@@ -1,0 +1,1511 @@
+<title>수업 복습 노트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: study desk — a fixed index rail on the left (top bar on phones), one calm reading column.
+   Red pen = what the teacher said will be on the test; highlighter = what they stressed. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --sunken: #f7f8fa;
+  --ink: #12141a;
+  --ink-2: #3a3f4b;
+  --muted: #6b7280;
+  --line: #e3e5ea;
+  --line-strong: #cfd3db;
+  --accent: #2448d8;
+  --accent-soft: #e8edfd;
+  --accent-ink: #ffffff;
+  --pen: #d93a3a;          /* 빨간 펜: 출제 예고 */
+  --pen-soft: #fdecec;
+  --hl: #ffe45e;           /* 형광펜: 강조 */
+  --hl-soft: #fff7cc;
+  --good: #16824a;
+  --good-soft: #e3f4ea;
+  --bad: #d93a3a;
+  --shadow: 0 1px 2px rgba(18, 20, 26, .04), 0 4px 16px rgba(18, 20, 26, .05);
+  --display: "Hahmlet", "AppleMyungjo", "Nanum Myeongjo", serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d0f14; --surface: #161922; --sunken: #1b1f2a; --ink: #eceef3; --ink-2: #c3c8d4; --muted: #8d94a5;
+  --line: #262b37; --line-strong: #353b4a; --accent: #8aa2ff; --accent-soft: #1d2540; --accent-ink: #0d0f14;
+  --pen: #ff7b72; --pen-soft: #3a1c1f; --hl: #e8c93a; --hl-soft: #3a3214; --good: #4cc47e; --good-soft: #15301f; --bad: #ff7b72;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0d0f14; --surface: #161922; --sunken: #1b1f2a; --ink: #eceef3; --ink-2: #c3c8d4; --muted: #8d94a5;
+  --line: #262b37; --line-strong: #353b4a; --accent: #8aa2ff; --accent-soft: #1d2540; --accent-ink: #0d0f14;
+  --pen: #ff7b72; --pen-soft: #3a1c1f; --hl: #e8c93a; --hl-soft: #3a3214; --good: #4cc47e; --good-soft: #15301f; --bad: #ff7b72;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 20px rgba(0, 0, 0, .25); color-scheme: dark }
+
+* { box-sizing: border-box }
+[hidden] { display: none !important }
+body { margin: 0 }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100% }
+body { word-break: keep-all; overflow-wrap: anywhere }
+html, body { background: var(--bg) }
+body { color: var(--ink); font: 15.5px/1.65 var(--body); -webkit-font-smoothing: antialiased; letter-spacing: -.005em }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface) }
+button { font-family: inherit }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px }
+
+/* ---------- 앱 뼈대 ---------- */
+.app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100% }
+.side { position: sticky; top: env(safe-area-inset-top, 0px); align-self: start; height: calc(100vh - env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 22px;
+  padding-block: 26px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: 18px; border-right: 1px solid var(--line); background: var(--surface) }
+.brand { display: flex; gap: 10px; align-items: center }
+.brand svg { flex: none }
+.brand h1 { font: 600 19px/1.2 var(--display); margin: 0; letter-spacing: -.01em }
+.brand .sub { font-size: 12px; color: var(--muted); margin: 2px 0 0 }
+.countdown { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; background: var(--sunken) }
+.countdown .lbl { font-size: 11.5px; color: var(--muted); font-weight: 600; letter-spacing: .06em }
+.countdown .nm { font-weight: 600 }
+.countdown .d { font: 600 26px/1.1 var(--mono); color: var(--pen); font-variant-numeric: tabular-nums }
+.tabs { display: flex; flex-direction: column; gap: 2px }
+.tab { appearance: none; display: flex; align-items: center; gap: 11px; width: 100%; border: 0; background: none; text-align: left; cursor: pointer;
+  font: 500 15px var(--body); color: var(--ink-2); padding: 9px 11px; border-radius: 9px }
+.tab svg { flex: none; color: var(--muted) }
+.tab:hover { background: var(--sunken) }
+.tab[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600 }
+.tab[aria-selected="true"] svg { color: var(--accent) }
+.tab .badge { margin-left: auto; font: 600 11.5px var(--mono); min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--pen); color: #fff; text-align: center }
+.tab .badge:empty { display: none }
+.side .foot { margin-top: auto; font-size: 12px; color: var(--muted) }
+.main { min-width: 0; padding-block: 34px 80px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)) }
+.main > * { max-width: 820px; margin-left: auto; margin-right: auto }
+.pagehead { display: flex; align-items: end; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px }
+.pagehead h2 { font: 600 30px/1.2 var(--display); letter-spacing: -.02em; margin: 0 }
+.pagehead p { margin: 4px 0 0; color: var(--muted); font-size: 14px }
+
+@media (max-width: 899px) {
+  .app { grid-template-columns: minmax(0, 1fr) }
+  .side { position: sticky; z-index: 20; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+    padding-block: 12px 0; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    border-right: 0; border-bottom: 1px solid var(--line) }
+  .brand .sub, .side .foot { display: none }
+  .countdown { margin-left: auto; padding: 4px 10px; display: flex; align-items: baseline; gap: 8px; border-radius: 999px }
+  .countdown .lbl { display: none }
+  .countdown .nm { font-size: 13px }
+  .countdown .d { font-size: 15px }
+  .tabs { flex-direction: row; width: 100%; overflow-x: auto; gap: 4px; scrollbar-width: none; margin: 0 -4px; padding: 0 4px }
+  .tabs::-webkit-scrollbar { display: none }
+  .tab { width: auto; white-space: nowrap; border-radius: 0; padding: 10px 10px 11px; border-bottom: 2px solid transparent; gap: 7px; font-size: 14.5px }
+  .tab[aria-selected="true"] { background: none; border-color: var(--accent) }
+  .tab:hover { background: none }
+  .main { padding-block: 22px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+  .pagehead h2 { font-size: 25px }
+}
+
+/* ---------- 타이포 ---------- */
+h2 { font: 600 24px/1.3 var(--display); letter-spacing: -.015em; margin: 0; text-wrap: balance }
+h3 { font-size: 15.5px; font-weight: 600; margin: 0; line-height: 1.45 }
+h4 { font: 600 13px var(--body); color: var(--muted); letter-spacing: .08em; margin: 0 0 4px; text-transform: none }
+.sheet h4, .note h4 { display: flex; align-items: center; gap: 8px }
+.hint, .sub { color: var(--muted); font-size: 13.5px; margin: 0 }
+label { font-size: 12.5px; font-weight: 600; color: var(--muted); letter-spacing: .04em }
+mark { background: linear-gradient(transparent 55%, var(--hl) 55%); color: inherit; padding: 0 1px }
+
+/* ---------- 면과 배치 ---------- */
+section.panel { padding-top: 22px; display: grid; gap: 16px }
+.sheet { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px 22px; display: grid; gap: 14px; min-width: 0; box-shadow: var(--shadow) }
+@media (max-width: 520px) { .sheet { padding: 16px; border-radius: 12px } }
+.field { display: grid; gap: 7px; min-width: 0 }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.list { display: grid; gap: 10px }
+
+/* ---------- 입력 ---------- */
+input[type=text], input[type=date], input:not([type]), select, textarea {
+  font: 15.5px/1.5 var(--body); color: var(--ink); background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%;
+  transition: border-color .15s, background .15s, box-shadow .15s }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 3px var(--accent-soft) }
+textarea { min-height: 200px; resize: vertical; line-height: 1.7 }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: .8 }
+
+/* ---------- 버튼과 칩 ---------- */
+.btn { appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: 600 15px var(--body); padding: 11px 18px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); transition: transform .1s, filter .15s, background .15s }
+.btn:hover { filter: brightness(1.06) }
+.btn:active { transform: translateY(1px) }
+.btn.ghost { background: var(--surface); color: var(--ink-2); border-color: var(--line-strong) }
+.btn.ghost:hover { border-color: var(--ink-2); filter: none }
+.btn.small { font-size: 13.5px; padding: 7px 12px; border-radius: 8px }
+.btn:disabled { opacity: .45; cursor: default; filter: none; transform: none }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { appearance: none; font: 500 14px var(--body); padding: 6px 13px; border-radius: 999px; cursor: pointer; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-2); transition: background .15s, border-color .15s }
+.chip:hover { border-color: var(--ink-2) }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+.x { appearance: none; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 2px 8px; border-radius: 6px; line-height: 1 }
+.x:hover { color: var(--bad); background: var(--pen-soft) }
+
+/* ---------- 목록 행 ---------- */
+.item { position: relative; display: grid; grid-template-columns: 4px minmax(0, 1fr) auto; gap: 16px; align-items: center; text-align: left; width: 100%;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 14px 0; cursor: pointer; font: inherit; color: inherit; overflow: hidden;
+  box-shadow: var(--shadow); transition: border-color .15s, transform .15s }
+.item:hover { border-color: var(--line-strong); transform: translateY(-1px) }
+.item .bar { align-self: stretch; margin: -14px 0; border-radius: 0 3px 3px 0 }
+.item h3 { margin-top: 3px }
+.item .meta { font-size: 13px; color: var(--muted) }
+.item .score { font: 600 17px var(--mono); color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap }
+.tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--sunken); color: var(--ink-2); border: 1px solid var(--line); letter-spacing: .01em }
+.tag.solid { background: var(--c); color: #fff; border-color: transparent }
+.example { font-size: 11.5px; font-weight: 700; color: var(--pen); letter-spacing: .04em; border: 1px dashed var(--pen); border-radius: 6px; padding: 1px 6px }
+.empty { text-align: center; color: var(--muted); padding: 44px 16px; border: 1px dashed var(--line-strong); border-radius: var(--r); background: var(--surface); line-height: 1.8 }
+
+/* ---------- 새 수업 ---------- */
+.howto { font-size: 13.5px; color: var(--ink-2); background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin: 0; line-height: 1.7 }
+.howto b { color: var(--ink) }
+.thumbs { display: flex; gap: 8px; flex-wrap: wrap }
+.thumbs:empty { display: none }
+.thumbs img { width: 76px; height: 76px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); cursor: pointer }
+.status { font-size: 13.5px; color: var(--ink-2); background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; white-space: pre-wrap; max-height: 160px; overflow: auto }
+.status.err, .err { color: var(--bad); background: var(--pen-soft) }
+
+/* ---------- 노트: 출제 예고(빨간 펜) · 강조(형광펜) ---------- */
+.note ul { margin: 0; padding-left: 20px }
+.note li { margin: 3px 0 }
+.hints { display: grid; gap: 2px; margin: 0; padding: 0 !important; list-style: none }
+.hintrow { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); margin: 0 !important }
+.hintrow:first-child { border-top: 0 }
+.hintrow .txt { min-width: 0; display: grid; gap: 2px }
+.hintrow .txt b { font-weight: 600 }
+.hintrow .quote { font-size: 13.5px; color: var(--ink-2); font-style: italic }
+.hintrow .src { font: 500 12px var(--mono); color: var(--muted) }
+.hintrow.done .txt > span:first-child b { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted) }
+.kind { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 5px; margin-right: 7px; white-space: nowrap; vertical-align: 1px; letter-spacing: .02em }
+.kind.exam { color: var(--pen); background: transparent; border: 1.5px solid var(--pen); transform: rotate(-2deg); border-radius: 6px }
+.kind.emph { background: var(--hl); color: #3a3000 }
+.kind.need { background: var(--accent-soft); color: var(--accent) }
+.kind.ok { background: var(--good-soft); color: var(--good) }
+.cnt { font: 600 12px var(--mono); color: var(--pen); margin-left: 8px; white-space: nowrap }
+.check { appearance: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 7px; border: 1.5px solid var(--line-strong); background: var(--surface); cursor: pointer;
+  font: 700 14px var(--body); color: #fff; padding: 0; line-height: 1; transition: background .15s, border-color .15s }
+.check:hover { border-color: var(--good) }
+.check[aria-pressed="true"] { background: var(--good); border-color: var(--good) }
+.progress { height: 6px; background: var(--sunken); border: 1px solid var(--line); border-radius: 99px; overflow: hidden }
+.progress > i { display: block; height: 100%; background: var(--good); border-radius: 99px; transition: width .4s }
+.terms { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0 18px; margin: 0 }
+.terms dt { font-weight: 600; padding: 8px 0; border-top: 1px solid var(--line) }
+.terms dd { margin: 0; min-width: 0; padding: 8px 0; border-top: 1px solid var(--line); color: var(--ink-2) }
+.terms dt:first-of-type, .terms dt:first-of-type + dd { border-top: 0 }
+@media (max-width: 520px) { .terms { grid-template-columns: minmax(0, 1fr) } .terms dd { border-top: 0; padding-top: 0 } }
+.unit { display: grid; gap: 6px; padding: 14px 0 6px; border-top: 1px solid var(--line) }
+.unit:first-of-type { border-top: 0; padding-top: 2px }
+.unit > h5 { margin: 0 0 2px; font: 600 17px var(--display); color: var(--ink) }
+details.lesson { border-left: 2px solid var(--line); padding: 4px 0 4px 14px; margin-left: 2px }
+details.lesson[open] { border-color: var(--accent) }
+details.lesson summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap }
+details.lesson summary::-webkit-details-marker { display: none }
+details.lesson summary::before { content: "›"; color: var(--muted); font-weight: 400; transition: transform .15s; display: inline-block }
+details.lesson[open] summary::before { transform: rotate(90deg) }
+details.lesson summary .meta { font: 500 12.5px var(--mono); color: var(--muted) }
+details.lesson > div { display: grid; gap: 10px; padding: 10px 0 6px }
+.new { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 1px 7px; border-radius: 99px }
+.unitedit { display: flex; gap: 6px; flex-wrap: wrap; align-items: center }
+.unitedit input { width: auto; flex: 1 1 160px; padding: 7px 10px; font-size: 14px }
+details > summary.hint { list-style: none }
+
+/* ---------- 문제 ---------- */
+.sets { display: grid; gap: 8px }
+.q { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--line) }
+.q .stem { font-weight: 500; line-height: 1.6 }
+.q .num { font: 600 15px var(--mono); color: var(--accent); margin-right: 8px }
+.opts { display: grid; gap: 6px }
+.opt { appearance: none; text-align: left; font: 15px/1.5 var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px 14px; cursor: pointer; transition: border-color .12s, background .12s }
+.opt:hover { border-color: var(--ink-2) }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent) }
+.opt.right { border-color: var(--good); background: var(--good-soft); box-shadow: inset 0 0 0 1px var(--good) }
+.opt.wrong { border-color: var(--bad); background: var(--pen-soft); box-shadow: inset 0 0 0 1px var(--bad) }
+.verdict { font-size: 14px; display: grid; gap: 4px; background: var(--sunken); border-radius: 10px; padding: 10px 12px; color: var(--ink-2) }
+.verdict .ok { color: var(--good); font-weight: 700 } .verdict .no { color: var(--bad); font-weight: 700 }
+.scoreline { font: 600 26px var(--mono); margin: 0; font-variant-numeric: tabular-nums }
+
+/* ---------- 시간표 · 시험 ---------- */
+table.tt { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 560px; font-variant-numeric: tabular-nums; border: 1px solid var(--line); border-radius: 12px; overflow: hidden }
+.tt th, .tt td { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 3px; text-align: center; font-size: 14px }
+.tt tr > *:last-child { border-right: 0 } .tt tr:last-child > * { border-bottom: 0 }
+.tt th { color: var(--muted); font-weight: 600; background: var(--sunken); font-size: 13px; padding: 8px 4px }
+.tt input { width: 100%; font: 14px var(--body); padding: 8px 4px; border: 0; background: transparent; color: var(--ink); text-align: center; border-radius: 6px; box-shadow: none }
+.tt input:focus { background: var(--accent-soft); box-shadow: none }
+.tt input.time { color: var(--muted); font: 500 13px var(--mono) }
+.examrow { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center }
+@media (max-width: 520px) { .examrow { grid-template-columns: 1fr 1fr } }
+
+/* ---------- 수행평가 ---------- */
+.dday { font: 600 18px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-2) }
+.dday.soon { color: var(--pen) } .dday.done { color: var(--good) }
+.steps { display: grid; gap: 0; margin: 0; padding: 0 !important; list-style: none }
+.steps li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); margin: 0 !important }
+.steps li:first-child { border-top: 0 }
+.steps li.done span { text-decoration: line-through; color: var(--muted) }
+.crit { width: 100%; border-collapse: collapse; font-size: 14.5px }
+.crit td { border-top: 1px solid var(--line); padding: 9px 4px; vertical-align: top }
+.crit tr:first-child td { border-top: 0 }
+.crit td:last-child { text-align: right; white-space: nowrap; font: 600 14px var(--mono); color: var(--ink-2) }
+.photos { display: flex; gap: 10px; flex-wrap: wrap }
+.photos a img { width: 116px; height: 116px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block }
+
+/* ---------- 자료 요청 ---------- */
+.mat { display: grid; gap: 7px; padding: 14px 0; border-top: 1px solid var(--line) }
+.mat:first-of-type { border-top: 0; padding-top: 2px }
+.mat .head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap }
+.mat .head b { font-weight: 600 }
+.mat .why { font-size: 13.5px; color: var(--muted) }
+.mat .quote { font-size: 13.5px; color: var(--ink-2); font-style: italic }
+.mat textarea { min-height: 110px }
+.matbody { font-size: 14px; display: grid; gap: 8px; padding-top: 8px }
+pre.raw { white-space: pre-wrap; word-break: break-word; font: 13.5px/1.7 var(--body); background: var(--sunken); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; max-height: 360px; overflow: auto; margin: 0; color: var(--ink-2) }
+.matbody pre.raw { max-height: 220px }
+
+/* ---------- 편집 ---------- */
+.edbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 15; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); padding: 12px 0; border-bottom: 1px solid var(--line) }
+@media (max-width: 899px) { .edbar { position: static } }
+.edrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 12px 0; border-top: 1px solid var(--line) }
+.edrow:first-child { border-top: 0 }
+.edrow .stack { display: grid; gap: 6px; min-width: 0 }
+.edrow input, .edrow select, .edrow textarea { padding: 8px 10px; font-size: 14.5px }
+.edrow textarea { min-height: 130px }
+#aiBox { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); background: linear-gradient(var(--accent-soft), var(--surface) 70%) }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="1" y="1" width="32" height="32" rx="9" fill="var(--ink)"/><path d="M9 21.5h16" stroke="var(--hl)" stroke-width="5" stroke-linecap="round" opacity=".9"/><path d="M10 12.5h14M10 17h9" stroke="var(--bg)" stroke-width="2" stroke-linecap="round"/><circle cx="24.5" cy="12" r="3.2" fill="none" stroke="var(--pen)" stroke-width="1.6"/></svg>
+      <div><h1>수업 복습 노트</h1><p class="sub" id="who">과목마다 쌓이는 시험 노트</p></div>
+    </div>
+    <div class="countdown" id="countdown"></div>
+    <nav class="tabs" role="tablist" aria-label="메뉴">
+      <button class="tab" role="tab" id="tab-new" aria-selected="true" data-tab="new"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>새 수업 추가</span></button>
+      <button class="tab" role="tab" id="tab-books" aria-selected="false" data-tab="books"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM13 4h5.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H13z"/></svg><span>과목 노트</span></button>
+      <button class="tab" role="tab" id="tab-mats" aria-selected="false" data-tab="mats"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 17h4"/></svg><span>자료 요청</span><span class="badge" id="badge-mats"></span></button>
+      <button class="tab" role="tab" id="tab-tasks" aria-selected="false" data-tab="tasks"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"/></svg><span>수행평가</span><span class="badge" id="badge-tasks"></span></button>
+      <button class="tab" role="tab" id="tab-wrong" aria-selected="false" data-tab="wrong"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M9.5 9.5l5 5M14.5 9.5l-5 5"/></svg><span>오답 모음</span></button>
+      <button class="tab" role="tab" id="tab-tt" aria-selected="false" data-tab="tt"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.5h16M4 14.5h16M10 4v16"/></svg><span>시간표</span></button>
+    </nav>
+    <p class="foot">녹음은 수업 시간에만, 노트는 나만 봐요.</p>
+  </aside>
+
+  <main class="main">
+    <div class="pagehead" id="pagehead"><div><h2 id="ph-title">새 수업 추가</h2><p id="ph-sub"></p></div></div>
+
+  <!-- 새 수업 추가 -->
+  <section class="panel" id="p-new">
+    <div class="sheet">
+      <div class="field">
+        <label>넣을 내용</label>
+        <div class="chips" id="modes">
+          <button class="chip" data-m="day" aria-pressed="true">하루 전체 (자동 분류)</button>
+          <button class="chip" data-m="one" aria-pressed="false">수업 하나</button>
+        </div>
+      </div>
+      <div class="field" id="subjField" hidden>
+        <label>과목</label>
+        <div class="chips" id="subjects"></div>
+      </div>
+      <div class="row">
+        <div class="field" id="titleField" hidden><label for="f-title">단원 (입력하거나 고르기)</label><input type="text" id="f-title" list="unitList" placeholder="예: Ⅲ. 식물과 에너지" autocomplete="off"><datalist id="unitList"></datalist></div>
+        <div class="field"><label for="f-date">수업 날짜</label><input type="date" id="f-date"></div>
+        <div class="field" id="startField"><label for="f-start">녹음 시작 시각</label><input type="text" id="f-start" placeholder="예: 08:50" inputmode="numeric"></div>
+      </div>
+      <p class="hint" id="ttHint"></p>
+      <div class="field">
+        <label for="f-text">수업 받아쓰기 / 필기</label>
+        <textarea id="f-text" placeholder="클로바노트 같은 앱으로 받아쓴 텍스트를 여기에 붙여넣으세요. 하루치를 한꺼번에 넣으면 시간표에 맞춰 과목별로 나눠요."></textarea>
+      </div>
+      <p class="howto"><b>새 노트를 만들지 않아요.</b> 정리한 내용은 그 시험 범위의 과목 노트에 단원별로 이어서 쌓여요. 문제는 나중에 과목 노트에서 단원 범위를 골라 만들어요. 선생님이 전에 말한 걸 또 강조하면 같은 항목에 횟수가 올라가요.<br><b>받아쓰기:</b> 클로바노트나 다글로로 녹음하고 시간 표시까지 복사하세요. 수업 시간에만 녹음하고, 쉬는 시간에는 멈춰 주세요.</p>
+      <div class="actions">
+        <label class="btn ghost small" for="f-file" style="letter-spacing:0">텍스트 파일 올리기</label>
+        <input type="file" id="f-file" accept=".txt,.md,text/plain" hidden>
+        <label class="btn ghost small" for="f-img" style="letter-spacing:0" id="imgLabel" hidden>칠판·프린트 사진 추가</label>
+        <input type="file" id="f-img" accept="image/*" multiple hidden>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="actions">
+        <button class="btn" id="go">과목 노트에 추가하기</button>
+        <span class="hint" id="goHint"></span>
+      </div>
+      <div class="status" id="status" hidden></div>
+    </div>
+  </section>
+
+  <!-- 과목 노트 목록 -->
+  <section class="panel" id="p-books" hidden>
+    <div class="field"><label>시험</label><div class="chips" id="examChips"></div></div>
+    <div class="sheet" id="examEdit" hidden>
+      <p class="hint">시험마다 마지막 시험일을 넣어 주세요. 그 날짜까지 한 수업이 그 시험의 과목 노트에 쌓여요.</p>
+      <div class="list" id="examRows"></div>
+      <div class="actions"><button class="btn small" id="examSave">저장</button><button class="btn ghost small" id="examAdd">시험 추가</button><span class="hint" id="examMsg"></span></div>
+    </div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <!-- 과목 노트 한 권 -->
+  <section class="panel" id="p-view" hidden></section>
+
+  <!-- 수행평가 -->
+  <section class="panel" id="p-tasks" hidden>
+    <div class="sheet">
+      <h4>새 수행평가</h4>
+      <div class="field"><label for="t-text">공지 내용 (글로 쓰거나 붙여넣기)</label>
+        <textarea id="t-text" style="min-height:110px" placeholder="예: 국어 수행평가 - 다음 주 금요일까지 독서 감상문 A4 1장, 내용 40점 표현 30점 분량 30점"></textarea></div>
+      <div class="actions">
+        <label class="btn ghost small" for="t-img" style="letter-spacing:0" id="tImgLabel">공지·안내문 사진 찍기/올리기</label>
+        <input type="file" id="t-img" accept="image/*" multiple hidden>
+      </div>
+      <div class="thumbs" id="tThumbs"></div>
+      <div class="actions"><button class="btn" id="tGo">정리해서 추가하기</button><span class="hint" id="tMsg"></span></div>
+    </div>
+    <div class="chips" id="tFilter"></div>
+    <div class="list" id="tList"></div>
+  </section>
+
+  <!-- 수행평가 하나 -->
+  <section class="panel" id="p-task" hidden></section>
+
+  <!-- 자료 요청 -->
+  <section class="panel" id="p-mats" hidden></section>
+
+  <!-- 오답 -->
+  <section class="panel" id="p-wrong" hidden></section>
+
+  <!-- 시간표 -->
+  <section class="panel" id="p-tt" hidden>
+    <div class="sheet">
+      <div style="overflow-x:auto"><table class="tt" id="ttTable"></table></div>
+      <div class="actions"><button class="btn" id="ttSave">시간표 저장</button><span class="hint" id="ttMsg"></span></div>
+    </div>
+  </section>
+  </main>
+</div>
+
+<script>
+const SUBJECTS = [
+  ["국어", "#d9534f"], ["수학", "#2a49d1"], ["영어", "#7a4fd1"], ["사회", "#d98a1f"],
+  ["과학", "#1f8a4c"], ["한국사", "#8a5a2b"], ["기타", "#6b7280"]
+];
+const colorOf = s => (SUBJECTS.find(x => x[0] === s) || SUBJECTS[6])[1];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const norm = s => String(s ?? "").replace(/\s+/g, "").replace(/[.,·'"()]/g, "").toLowerCase();
+const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+const md = d => d ? d.slice(5).replace("-", "/") : "";
+
+/* 과목 노트 한 권 = 시험 하나 × 과목 하나. 수업을 추가할 때마다 lessons에 쌓이고,
+   출제 예고·강조(hints)와 용어(terms)는 같은 내용이면 합쳐져요. */
+const EXAMPLE = {
+  id: "example", example: true, subject: "과학", exam: "2학기 기말", updatedAt: 0,
+  lessons: [
+    { id: "ex1", date: "2026-10-22", period: 3, unit: "Ⅲ. 식물과 에너지", title: "광합성",
+      summary: [{ heading: "광합성이란", points: ["식물이 빛에너지로 이산화 탄소와 물을 이용해 포도당을 만드는 과정", "엽록체에서 일어나며 산소가 나온다"] }] },
+    { id: "ex2", date: "2026-10-24", period: 2, unit: "Ⅲ. 식물과 에너지", title: "광합성에 영향을 주는 요인",
+      summary: [{ heading: "요인", points: ["빛의 세기, 이산화 탄소 농도, 온도", "온도는 너무 높으면 효율이 떨어진다"] }] }
+  ],
+  hints: [
+    { kind: "출제예고", text: "광합성 식 (재료와 생성물)", count: 2, dates: ["2026-10-22", "2026-10-24"], quote: "지난 시간에 말한 식, 시험에 무조건 나와." },
+    { kind: "출제예고", text: "광합성 요인 그래프 해석", count: 1, dates: ["2026-10-24"], quote: "그래프 문제 서술형으로 낼 거야." },
+    { kind: "강조", text: "포도당은 녹말로 바뀌어 저장된다", count: 1, dates: ["2026-10-22"], quote: "이거 헷갈리는 사람 많아." }
+  ],
+  terms: [{ term: "엽록체", def: "광합성이 일어나는 세포 소기관" }, { term: "기공", def: "잎 뒷면에 많은 기체 출입 통로" }],
+  materials: [
+    { id: "exm1", title: "광합성 학습지 2", where: "3번 그래프 문제", quote: "학습지 3번, 이거 그대로 시험에 낸다.", reason: "선생님이 시험에 낸다고 한 문제라 문제와 답이 필요해요.", priority: "시험", count: 1, unit: "Ⅲ. 식물과 에너지", date: "2026-10-24", status: "needed", photos: [], text: "", extracted: null },
+    { id: "exm2", title: "교과서", where: "112~113쪽", quote: "", reason: "오늘 수업한 쪽이라 받아쓰기에서 빠진 그림 설명을 채울 수 있어요.", priority: "참고", count: 1, unit: "Ⅲ. 식물과 에너지", date: "2026-10-22", status: "needed", photos: [], text: "", extracted: null }],
+  quizzes: [{ id: "exq", units: ["Ⅲ. 식물과 에너지"], createdAt: 0, questions: [
+    { type: "mc", q: "광합성이 일어나는 세포 소기관은?", choices: ["미토콘드리아", "엽록체", "핵", "세포막"], answer: "엽록체", explanation: "엽록소가 있는 엽록체에서 빛에너지를 흡수해요." },
+    { type: "ox", q: "광합성 결과 이산화 탄소가 발생한다.", answer: "X", explanation: "산소가 발생하고, 이산화 탄소는 재료로 쓰여요." },
+    { type: "short", q: "광합성으로 만든 포도당은 어떤 형태로 바뀌어 저장되나요?", answer: "녹말", explanation: "포도당은 녹말로 바뀌어 저장돼요." }] }],
+  attempts: {}
+};
+
+let state = { mode: "day", subject: "과학", count: 15, images: [], books: [], tab: "new", exam: null };
+let db = null, uid = null, sample = null, imagesOk = false;
+
+/* ---------- 저장: 내 계정(db), 안 되면 이 기기 ---------- */
+const LS = "class-review-books";
+function lsLoad() { try { return JSON.parse(localStorage.getItem(LS) || "[]") } catch { return [] } }
+function lsSave() { try { localStorage.setItem(LS, JSON.stringify(state.books)) } catch {} }
+const col = () => db.collection("data/users/" + uid);
+function hashId(s) { let h = 5381; for (const c of s) h = ((h * 33) ^ c.codePointAt(0)) >>> 0; return "b" + h.toString(36); }
+
+async function saveBook(b) {
+  b.updatedAt = Date.now();
+  const i = state.books.findIndex(x => x.id === b.id);
+  if (i >= 0) state.books[i] = b; else state.books.push(b);
+  if (db && uid) { const body = JSON.parse(JSON.stringify(b)); delete body.id; await col().doc(b.id).set(body); }
+  else lsSave();
+}
+async function deleteBook(id) {
+  state.books = state.books.filter(x => x.id !== id);
+  if (db && uid) await col().doc(id).delete(); else lsSave();
+}
+function bookFor(exam, subject) {
+  const id = hashId(exam + "|" + subject);
+  return state.books.find(b => b.exam === exam && b.subject === subject) || state.books.find(b => b.id === id) ||
+    { id, subject, exam, lessons: [], hints: [], terms: [], quizzes: [], attempts: {}, updatedAt: 0 };
+}
+
+/* 새 수업 하나를 과목 노트에 합치기 */
+/* 자료 요청: 같은 자료를 또 말하면 새로 만들지 않고 합쳐요. 이미 올린 자료는 다시 요청하지 않아요. */
+function mergeMaterials(book, lesson, mats) {
+  book.materials = book.materials || [];
+  for (const m of mats || []) {
+    if (!m?.title) continue;
+    const same = Number.isInteger(m.same) && book.materials[m.same] ? book.materials[m.same]
+      : book.materials.find(x => norm(x.title) === norm(m.title) && norm(x.where) === norm(m.where));
+    if (same) {
+      same.count = (same.count || 1) + 1;
+      if (m.priority === "시험") same.priority = "시험";
+      if (m.quote) same.quote = m.quote;
+      if (m.where && !norm(same.where).includes(norm(m.where))) same.where = [same.where, m.where].filter(Boolean).join(", ");
+      continue;
+    }
+    book.materials.push({ id: "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), title: m.title, where: m.where || "",
+      quote: m.quote || "", reason: m.reason || "", priority: m.priority === "시험" ? "시험" : "참고", count: 1,
+      lessonId: lesson.id, unit: lesson.unit || "", date: lesson.date, status: "needed", photos: [], text: "", extracted: null });
+  }
+}
+
+function mergeLesson(book, lesson, hints, terms) {
+  book = JSON.parse(JSON.stringify(book));
+  book.lessons.push(lesson);
+  book.lessons.sort((a, b) => (a.date || "").localeCompare(b.date || "") || (a.period || 0) - (b.period || 0));
+  for (const h of hints || []) {
+    if (!h?.text) continue;
+    const same = Number.isInteger(h.same) && book.hints[h.same] ? book.hints[h.same]
+      : book.hints.find(x => norm(x.text) === norm(h.text));
+    if (same) {
+      same.count = (same.count || 1) + 1;
+      same.dates = [...(same.dates || []), lesson.date];
+      if (h.kind === "출제예고") same.kind = "출제예고";
+      if (h.quote) same.quote = h.quote;
+      if (lesson.unit && !(same.units || []).includes(lesson.unit)) same.units = [...(same.units || []), lesson.unit];
+    } else book.hints.push({ kind: h.kind === "출제예고" ? "출제예고" : "강조", text: h.text, quote: h.quote || "", count: 1, dates: [lesson.date], units: lesson.unit ? [lesson.unit] : [] });
+  }
+  for (const t of terms || []) if (t?.term && !book.terms.some(x => norm(x.term) === norm(t.term))) book.terms.push({ ...t, unit: lesson.unit || "" });
+  return book;
+}
+
+/* ---------- 시험 기간 ---------- */
+const EX_LS = "class-review-exams";
+function defaultExams() {
+  const d = new Date(), y = d.getMonth() >= 2 ? d.getFullYear() : d.getFullYear() - 1;
+  return [["1학기 중간", "04-30"], ["1학기 기말", "07-10"], ["2학기 중간", "10-20"], ["2학기 기말", "12-20"]].map(([name, m]) => ({ name, until: `${y}-${m}` }));
+}
+state.exams = defaultExams();
+async function loadExams() {
+  let e = null;
+  if (db && uid) { try { const d = await col().doc("_exams").get(); if (d.exists) e = d.data().list; } catch {} }
+  if (!e) { try { e = JSON.parse(localStorage.getItem(EX_LS) || "null") } catch {} }
+  if (Array.isArray(e) && e.length) state.exams = e;
+}
+const sortedExams = () => [...state.exams].filter(x => x.until).sort((a, b) => a.until.localeCompare(b.until));
+function examOf(date) { const e = sortedExams().find(x => (date || "") <= x.until); return e ? e.name : "다음 시험"; }
+
+/* ---------- 새 수업 추가 ---------- */
+function renderSubjects() {
+  $("subjects").innerHTML = SUBJECTS.map(([s]) => `<button class="chip" aria-pressed="${s === state.subject}" data-s="${s}">${s}</button>`).join("");
+  renderUnitList();
+}
+const unitsOf = b => [...new Set((b.lessons || []).map(l => l.unit).filter(Boolean))];
+function renderUnitList() {
+  const b = bookFor(examOf($("f-date").value), state.subject);
+  $("unitList").innerHTML = unitsOf(b).map(u => `<option value="${esc(u)}">`).join("");
+  $("f-title").placeholder = unitsOf(b).length ? "목록에서 고르거나 새 단원 입력" : "예: Ⅲ. 식물과 에너지";
+}
+$("subjects").onclick = e => { const s = e.target.dataset.s; if (s) { state.subject = s; renderSubjects() } };
+$("f-date").value = today();
+try { $("f-text").value = localStorage.getItem("class-review-draft") || "" } catch {}
+$("f-text").oninput = () => { try { localStorage.setItem("class-review-draft", $("f-text").value) } catch {} };
+
+$("f-file").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  const t = await f.text(); $("f-text").value = ($("f-text").value ? $("f-text").value + "\n\n" : "") + t; $("f-text").oninput();
+  e.target.value = "";
+};
+async function shrink(file) {
+  const img = await createImageBitmap(file);
+  const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  return new Promise(r => c.toBlob(r, "image/jpeg", 0.82));
+}
+$("f-img").onchange = async e => {
+  for (const f of [...e.target.files].slice(0, 6 - state.images.length)) { try { state.images.push(await shrink(f)) } catch {} }
+  e.target.value = ""; renderThumbs();
+};
+function renderThumbs() {
+  $("thumbs").innerHTML = state.images.map((b, i) => `<img src="${URL.createObjectURL(b)}" alt="사진 ${i + 1}" title="눌러서 빼기" data-i="${i}">`).join("");
+}
+$("thumbs").onclick = e => { if (e.target.dataset.i) { state.images.splice(+e.target.dataset.i, 1); renderThumbs() } };
+
+function lessonPrompt(text, subject, book, withImages, unit) {
+  const prev = book.lessons.length ? book.lessons.map(l => `- ${md(l.date)} [${l.unit || "단원 없음"}] ${l.title}`).join("\n") : "(아직 없음)";
+  const units = unitsOf(book);
+  const hints = book.hints.length ? book.hints.map((h, i) => `[${i}] ${h.kind}: ${h.text}`).join("\n") : "(아직 없음)";
+  const mats = (book.materials || []).length ? book.materials.map((m, i) => `[${i}] ${m.title}${m.where ? " · " + m.where : ""}`).join("\n") : "(아직 없음)";
+  return `너는 한국 중·고등학생의 시험 공부를 돕는 선생님이야. 학생은 "${book.exam}" 대비 "${subject}" 노트를 수업마다 이어서 쌓고 있어.
+아래 새 수업 받아쓰기(또는 필기)를 정리해서 이 노트에 추가할 내용을 만들어.${withImages ? " 함께 보낸 사진은 칠판이나 프린트야. 내용에 포함해." : ""}
+받아쓰기 오류나 잡담은 걸러내고 수업 내용만 정리해.
+
+이 노트에 이미 있는 수업:
+${prev}
+
+이 노트에 이미 요청한 자료 목록:
+${mats}
+
+이 노트에 이미 있는 출제 예고·강조 목록:
+${hints}
+
+할 일:
+0. unit: ${unit ? `학생이 정한 단원은 "${unit}"이야. 그대로 써.` : `이번 수업이 속한 교과서 단원(대단원이나 중단원). 이미 있는 단원 ${units.length ? units.map(u => `"${u}"`).join(", ") : "(없음)"} 중 이어지는 게 있으면 글자 그대로 그걸 쓰고, 새 단원이면 새로 지어.`}
+1. title: 이번 수업에서 다룬 주제(짧게). 지난 수업에 이어지는 내용이면 그 흐름에 맞게.
+2. summary: 이번 수업 내용을 2~5개 소주제로 나누고, 각 소주제마다 핵심을 짧은 문장 2~5개로. 이미 있는 수업과 겹치는 설명은 짧게.
+3. examHints: 이번 수업에서 선생님이 시험과 관련해 한 말을 빠짐없이.
+   - kind "출제예고": "시험에 나와", "이거 낸다", "서술형으로 나올 거야", "별표", "밑줄 쳐"처럼 출제를 직접 말한 것.
+   - kind "강조": "중요해", "꼭 외워", "헷갈리는 부분", 여러 번 반복한 내용.
+   - text: 무엇을 공부해야 하는지 짧게. quote: 선생님이 실제로 한 말을 짧게 그대로(없으면 "").
+   - same: 위 "이미 있는 목록"과 같은 내용이면 그 번호, 새 내용이면 -1.
+   - 정말 아무것도 없으면 이번 수업의 핵심 개념 2개를 "강조"로.
+4. terms: 이번 수업의 새 용어와 뜻 (최대 8개).
+5. materials: 학생에게 사진이나 글로 받아야 할 자료. 많이 요청해도 괜찮아, 놓치는 것보다 나아.
+   - 선생님이 언급한 자료는 빠짐없이: 학습지, 프린트, 교과서 쪽, 문제집, 활동지, PPT, 판서, 영상, 지난 시험지 등. "학습지 3번 시험에 나와", "교과서 52쪽 표 봐" 같은 말.
+   - 선생님이 말하지 않았어도 이번 수업을 제대로 정리하려면 필요한 것: 오늘 수업한 교과서 쪽, 판서, 받아쓰기가 끊기거나 "이거", "여기"처럼 화면·칠판을 가리킨 부분.
+   - title: 자료 이름(예: "광합성 학습지 2"), where: 어느 부분(예: "3번 문제", "52~53쪽"), quote: 선생님이 한 말 그대로(없으면 ""), reason: 왜 필요한지 한 문장.
+   - priority: 시험에 나온다고 했거나 강조한 자료면 "시험", 아니면 "참고".
+   - same: 위 "이미 요청한 자료"와 같은 자료면 그 번호, 새 자료면 -1.
+6. tasks: 선생님이 수행평가나 과제를 공지했으면 (오늘 날짜는 ${book.today}). 없으면 빈 배열.
+   - title, due(YYYY-MM-DD, "다음 주 금요일" 같은 말은 오늘 기준으로 계산, 모르면 ""), dueText(선생님이 말한 그대로), desc(무엇을 하는지), criteria([{item, points}]), prepare(준비물), steps(해야 할 일 순서대로 3~6개).
+
+JSON만 출력해:
+{"unit":"","title":"","summary":[{"heading":"","points":[""]}],"examHints":[{"kind":"출제예고","text":"","quote":"","same":-1}],"terms":[{"term":"","def":""}],"tasks":[],"materials":[{"title":"","where":"","quote":"","reason":"","priority":"시험","same":-1}]}
+
+--- 새 수업 내용 ---
+${text}`;
+}
+
+/* 넣었던 원문(받아쓰기)은 수업마다 따로 보관해요. 노트를 고치거나 지워도 원문은 남아요. */
+const rawCol = () => db.collection("data/users/" + uid + "/_raw/items");
+async function saveRaw(id, text, meta) {
+  if (db && uid) { try { await rawCol().doc(id).set({ text, ...meta, savedAt: Date.now() }); } catch {} }
+  else { try { localStorage.setItem("class-review-raw-" + id, text) } catch {} }
+}
+async function loadRaw(id) {
+  if (db && uid) { try { const d = await rawCol().doc(id).get(); return d.exists ? d.data().text : null; } catch { return null; } }
+  try { return localStorage.getItem("class-review-raw-" + id) } catch { return null }
+}
+
+/* 수업 하나를 정리해서 과목 노트에 붙이기 */
+async function addLesson(text, subject, date, period, unitHint, images) {
+  const exam = examOf(date), book = bookFor(exam, subject);
+  const opts = { modelTier: "complex" };
+  if (images?.length && imagesOk) opts.images = images;
+  const r = await sample.json(lessonPrompt(text, subject, { ...book, today: date }, !!opts.images, unitHint), opts);
+  const lesson = { id: "l" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), date, period: period || null,
+    unit: unitHint || String(r.unit || "").trim() || "단원 미정", title: r.title || subject + " 수업", summary: r.summary || [] };
+  await saveRaw(lesson.id, text, { subject, date, period: period || null });
+  lesson.hasRaw = true;
+  const merged = mergeLesson(book, lesson, r.examHints, r.terms);
+  mergeMaterials(merged, lesson, r.materials);
+  await saveBook(merged);
+  for (const t of r.tasks || []) await addTask({ ...t, subject }, "수업 중 공지 · " + md(date));
+  return merged;
+}
+
+$("go").onclick = async () => {
+  if (state.mode === "day") return runDay();
+  const text = $("f-text").value.trim();
+  if (text.length < 40 && !state.images.length) { showStatus("받아쓴 텍스트를 붙여넣거나 사진을 추가해 주세요. 내용이 너무 짧으면 정리할 수 없어요.", true); return; }
+  if (!sample) { showStatus("이 화면에서는 Claude에게 요청할 수 없어요. claude.ai에서 이 페이지를 열어 주세요.", true); return; }
+  $("go").disabled = true; showStatus(`${examOf($("f-date").value)} ${state.subject} 노트에 추가하는 중이에요.`);
+  try {
+    const b = await addLesson(text.slice(0, 70000), state.subject, $("f-date").value, null, $("f-title").value.trim(), state.images);
+    $("f-text").value = ""; $("f-title").value = ""; state.images = []; renderThumbs(); $("f-text").oninput();
+    $("status").hidden = true;
+    openBook(b.id);
+  } catch (e) { showStatus(sampleErr(e), true); }
+  finally { $("go").disabled = false; }
+};
+function sampleErr(e) {
+  return { not_granted: "Claude 사용을 허용해야 정리할 수 있어요. 페이지를 새로 고침하고 허용을 눌러 주세요.",
+    rate_limited: "요청이 많아요. 1분쯤 뒤에 다시 눌러 주세요.", invalid_json: "결과를 읽지 못했어요. 한 번 더 눌러 주세요." }[e?.code]
+    || ("정리하지 못했어요: " + (e?.message || e));
+}
+function showStatus(msg, isErr) { const s = $("status"); s.hidden = false; s.className = isErr ? "status err" : "status"; s.textContent = msg; }
+
+/* ---------- 하루 전체: 시간표로 나눠서 과목 노트마다 추가 ---------- */
+const DAYS = ["월", "화", "수", "목", "금"];
+const DEFAULT_TT = { times: ["08:50", "09:50", "10:50", "11:50", "13:40", "14:40", "15:40"], days: Object.fromEntries(DAYS.map(d => [d, Array(7).fill("")])) };
+function weekdayOf(dateStr) { const d = new Date(dateStr + "T12:00:00"); return "일월화수목금토"[d.getDay()]; }
+function todaysLessons() {
+  const day = weekdayOf($("f-date").value), subs = state.tt.days[day] || [];
+  return subs.map((s, i) => s && { period: i + 1, time: state.tt.times[i], subject: s }).filter(Boolean);
+}
+function updateTTHint() {
+  if (state.mode !== "day") { renderUnitList(); $("ttHint").textContent = `${examOf($("f-date").value)} ${state.subject} 노트에 이어서 추가돼요. 단원을 비워 두면 내용을 보고 정해요.`; return; }
+  const day = weekdayOf($("f-date").value), ls = todaysLessons();
+  $("ttHint").textContent = (ls.length ? `${day}요일 시간표: ` + ls.map(l => `${l.period}교시 ${l.subject}`).join(" · ")
+    : `${day}요일 시간표가 비어 있어요. 시간표 탭에서 넣으면 더 정확해요.`) + ` → ${examOf($("f-date").value)} 노트에 추가. 단원은 과목 노트에 있던 단원 중에서 고르거나 새로 정해요.`;
+}
+function blocksOf(text) {
+  const out = []; let cur = "";
+  for (const l of text.split(/\n/)) { if (cur.length + l.length > 1200 && cur) { out.push(cur); cur = ""; } cur += l + "\n"; }
+  if (cur.trim()) out.push(cur);
+  return out;
+}
+async function runDay() {
+  const text = $("f-text").value.trim(), date = $("f-date").value;
+  if (text.length < 200) { showStatus("하루치 받아쓰기를 붙여넣어 주세요. 내용이 너무 짧아요.", true); return; }
+  if (!sample) { showStatus("이 화면에서는 Claude에게 요청할 수 없어요. claude.ai에서 이 페이지를 열어 주세요.", true); return; }
+  const blocks = blocksOf(text), ls = todaysLessons(), subjectList = SUBJECTS.map(x => x[0]).join(", ");
+  $("go").disabled = true;
+  try {
+    showStatus(`1단계: 하루 내용을 교시별로 나누는 중이에요 (${blocks.length}조각).`);
+    const split = await sample.json(`아래는 한국 학생이 학교에서 하루 동안 녹음해서 받아쓴 텍스트를 조각으로 나눈 거야. 각 조각은 [번호]와 앞부분 일부만 보여 줘.
+녹음 시작 시각: ${$("f-start").value || "모름"}. 텍스트 안에 시간 표시(예: 00:12:30)가 있으면 녹음 시작부터 지난 시간이야.
+오늘 시간표: ${ls.length ? ls.map(l => `${l.period}교시(${l.time} 시작) ${l.subject}`).join(", ") : "없음 (내용을 보고 과목을 판단해. 과목 후보: " + subjectList + ")"}
+
+할 일: 수업이 진행된 구간만 찾아서 과목별로 묶어. 쉬는 시간, 점심시간, 조회·종례, 친구끼리 잡담, 수업과 관계없는 개인 대화는 빼.
+시간표가 있으면 순서와 시각을 참고하되, 실제 내용이 다른 과목이면 내용을 따라. subject는 시간표에 쓰인 과목명을 그대로 써.
+
+JSON만 출력해: {"lessons":[{"period":1,"subject":"","from":0,"to":0}]}  (from, to는 조각 번호, 포함)
+
+${blocks.map((b, i) => `[${i}] ${b.slice(0, 220).replace(/\s+/g, " ")}`).join("\n")}`, { modelTier: "complex" });
+    const lessons = (split.lessons || []).filter(l => l.to >= l.from && l.from >= 0 && l.subject);
+    if (!lessons.length) { showStatus("수업 구간을 찾지 못했어요. 받아쓰기에 수업 내용이 들어 있는지 확인해 주세요.", true); return; }
+    const added = [];
+    for (const [k, l] of lessons.entries()) {
+      const body = blocks.slice(l.from, l.to + 1).join("").slice(0, 70000);
+      if (body.trim().length < 300) continue;
+      showStatus(`2단계: ${k + 1}/${lessons.length} · ${l.period ? l.period + "교시 " : ""}${l.subject} 노트에 추가하는 중이에요.`);
+      try { await addLesson(body, l.subject, date, l.period, "", null); added.push(l.subject); }
+      catch (e) { if (e?.code === "not_granted" || e?.code === "rate_limited") throw e; }
+    }
+    $("f-text").value = ""; $("f-text").oninput();
+    showStatus(added.length ? `${added.join(", ")} 노트에 오늘 수업을 추가했어요.` : "추가할 만한 수업 내용을 찾지 못했어요.", !added.length);
+    if (added.length) { state.exam = examOf(date); show("books"); }
+  } catch (e) { showStatus(sampleErr(e), true); }
+  finally { $("go").disabled = false; }
+}
+
+/* ---------- 시간표 ---------- */
+const TT_LS = "class-review-tt";
+async function loadTT() {
+  let t = null;
+  if (db && uid) { try { const d = await col().doc("_timetable").get(); if (d.exists) t = d.data(); } catch {} }
+  if (!t) { try { t = JSON.parse(localStorage.getItem(TT_LS) || "null") } catch {} }
+  if (t && t.days) state.tt = t;
+  renderTT(); updateTTHint();
+}
+function renderTT() {
+  const t = state.tt;
+  $("ttTable").innerHTML = `<tr><th>교시</th><th>시작</th>${DAYS.map(d => `<th>${d}</th>`).join("")}</tr>` +
+    t.times.map((tm, i) => `<tr><th>${i + 1}</th><td><input class="time" id="tt-t${i}" value="${esc(tm)}" aria-label="${i + 1}교시 시작"></td>${DAYS.map(d =>
+      `<td><input id="tt-${d}${i}" value="${esc(t.days[d]?.[i] || "")}" list="subjList" aria-label="${d}요일 ${i + 1}교시"></td>`).join("")}</tr>`).join("") +
+    `<datalist id="subjList">${SUBJECTS.map(([s]) => `<option value="${s}">`).join("")}</datalist>`;
+}
+$("ttSave").onclick = async () => {
+  const t = { times: state.tt.times.map((_, i) => $("tt-t" + i).value.trim()), days: {} };
+  for (const d of DAYS) t.days[d] = t.times.map((_, i) => $("tt-" + d + i).value.trim());
+  state.tt = t;
+  try { localStorage.setItem(TT_LS, JSON.stringify(t)) } catch {}
+  try { if (db && uid) await col().doc("_timetable").set(t); $("ttMsg").textContent = "저장했어요."; }
+  catch { $("ttMsg").textContent = "이 기기에만 저장했어요."; }
+  updateTTHint();
+};
+
+/* ---------- 모드 ---------- */
+function renderMode() {
+  document.querySelectorAll("#modes .chip").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === state.mode));
+  const day = state.mode === "day";
+  $("subjField").hidden = day; $("titleField").hidden = day; $("startField").hidden = !day;
+  $("imgLabel").hidden = day || !imagesOk;
+  updateTTHint();
+}
+$("modes").onclick = e => { if (e.target.dataset.m) { state.mode = e.target.dataset.m; renderMode() } };
+$("subjects").addEventListener("click", updateTTHint);
+$("f-date").addEventListener("change", updateTTHint);
+
+/* ---------- 과목 노트 목록 ---------- */
+const visibleBooks = () => state.books.length ? state.books : [EXAMPLE];
+/* 문제 세트: 과목 노트에서 단원 범위를 골라 만든 문제 묶음. 예전 버전의 수업별 문제도 함께 보여요. */
+const setsOf = b => [...(b.quizzes || []),
+  ...(b.lessons.some(l => l.questions?.length) ? [{ id: "legacy", legacy: true, units: [], createdAt: 0, questions: [] }] : [])];
+function qsOfSet(b, set) {
+  if (set.legacy) return b.lessons.flatMap(l => (l.questions || []).map((q, i) => ({ key: l.id + ":" + i, q, src: l.title })));
+  return (set.questions || []).map((q, i) => ({ key: set.id + ":" + i, q, src: q.unit || "" }));
+}
+const allQs = b => setsOf(b).flatMap(s => qsOfSet(b, s));
+const wrongCount = b => Object.values(b.attempts || {}).filter(v => v === false).length;
+const checkedCount = b => b.hints.filter(h => h.checked).length;
+
+function renderBooks() {
+  const books = visibleBooks();
+  const names = [...new Set([...sortedExams().map(x => x.name), ...books.map(b => b.exam)])];
+  if (!state.exam || !names.includes(state.exam)) state.exam = books.some(b => b.exam === examOf(today())) || !books.length ? examOf(today()) : books[0].exam;
+  $("examChips").innerHTML = names.map(x => {
+    const c = books.filter(b => b.exam === x).length;
+    return `<button class="chip" data-e="${esc(x)}" aria-pressed="${x === state.exam}">${esc(x)}${c ? ` · ${c}과목` : ""}</button>`;
+  }).join("") + `<button class="chip" id="examEditBtn">시험 날짜 설정</button>`;
+  const bs = books.filter(b => b.exam === state.exam).sort((a, b) => a.subject.localeCompare(b.subject, "ko"));
+  $("list").innerHTML = bs.length ? bs.map(b => {
+    const last = b.lessons[b.lessons.length - 1], pre = b.hints.filter(h => h.kind === "출제예고").length;
+    return `<button class="item" data-id="${b.id}">
+      <span class="bar" style="background:${colorOf(b.subject)}"></span>
+      <span style="min-width:0"><span class="tag">${esc(b.subject)}</span> ${b.example ? '<span class="example">예시</span>' : ""}
+        <h3 style="margin-top:4px">수업 ${b.lessons.length}개 · 출제 예고 ${pre}개 · 강조 ${b.hints.length - pre}개</h3>
+        <span class="meta">${last ? `최근 ${md(last.date)} ${esc(last.title)}` : ""}</span></span>
+      <span class="score">${checkedCount(b)}/${b.hints.length}</span>
+    </button>`;
+  }).join("") : `<p class="empty">${esc(state.exam)} 과목 노트가 아직 없어요.<br>새 수업 추가에서 받아쓰기를 넣으면 과목마다 노트가 생기고 계속 쌓여요.</p>`;
+}
+function renderExamEdit() {
+  $("examRows").innerHTML = state.exams.map((x, i) => `<div class="examrow">
+    <input type="text" id="ex-n${i}" value="${esc(x.name)}" aria-label="시험 이름">
+    <input type="date" id="ex-d${i}" value="${esc(x.until)}" aria-label="마지막 시험일">
+    <button class="btn ghost small" data-rm="${i}">빼기</button></div>`).join("");
+}
+function readExamEdit() {
+  state.exams = state.exams.map((_, i) => ({ name: $("ex-n" + i).value.trim(), until: $("ex-d" + i).value })).filter(x => x.name);
+}
+$("p-books").addEventListener("click", async e => {
+  const t = e.target, item = t.closest(".item");
+  if (item) { openBook(item.dataset.id); return; }
+  if (t.dataset.e) { state.exam = t.dataset.e; renderBooks(); return; }
+  if (t.id === "examEditBtn") { $("examEdit").hidden = !$("examEdit").hidden; renderExamEdit(); return; }
+  if (t.id === "examAdd") { readExamEdit(); state.exams.push({ name: "새 시험", until: "" }); renderExamEdit(); return; }
+  if (t.dataset.rm) { readExamEdit(); state.exams.splice(+t.dataset.rm, 1); renderExamEdit(); return; }
+  if (t.id === "examSave") {
+    readExamEdit();
+    try { localStorage.setItem(EX_LS, JSON.stringify(state.exams)) } catch {}
+    try { if (db && uid) await col().doc("_exams").set({ list: state.exams }); $("examMsg").textContent = "저장했어요. 앞으로 추가하는 수업부터 적용돼요."; }
+    catch { $("examMsg").textContent = "이 기기에만 저장했어요."; }
+    renderExamEdit(); renderBooks(); updateTTHint(); renderCountdown();
+  }
+});
+
+/* ---------- 과목 노트 한 권 ---------- */
+let curId = null, quiz = null; // quiz = { mode, keys, picks, checked }
+const curBook = () => visibleBooks().find(b => b.id === curId);
+function openBook(id, quizMode) {
+  draft = null;
+  if (curId !== id) pickUnits = null;
+  curId = id; quiz = quizMode ? newQuiz(quizMode) : null;
+  show("view"); renderView(); window.scrollTo({ top: 0 });
+  if (quiz) $("quiz")?.scrollIntoView();
+}
+function newQuiz(mode) {
+  const b = curBook();
+  const set = setsOf(b).find(s => s.id === mode);
+  const keys = (set ? qsOfSet(b, set) : allQs(b).filter(x => b.attempts?.[x.key] === false)).map(x => x.key);
+  return { mode, keys, picks: {}, checked: false };
+}
+let pickUnits = null, genBusy = false;
+async function makeQuiz(b) {
+  const units = pickUnits?.length ? pickUnits : unitsOf(b);
+  const inRange = l => !units.length || units.includes(l.unit || "단원 미정");
+  const ls = b.lessons.filter(inRange);
+  if (!ls.length) { $("genMsg").textContent = "고른 단원에 수업이 없어요."; return; }
+  if (!sample) { $("genMsg").textContent = "이 화면에서는 문제를 만들 수 없어요."; return; }
+  const hs = b.hints.filter(h => !h.units?.length || h.units.some(u => units.includes(u)));
+  const ts = b.terms.filter(t => !t.unit || units.includes(t.unit));
+  const ms = (b.materials || []).filter(m => !m.unit || units.includes(m.unit));
+  const have = ms.filter(m => m.status === "done"), missing = ms.filter(m => m.status === "needed" && m.priority === "시험");
+  if (missing.length && !$("genGo").dataset.ok) {
+    $("genGo").dataset.ok = 1;
+    $("genMsg").textContent = `시험에 나온다고 한 자료 ${missing.length}개(${missing.map(m => m.title).join(", ")})가 아직 없어요. 위 자료 요청에서 올리면 문제가 더 정확해져요. 그냥 만들려면 한 번 더 누르세요.`;
+    return;
+  }
+  const n = state.count;
+  genBusy = true; renderView(); $("genMsg").textContent = `${units.join(", ")} 범위로 ${n}문제를 만드는 중이에요.`;
+  try {
+    const r = await sample.json(`너는 한국 중·고등학교 "${b.subject}" 선생님이야. 학생의 "${b.exam}" 대비 노트에서 아래 단원 범위로 시험 문제를 만들어.
+범위: ${units.join(", ")}
+
+출제 예고와 강조 (횟수가 많을수록 선생님이 여러 번 말한 것):
+${hs.map(h => `- ${h.kind} (${h.count || 1}번): ${h.text}${h.quote ? ` / 선생님 말: "${h.quote}"` : ""}`).join("\n") || "(없음)"}
+
+핵심 용어:
+${ts.map(t => `- ${t.term}: ${t.def}`).join("\n") || "(없음)"}
+
+학생이 올린 수업 자료 (학습지·교과서 등, 선생님이 언급한 부분 위주):
+${have.map(m => `## ${m.title}${m.where ? " · " + m.where : ""}${m.priority === "시험" ? " (선생님이 시험과 관련 있다고 함)" : ""}\n` + [m.extracted?.focus, (m.extracted?.points || []).map(p => "- " + p).join("\n"), m.text, (m.extracted?.content || "").slice(0, 3000)].filter(Boolean).join("\n")).join("\n\n") || "(없음)"}
+
+수업 정리:
+${ls.map(l => `## ${md(l.date)} [${l.unit}] ${l.title}\n` + (l.summary || []).map(s => `- ${s.heading}: ${(s.points || []).join(" / ")}`).join("\n")).join("\n\n")}
+
+규칙:
+- 정확히 ${n}문제. 실제 학교 시험처럼 객관식(mc, 보기 4개) 위주로, OX(ox)와 단답형(short)을 섞어.
+- 출제예고 항목은 하나도 빠짐없이 한 문제 이상 내. 여러 번 말한 강조 항목도 우선 출제해.
+- 학습지·교과서 자료에서 선생님이 언급한 부분은 실제 학교 시험처럼 변형해서 꼭 출제해.
+- 범위 안의 단원에서 골고루, 노트에 있는 내용으로만 출제해.
+- mc: answer는 choices 중 하나와 글자까지 똑같이. ox: answer는 "O" 또는 "X". short: 한두 단어 정답, 다른 표기는 accept 배열에.
+- unit: 그 문제가 나온 단원을 위 범위의 이름 그대로. explanation: 왜 그게 답인지 한두 문장.
+
+JSON만 출력해: {"questions":[{"type":"mc","unit":"","q":"","choices":["","","",""],"answer":"","accept":[],"explanation":""}]}`.slice(0, 80000), { modelTier: "complex" });
+    const set = { id: "q" + Date.now().toString(36), units, createdAt: Date.now(), questions: r.questions || [] };
+    b.quizzes = [...(b.quizzes || []), set];
+    if (!b.example) await saveBook(b);
+    quiz = newQuiz(set.id);
+  } catch (e) { $("genMsg").textContent = sampleErr(e); genBusy = false; return; }
+  genBusy = false; renderView(); $("quiz").scrollIntoView();
+}
+function isRight(q, v) {
+  if (v == null || v === "") return false;
+  if (q.type === "short") return [q.answer, ...(q.accept || [])].some(a => norm(a) === norm(v));
+  return norm(q.answer) === norm(v);
+}
+function hintHtml(h, i) {
+  const exam = h.kind === "출제예고";
+  return `<li class="hintrow ${h.checked ? "done" : ""}">
+    <button class="check" data-h="${i}" aria-pressed="${!!h.checked}" aria-label="외웠으면 체크">${h.checked ? "✓" : ""}</button>
+    <span class="txt"><span><span class="kind ${exam ? "exam" : "emph"}">${exam ? "출제 예고" : "강조"}</span><b>${esc(h.text)}</b>${h.count > 1 ? `<span class="cnt">${h.count}번 말함</span>` : ""}</span>
+      ${h.quote ? `<span class="quote">“${esc(h.quote)}”</span>` : ""}
+      <span class="src">${(h.dates || []).map(md).join(" · ")}</span></span></li>`;
+}
+function renderView() {
+  const b = curBook(); if (!b) { show("books"); return; }
+  if (draft && draft.id === b.id) return renderEdit();
+  draft = null;
+  const order = (a, c) => (c.count || 1) - (a.count || 1);
+  const idx = b.hints.map((h, i) => ({ h, i }));
+  const pre = idx.filter(x => x.h.kind === "출제예고").sort((a, c) => order(a.h, c.h));
+  const emp = idx.filter(x => x.h.kind !== "출제예고").sort((a, c) => order(a.h, c.h));
+  const done = checkedCount(b), total = b.hints.length;
+  const wrong = wrongCount(b), units = unitsOf(b);
+  if (pickUnits) pickUnits = pickUnits.filter(u => units.includes(u));
+  const byUnit = units.map(u => [u, b.lessons.filter(l => l.unit === u)]);
+  const noUnit = b.lessons.filter(l => !l.unit);
+  if (noUnit.length) byUnit.push(["단원 미정", noUnit]);
+  const list = arr => `<ul class="hints">${arr.map(x => hintHtml(x.h, x.i)).join("")}</ul>`;
+  $("p-view").innerHTML = `
+    <div class="actions"><button class="btn ghost small" id="back">← 과목 노트</button>
+      ${b.example ? '<span class="example">예시 노트예요. 수업을 추가하면 내 노트가 생겨요.</span>' : `<button class="btn small" id="editOn" style="margin-left:auto">편집</button><button class="btn ghost small" id="del">노트 삭제</button>`}</div>
+    <div class="sheet">
+      <div><span class="tag solid" style="--c:${colorOf(b.subject)}">${esc(b.subject)}</span> <span class="hint" style="display:inline">${esc(b.exam)} · 수업 ${b.lessons.length}개</span></div>
+      <h2 style="font-size:30px">${esc(b.subject)} <span style="color:var(--muted);font-weight:500">${esc(b.exam)}</span></h2>
+      <div class="progress"><i style="width:${total ? Math.round(done / total * 100) : 0}%"></i></div>
+      <p class="hint">외운 항목 ${done} / ${total}</p>
+    </div>
+    ${matsSection(b)}
+    <div class="sheet note"><h4>출제 예고 · ${pre.length}</h4>${pre.length ? list(pre) : `<p class="hint">선생님이 "시험에 나온다"고 직접 말한 내용이 아직 없어요.</p>`}</div>
+    <div class="sheet note"><h4>강조한 내용 · ${emp.length}</h4>${emp.length ? list(emp) : `<p class="hint">아직 없어요.</p>`}</div>
+    ${b.terms.length ? `<div class="sheet note"><h4>핵심 용어 · ${b.terms.length}</h4><dl class="terms">${b.terms.map(t => `<dt>${esc(t.term)}</dt><dd>${esc(t.def)}</dd>`).join("")}</dl></div>` : ""}
+    <div class="sheet note"><h4>단원별 정리 · 단원 ${byUnit.length}개 · 수업 ${b.lessons.length}개</h4>
+      <datalist id="bookUnits">${units.map(u => `<option value="${esc(u)}">`).join("")}</datalist>
+      ${byUnit.map(([u, ls]) => `<div class="unit"><h5>${esc(u)}</h5>
+        ${ls.map(l => `<details class="lesson" ${l.id === b.lessons[b.lessons.length - 1]?.id ? "open" : ""}>
+          <summary>${esc(l.title)}<span class="meta">${md(l.date)}${l.period ? " · " + l.period + "교시" : ""}</span>${l.id === b.lessons[b.lessons.length - 1]?.id ? '<span class="new">최근</span>' : ""}</summary>
+          <div>${(l.summary || []).map(s => `<div><b>${esc(s.heading)}</b><ul>${(s.points || []).map(p => `<li>${esc(p)}</li>`).join("")}</ul></div>`).join("")}
+            ${l.hasRaw ? `<div class="actions"><button class="btn ghost small" data-raw="${l.id}">넣었던 원문 보기</button></div><div id="raw-${l.id}"></div>` : ""}
+            ${b.example ? "" : `<div class="unitedit"><input id="ue-${l.id}" list="bookUnits" value="${esc(l.unit || "")}" placeholder="단원 입력하거나 고르기" aria-label="이 수업의 단원" autocomplete="off"><button class="btn ghost small" data-unit="${l.id}">단원 바꾸기</button></div>`}</div>
+        </details>`).join("")}</div>`).join("")}
+    </div>
+    <div class="sheet" id="gen">
+      <h4>문제 만들기</h4>
+      <div class="field"><label>범위 (단원 고르기 · 안 고르면 전체)</label>
+        <div class="chips">${units.length ? units.map(u => `<button class="chip" data-pu="${esc(u)}" aria-pressed="${!!pickUnits?.includes(u)}">${esc(u)}</button>`).join("") : '<span class="hint">아직 단원이 없어요.</span>'}</div></div>
+      <div class="field"><label>문제 수</label>
+        <div class="chips">${[10, 15, 20, 30].map(n => `<button class="chip" data-cnt="${n}" aria-pressed="${n === state.count}">${n}문제</button>`).join("")}</div></div>
+      <div class="actions"><button class="btn" id="genGo" ${genBusy || !b.lessons.length ? "disabled" : ""}>${genBusy ? "만드는 중…" : "이 범위로 문제 만들기"}</button><span class="hint" id="genMsg"></span></div>
+    </div>
+    <div class="sheet" id="quiz">
+      <h4>문제 풀기</h4>
+      <div class="sets">${setsOf(b).length ? [...setsOf(b)].reverse().map(st => {
+        const qs = qsOfSet(b, st), right = qs.filter(x => b.attempts?.[x.key] === true).length, tried = qs.some(x => x.key in (b.attempts || {}));
+        return `<button class="item" data-qm="${st.id}" ${quiz?.mode === st.id ? 'style="border-color:var(--accent)"' : ""}>
+          <span class="bar" style="background:${colorOf(b.subject)}"></span>
+          <span style="min-width:0"><h3>${st.legacy ? "예전 수업별 문제" : esc(st.units.join(", ") || "전체")}</h3>
+            <span class="meta">${qs.length}문제${st.createdAt ? " · " + md(new Date(st.createdAt - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10)) + " 만듦" : ""}</span></span>
+          <span class="score">${tried ? `${right}/${qs.length}` : ""}</span></button>`;
+      }).join("") : '<p class="hint">위에서 범위를 골라 문제를 만들면 여기에 쌓여요.</p>'}</div>
+      ${wrong ? `<div class="actions"><button class="btn ${quiz?.mode === "wrong" ? "" : "ghost"} small" data-qm="wrong">틀린 것만 모아 풀기 (${wrong})</button></div>` : ""}
+      ${quiz ? quizHtml(b) : ""}
+    </div>`;
+}
+function quizHtml(b) {
+  const byKey = Object.fromEntries(allQs(b).map(x => [x.key, x]));
+  const keys = quiz.keys.filter(k => byKey[k]);
+  if (!keys.length) return `<p class="empty">풀 문제가 없어요.</p>`;
+  const right = keys.filter(k => isRight(byKey[k].q, quiz.picks[k])).length;
+  return `${quiz.checked ? `<p class="scoreline">${right} / ${keys.length}</p>` : ""}
+    ${keys.map((k, n) => qHtml(byKey[k], n + 1)).join("")}
+    <div class="actions">${quiz.checked ? `<button class="btn" data-qm="${quiz.mode}">다시 풀기</button>` : `<button class="btn" id="check">채점하기</button>`}</div>`;
+}
+function qHtml({ key, q, src }, num) {
+  const v = quiz.picks[key], ck = quiz.checked;
+  const verdict = ck ? `<div class="verdict">${isRight(q, v) ? `<span class="ok">정답</span>` : `<span class="no">오답 · 정답: ${esc(q.answer)}</span>`}<span>${esc(q.explanation)}</span></div>` : "";
+  let body;
+  if (q.type === "short") body = `<input type="text" data-k="${key}" value="${esc(v || "")}" placeholder="답 입력" aria-label="${num}번 답" ${ck ? "disabled" : ""}>`;
+  else {
+    const ch = q.type === "ox" ? ["O", "X"] : (q.choices || []);
+    body = `<div class="opts" ${q.type === "ox" ? 'style="grid-template-columns:1fr 1fr"' : ""}>${ch.map((c, j) => {
+      let cls = "opt"; if (ck) { if (norm(c) === norm(q.answer)) cls += " right"; else if (c === v) cls += " wrong"; }
+      return `<button class="${cls}" data-k="${key}" data-v="${esc(c)}" aria-pressed="${c === v}" ${ck ? "disabled" : ""}>${q.type === "mc" ? "①②③④⑤"[j] + " " : ""}${esc(c)}</button>`;
+    }).join("")}</div>`;
+  }
+  return `<div class="q"><div class="stem"><span class="num">${num}</span>${esc(q.q)} ${src ? `<span class="hint" style="display:inline;font-size:12px">${esc(src)}</span>` : ""}</div>${body}${verdict}</div>`;
+}
+$("p-view").addEventListener("click", async e => {
+  if (draft) return;
+  const t = e.target, b = curBook();
+  if (t.id === "back") { show("books"); return; }
+  if (t.id === "del") { if (t.dataset.sure) { await deleteBook(b.id); show("books"); } else { t.dataset.sure = 1; t.textContent = "한 번 더 누르면 노트 전체 삭제"; } return; }
+  if (t.classList.contains("check")) {
+    const h = b.hints[+t.dataset.h]; h.checked = !h.checked;
+    if (!b.example) saveBook(b).catch(() => {});
+    renderView(); return;
+  }
+  const qm = t.closest("[data-qm]")?.dataset.qm;
+  if (qm) { quiz = newQuiz(qm); renderView(); $("quiz").scrollIntoView(); return; }
+  if (t.dataset.pu) { const u = t.dataset.pu; pickUnits = pickUnits?.includes(u) ? pickUnits.filter(x => x !== u) : [...(pickUnits || []), u]; renderView(); $("gen").scrollIntoView(); return; }
+  if (t.dataset.cnt) { state.count = +t.dataset.cnt; renderView(); $("gen").scrollIntoView(); return; }
+  if (t.id === "genGo") { makeQuiz(b); return; }
+  if (t.dataset.unit) {
+    const l = b.lessons.find(x => x.id === t.dataset.unit), v = $("ue-" + l.id).value.trim();
+    if (v && l && v !== l.unit) { l.unit = v; await saveBook(b); renderView(); }
+    return;
+  }
+  if (t.classList.contains("opt") && quiz && !quiz.checked) { quiz.picks[t.dataset.k] = t.dataset.v; renderView(); $("quiz").scrollIntoView(); return; }
+  if (t.id === "check") {
+    document.querySelectorAll("#quiz input[data-k]").forEach(inp => quiz.picks[inp.dataset.k] = inp.value.trim());
+    quiz.checked = true;
+    const byKey = Object.fromEntries(allQs(b).map(x => [x.key, x.q]));
+    b.attempts = { ...(b.attempts || {}) };
+    for (const k of quiz.keys) if (byKey[k]) b.attempts[k] = isRight(byKey[k], quiz.picks[k]);
+    if (!b.example) saveBook(b).catch(() => {});
+    renderView(); $("quiz").scrollIntoView(); return;
+  }
+});
+/* ---------- 노트 편집: 복사본(draft)을 고치고 저장할 때 한 번에 반영 ---------- */
+let draft = null, draftHistory = [], aiBusy = false, aiUseRaw = false, aiAskText = "", aiMsg = "";
+
+/* AI 편집: 노트를 보내고, 바뀐 부분만 돌려받아 draft에 합쳐요. id와 사진·체크 같은 기록은 그대로 둬요. */
+function byIdMerge(oldArr, newArr) {
+  if (!Array.isArray(newArr)) return oldArr;
+  const olds = Object.fromEntries((oldArr || []).filter(x => x.id).map(x => [x.id, x]));
+  return newArr.map(n => n?.id && olds[n.id] ? { ...olds[n.id], ...n } : n);
+}
+function hintMerge(oldArr, newArr) {
+  if (!Array.isArray(newArr)) return oldArr;
+  return newArr.map((n, i) => { const o = (oldArr || []).find(x => norm(x.text) === norm(n.text)) || (oldArr.length === newArr.length ? oldArr[i] : null);
+    return { count: 1, dates: [], units: [], ...(o || {}), ...n }; });
+}
+async function aiEdit() {
+  const ask = $("aiAsk").value.trim(); aiAskText = ask;
+  if (!ask) { aiMsg = "무엇을 고칠지 적어 주세요."; renderEdit(); return; }
+  if (!sample) { aiMsg = "이 화면에서는 AI에게 부탁할 수 없어요."; renderEdit(); return; }
+  aiBusy = true; aiMsg = "노트를 읽고 고치는 중이에요."; renderEdit();
+  try {
+    const slim = {
+      subject: draft.subject, exam: draft.exam,
+      lessons: draft.lessons.map(l => ({ id: l.id, date: l.date, period: l.period, unit: l.unit, title: l.title, summary: l.summary })),
+      hints: draft.hints.map(h => ({ kind: h.kind, text: h.text, quote: h.quote, count: h.count, dates: h.dates, units: h.units })),
+      terms: draft.terms,
+      materials: (draft.materials || []).map(m => ({ id: m.id, title: m.title, where: m.where, quote: m.quote, reason: m.reason, priority: m.priority, unit: m.unit, status: m.status, focus: m.extracted?.focus || "" })),
+      quizzes: (draft.quizzes || []).map(q => ({ id: q.id, units: q.units, questions: q.questions }))
+    };
+    let body = JSON.stringify(slim);
+    let quizNote = "";
+    if (body.length > 90000) { delete slim.quizzes; body = JSON.stringify(slim); quizNote = "\n(문제 세트는 너무 커서 보내지 않았어. quizzes는 돌려주지 마.)"; }
+    let raws = "";
+    if (aiUseRaw) {
+      for (const l of draft.lessons) {
+        if (!l.hasRaw || raws.length > 60000) continue;
+        const t = await loadRaw(l.id); if (t) raws += `\n### ${l.id} (${md(l.date)} ${l.title})\n${t.slice(0, 20000)}\n`;
+      }
+    }
+    const r = await sample.json(`너는 한국 중·고등학생의 "${draft.subject}" 시험 공부 노트를 고쳐 주는 도우미야. 학생의 부탁대로 노트를 고쳐.
+
+학생의 부탁: ${ask}
+
+규칙:
+- 부탁과 관계있는 부분만 고치고, 나머지는 그대로 둬.
+- 고친 부분만 돌려줘: lessons, hints, terms, materials, quizzes, subject 중 바뀐 것만. 배열을 돌려줄 때는 그 배열 전체를 빠짐없이(안 바뀐 항목도) 돌려줘.
+- 각 항목의 id는 절대 바꾸지 마. 새 항목은 id를 비워. 항목을 지우려면 배열에서 빼.
+- hints의 kind는 "출제예고" 또는 "강조". summary는 [{"heading":"","points":[""]}] 형식.
+- 문제(mc)는 answer가 choices 중 하나와 글자까지 똑같아야 해.
+- message: 무엇을 고쳤는지 학생에게 한두 문장으로.${quizNote}
+
+JSON만 출력: {"message":"","changes":{}}
+
+--- 지금 노트 ---
+${body}${raws ? "\n\n--- 넣었던 원문(받아쓰기) ---" + raws : ""}`.slice(0, 250000), { modelTier: "complex" });
+    const c = r.changes || {};
+    draftHistory.push(JSON.parse(JSON.stringify(draft)));
+    if (typeof c.subject === "string" && c.subject.trim()) draft.subject = c.subject.trim();
+    if (Array.isArray(c.lessons)) draft.lessons = byIdMerge(draft.lessons, c.lessons).map(l => ({ ...l, id: l.id || "l" + Math.random().toString(36).slice(2, 9) }));
+    if (Array.isArray(c.hints)) draft.hints = hintMerge(draft.hints, c.hints);
+    if (Array.isArray(c.terms)) draft.terms = c.terms.filter(t => t?.term);
+    if (Array.isArray(c.materials)) draft.materials = byIdMerge(draft.materials, c.materials).map(m => ({ status: "needed", photos: [], count: 1, ...m, id: m.id || "m" + Math.random().toString(36).slice(2, 9) }));
+    if (Array.isArray(c.quizzes) && !quizNote) draft.quizzes = byIdMerge(draft.quizzes, c.quizzes).map(q => ({ units: [], createdAt: Date.now(), ...q, id: q.id || "q" + Math.random().toString(36).slice(2, 9) }));
+    aiMsg = (r.message || "고쳤어요.") + " 확인하고 저장을 눌러 주세요.";
+    aiAskText = "";
+  } catch (e) { aiMsg = sampleErr(e); }
+  aiBusy = false; renderEdit();
+}
+const summaryToText = sm => (sm || []).map(x => `## ${x.heading}\n` + (x.points || []).map(p => `- ${p}`).join("\n")).join("\n\n");
+function textToSummary(t) {
+  const out = [];
+  for (const line of t.split("\n")) {
+    const l = line.trim(); if (!l) continue;
+    if (l.startsWith("#")) out.push({ heading: l.replace(/^#+\s*/, ""), points: [] });
+    else { if (!out.length) out.push({ heading: "정리", points: [] }); out[out.length - 1].points.push(l.replace(/^[-•·*]\s*/, "")); }
+  }
+  return out;
+}
+function getPath(o, p) { return p.split(".").reduce((a, k) => a?.[k], o); }
+function setPath(o, p, v) { const ks = p.split("."), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; }
+function renderEdit() {
+  const d = draft, units = unitsOf(d);
+  const inp = (p, ph = "", type = "text") => `<input type="${type}" data-p="${p}" value="${esc(getPath(d, p) ?? "")}" placeholder="${ph}" autocomplete="off">`;
+  const del = (p, label = "삭제") => `<button class="x" data-del="${p}" aria-label="${label}">×</button>`;
+  $("p-view").innerHTML = `
+    <div class="actions edbar"><span class="scoreline">편집 중</span>
+      <button class="btn" id="editSave" style="margin-left:auto">저장</button><button class="btn ghost" id="editCancel">취소</button></div>
+    <div class="sheet" id="aiBox"><h4 style="margin:0">AI에게 부탁하기</h4>
+      <textarea id="aiAsk" style="min-height:80px" placeholder="예: 10/22 수업 정리를 더 자세히 써 줘 · 겹치는 강조 항목 합쳐 줘 · 단원 이름을 교과서 목차대로 바꿔 줘 · 두 번째 문제 세트를 더 어렵게 바꿔 줘">${esc(aiAskText)}</textarea>
+      <div class="chips"><button class="chip" id="aiRaw" aria-pressed="${aiUseRaw}">넣었던 원문도 같이 보기</button>
+        <button class="chip" data-aiex="수업 정리를 원문을 다시 보고 빠진 내용 없이 더 자세히 정리해 줘">원문으로 다시 정리</button>
+        <button class="chip" data-aiex="같은 내용인 출제 예고·강조 항목과 용어를 하나로 합쳐 줘. 횟수와 날짜는 합쳐서 남겨 줘">겹치는 항목 합치기</button>
+        <button class="chip" data-aiex="맞춤법과 받아쓰기 오류를 고치고, 정리 문장을 읽기 쉽게 다듬어 줘">맞춤법·문장 다듬기</button></div>
+      <div class="actions"><button class="btn" id="aiGo" ${aiBusy ? "disabled" : ""}>${aiBusy ? "고치는 중…" : "부탁하기"}</button>
+        ${draftHistory.length ? `<button class="btn ghost small" id="aiUndo">방금 AI 수정 되돌리기</button>` : ""}
+        <span class="hint" id="aiMsg">${esc(aiMsg)}</span></div>
+      <p class="hint">AI가 고친 내용은 아래 편집 화면에 먼저 반영돼요. 확인하고 저장을 눌러야 노트에 들어가요.</p>
+    </div>
+    <div class="sheet"><h4 style="margin:0">노트 정보</h4>
+      <div class="row"><div class="field"><label>과목</label>${inp("subject")}</div>
+        <div class="field"><label>시험</label><select data-p="exam">${[...new Set([...sortedExams().map(x => x.name), d.exam])].map(n => `<option ${n === d.exam ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></div></div>
+    </div>
+    <div class="sheet note"><h4>출제 예고 · 강조 · ${d.hints.length}</h4>
+      <div>${d.hints.map((h, i) => `<div class="edrow">
+        <select data-p="hints.${i}.kind" style="width:auto">${["출제예고", "강조"].map(k => `<option value="${k}" ${h.kind === k ? "selected" : ""}>${k === "출제예고" ? "출제 예고" : "강조"}</option>`).join("")}</select>
+        <div class="stack">${inp(`hints.${i}.text`, "공부할 내용")}${inp(`hints.${i}.quote`, "선생님이 한 말 (선택)")}</div>${del(`hints.${i}`)}</div>`).join("")}</div>
+      <div class="actions"><button class="btn ghost small" data-add="hints">항목 추가</button></div>
+    </div>
+    <div class="sheet note"><h4>자료 요청 · ${(d.materials || []).length}</h4>
+      <div>${(d.materials || []).map((m, i) => `<div class="edrow">
+        <select data-p="materials.${i}.priority" style="width:auto">${["시험", "참고"].map(k => `<option ${m.priority === k ? "selected" : ""}>${k}</option>`).join("")}</select>
+        <div class="stack">${inp(`materials.${i}.title`, "자료 이름")}${inp(`materials.${i}.where`, "어느 부분")}${inp(`materials.${i}.reason`, "필요한 이유")}</div>${del(`materials.${i}`, "자료 요청 삭제")}</div>`).join("")}</div>
+      <div class="actions"><button class="btn ghost small" data-add="materials">자료 요청 추가</button></div>
+    </div>
+    <div class="sheet note"><h4>핵심 용어 · ${d.terms.length}</h4>
+      <div>${d.terms.map((t, i) => `<div class="edrow"><span></span><div class="stack">${inp(`terms.${i}.term`, "용어")}${inp(`terms.${i}.def`, "뜻")}</div>${del(`terms.${i}`)}</div>`).join("")}</div>
+      <div class="actions"><button class="btn ghost small" data-add="terms">용어 추가</button></div>
+    </div>
+    <div class="sheet note"><h4>수업 · ${d.lessons.length}</h4>
+      <datalist id="edUnits">${units.map(u => `<option value="${esc(u)}">`).join("")}</datalist>
+      <p class="hint">정리 칸은 "## 소주제" 줄 아래에 "- 내용"을 한 줄씩 쓰면 돼요.</p>
+      <div>${d.lessons.map((l, i) => `<div class="edrow"><span></span><div class="stack">
+          <div class="row"><input type="date" data-p="lessons.${i}.date" value="${esc(l.date)}" aria-label="날짜"><input data-p="lessons.${i}.unit" list="edUnits" value="${esc(l.unit || "")}" placeholder="단원" autocomplete="off"></div>
+          ${inp(`lessons.${i}.title`, "수업 주제")}
+          <textarea data-sum="${i}" aria-label="정리">${esc(summaryToText(l.summary))}</textarea>
+          ${l.hasRaw ? `<div class="actions"><button class="btn ghost small" data-raw="${l.id}">넣었던 원문 보기</button></div><div id="raw-${l.id}"></div>` : ""}
+        </div>${del(`lessons.${i}`, "수업 삭제")}</div>`).join("")}</div>
+    </div>
+    <div class="sheet note"><h4>문제 세트 · ${(d.quizzes || []).length}</h4>
+      ${(d.quizzes || []).map((st, si) => `<details class="lesson"><summary>${esc(st.units.join(", ") || "전체")}<span class="meta">${st.questions.length}문제</span></summary>
+        <div>${st.questions.map((q, qi) => `<div class="edrow"><span class="num" style="font:16px var(--display);color:var(--accent)">${qi + 1}</span><div class="stack">
+          ${inp(`quizzes.${si}.questions.${qi}.q`, "문제")}
+          ${q.type === "mc" ? (q.choices || []).map((_, ci) => inp(`quizzes.${si}.questions.${qi}.choices.${ci}`, "보기 " + (ci + 1))).join("") : ""}
+          ${inp(`quizzes.${si}.questions.${qi}.answer`, "정답 (객관식은 보기와 똑같이)")}${inp(`quizzes.${si}.questions.${qi}.explanation`, "해설")}
+        </div>${del(`quizzes.${si}.questions.${qi}`, "문제 삭제")}</div>`).join("")}
+        <div class="actions"><button class="btn ghost small" data-del="quizzes.${si}">이 세트 전체 삭제</button></div></div></details>`).join("") || '<p class="hint">아직 만든 문제 세트가 없어요.</p>'}
+    </div>`;
+}
+$("p-view").addEventListener("input", e => {
+  if (!draft) return;
+  if (e.target.id === "aiAsk") { aiAskText = e.target.value; return; }
+  const p = e.target.dataset.p; if (p) setPath(draft, p, e.target.value);
+  const si = e.target.dataset.sum; if (si != null) draft.lessons[+si].summary = textToSummary(e.target.value);
+});
+$("p-view").addEventListener("click", async e => {
+  const t = e.target;
+  if (t.dataset.raw) {
+    const box = $("raw-" + t.dataset.raw);
+    if (box.innerHTML) { box.innerHTML = ""; return; }
+    box.innerHTML = '<p class="hint">불러오는 중이에요.</p>';
+    const txt = await loadRaw(t.dataset.raw);
+    box.innerHTML = txt ? `<pre class="raw">${esc(txt)}</pre>` : '<p class="hint">원문을 찾지 못했어요.</p>';
+    return;
+  }
+  if (t.id === "editOn") { draft = JSON.parse(JSON.stringify(curBook())); draftHistory = []; aiMsg = ""; quiz = null; renderView(); window.scrollTo({ top: 0 }); return; }
+  if (!draft) return;
+  if (t.id === "editCancel") { draft = null; draftHistory = []; aiMsg = ""; renderView(); return; }
+  if (t.id === "aiGo") { aiEdit(); return; }
+  if (t.id === "aiRaw") { aiUseRaw = !aiUseRaw; aiAskText = $("aiAsk").value; renderEdit(); return; }
+  if (t.dataset.aiex) { aiAskText = t.dataset.aiex; if (/원문/.test(aiAskText)) aiUseRaw = true; renderEdit(); $("aiAsk").focus(); return; }
+  if (t.id === "aiUndo") { draft = draftHistory.pop(); aiMsg = "AI 수정 전으로 되돌렸어요."; aiAskText = $("aiAsk").value; renderEdit(); return; }
+  if (t.id === "editSave") {
+    draft.subject = draft.subject.trim() || curBook().subject;
+    draft.hints = draft.hints.filter(h => h.text?.trim());
+    draft.terms = draft.terms.filter(x => x.term?.trim());
+    draft.materials = (draft.materials || []).filter(m => m.title?.trim());
+    draft.lessons.sort((a, c) => (a.date || "").localeCompare(c.date || "") || (a.period || 0) - (c.period || 0));
+    (draft.quizzes || []).forEach(st => st.questions = st.questions.filter(q => q.q?.trim()));
+    draft.quizzes = (draft.quizzes || []).filter(st => st.questions.length);
+    const d = draft; draft = null; draftHistory = []; aiMsg = "";
+    await saveBook(d); renderView(); window.scrollTo({ top: 0 }); return;
+  }
+  if (t.dataset.del) {
+    const ks = t.dataset.del.split("."), i = +ks.pop();
+    if (ks[0] === "quizzes") { const st = draft.quizzes[+ks[1]]; for (const k of Object.keys(draft.attempts || {})) if (k.startsWith(st.id + ":")) delete draft.attempts[k]; }
+    ks.reduce((a, k) => a[k], draft).splice(i, 1);
+    renderEdit(); return;
+  }
+  if (t.dataset.add === "hints") { draft.hints.push({ kind: "강조", text: "", quote: "", count: 1, dates: [today()], units: [] }); renderEdit(); return; }
+  if (t.dataset.add === "materials") { draft.materials = [...(draft.materials || []), { id: "m" + Date.now().toString(36), title: "", where: "", quote: "", reason: "직접 추가", priority: "참고", count: 1, unit: "", date: today(), status: "needed", photos: [], text: "", extracted: null }]; renderEdit(); return; }
+  if (t.dataset.add === "terms") { draft.terms.push({ term: "", def: "", unit: "" }); renderEdit(); return; }
+});
+$("p-view").addEventListener("input", e => { if (e.target.dataset.k && quiz) quiz.picks[e.target.dataset.k] = e.target.value; });
+
+/* ---------- 수행평가 ---------- */
+let assets = null, tImages = [], tFilter = "할 일", curTask = null;
+const ddayOf = d => { if (!d) return null; return Math.round((new Date(d + "T00:00:00") - new Date(today() + "T00:00:00")) / 864e5); };
+const ddayText = t => { if (t.status === "done") return "완료"; const n = ddayOf(t.due); return n == null ? "마감 ?" : n === 0 ? "D-day" : n > 0 ? "D-" + n : "D+" + -n; };
+function sortTasks(ts) { return [...ts].sort((a, b) => (a.status === "done") - (b.status === "done") || (a.due || "9999").localeCompare(b.due || "9999")); }
+async function saveTask(t) {
+  t.updatedAt = Date.now();
+  const i = state.tasks.findIndex(x => x.id === t.id);
+  if (i >= 0) state.tasks[i] = t; else state.tasks.push(t);
+  if (db && uid) { const body = JSON.parse(JSON.stringify(t)); delete body.id; await col().doc(t.id).set(body); }
+  else { try { localStorage.setItem("class-review-tasks", JSON.stringify(state.tasks)) } catch {} }
+}
+async function deleteTask(id) {
+  state.tasks = state.tasks.filter(x => x.id !== id);
+  if (db && uid) await col().doc(id).delete(); else { try { localStorage.setItem("class-review-tasks", JSON.stringify(state.tasks)) } catch {} }
+}
+async function addTask(r, source, photos) {
+  if (!r?.title) return null;
+  const dup = state.tasks.find(x => x.subject === r.subject && norm(x.title) === norm(r.title));
+  if (dup) { // 같은 수행평가를 또 공지하면 빈 정보만 채워요
+    if (!dup.due && r.due) dup.due = r.due;
+    if (!dup.criteria?.length && r.criteria?.length) dup.criteria = r.criteria;
+    if (photos?.length) dup.photos = [...(dup.photos || []), ...photos];
+    dup.sources = [...(dup.sources || []), source];
+    await saveTask(dup); return dup;
+  }
+  const t = { kind: "task", id: "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    subject: r.subject || "기타", title: r.title, due: /^\d{4}-\d{2}-\d{2}$/.test(r.due || "") ? r.due : "", dueText: r.dueText || "",
+    desc: r.desc || "", criteria: r.criteria || [], prepare: r.prepare || [],
+    steps: (r.steps || []).map(x => ({ text: String(x), done: false })), photos: photos || [], note: "", status: "todo",
+    sources: [source], createdAt: Date.now() };
+  await saveTask(t); return t;
+}
+$("t-img").onchange = async e => {
+  for (const f of [...e.target.files].slice(0, 5 - tImages.length)) { try { tImages.push(await shrink(f)) } catch {} }
+  e.target.value = "";
+  $("tThumbs").innerHTML = tImages.map((b, i) => `<img src="${URL.createObjectURL(b)}" alt="사진 ${i + 1}" title="눌러서 빼기" data-i="${i}">`).join("");
+};
+$("tThumbs").onclick = e => { if (e.target.dataset.i) { tImages.splice(+e.target.dataset.i, 1); $("t-img").onchange({ target: { files: [], value: "" } }); } };
+$("tGo").onclick = async () => {
+  const text = $("t-text").value.trim();
+  if (!text && !tImages.length) { $("tMsg").textContent = "공지 내용을 쓰거나 사진을 올려 주세요."; return; }
+  if (!sample) { $("tMsg").textContent = "이 화면에서는 정리 기능을 쓸 수 없어요. claude.ai에서 열어 주세요."; return; }
+  if (tImages.length && !imagesOk) { $("tMsg").textContent = "이 화면에서는 사진을 보낼 수 없어요. 글로 적어 주세요."; return; }
+  $("tGo").disabled = true; $("tMsg").textContent = "정리하는 중이에요.";
+  try {
+    const subs = [...new Set([...SUBJECTS.map(x => x[0]), ...Object.values(state.tt.days).flat().filter(Boolean)])];
+    const opts = { modelTier: "complex" }; if (tImages.length) opts.images = tImages;
+    const r = await sample.json(`한국 중·고등학생의 수행평가 공지${tImages.length ? " (사진은 안내문, 칠판, 알림장 등)" : ""}를 정리해. 오늘은 ${today()} (${weekdayOf(today())}요일)이야.
+공지가 여러 개면 각각 따로. 과목은 다음 중에서 가장 맞는 것: ${subs.join(", ")}
+- title: 짧은 이름 (예: "독서 감상문")
+- due: 마감일 YYYY-MM-DD. "다음 주 금요일" 같은 말은 오늘 기준으로 계산. 모르면 "".
+- dueText: 공지에 쓰인 날짜 표현 그대로.
+- desc: 무엇을 해야 하는지 2~3문장.
+- criteria: 평가 기준과 배점 [{"item":"","points":""}] (없으면 []).
+- prepare: 준비물·분량·형식 같은 조건.
+- steps: 마감까지 해야 할 일을 순서대로 3~6개.
+JSON만: {"tasks":[{"subject":"","title":"","due":"","dueText":"","desc":"","criteria":[],"prepare":[],"steps":[]}]}
+
+${text ? "--- 공지 글 ---\n" + text : ""}`, opts);
+    let photos = [];
+    if (assets && tImages.length) for (const b of tImages) { try { const a = await assets.upload(b); photos.push({ id: a.id, url: a.url }); } catch {} }
+    const made = [];
+    for (const t of r.tasks || []) { const x = await addTask(t, tImages.length ? "사진" : "글", photos); if (x) made.push(x); }
+    $("t-text").value = ""; tImages = []; $("tThumbs").innerHTML = "";
+    $("tMsg").textContent = made.length ? `${made.map(x => x.subject + " " + x.title).join(", ")} 추가했어요.` : "수행평가 내용을 찾지 못했어요.";
+    tFilter = "할 일"; renderTasks();
+  } catch (e) { $("tMsg").textContent = sampleErr(e); }
+  finally { $("tGo").disabled = false; }
+};
+function renderTasks() {
+  const ts = state.tasks;
+  const groups = ["할 일", "완료", ...new Set(ts.map(t => t.subject))];
+  $("tFilter").innerHTML = groups.map(g => `<button class="chip" data-tf="${esc(g)}" aria-pressed="${g === tFilter}">${esc(g)}</button>`).join("");
+  const shown = sortTasks(ts.filter(t => tFilter === "할 일" ? t.status !== "done" : tFilter === "완료" ? t.status === "done" : t.subject === tFilter));
+  $("tList").innerHTML = shown.length ? shown.map(t => {
+    const n = ddayOf(t.due), steps = t.steps || [], d = steps.filter(x => x.done).length;
+    return `<button class="item" data-tid="${t.id}"><span class="bar" style="background:${colorOf(t.subject)}"></span>
+      <span style="min-width:0"><span class="tag">${esc(t.subject)}</span><h3 style="margin-top:4px">${esc(t.title)}</h3>
+        <span class="meta">${t.due ? md(t.due) + "(" + weekdayOf(t.due) + ")" : esc(t.dueText || "마감일 미정")}${steps.length ? ` · 할 일 ${d}/${steps.length}` : ""}</span></span>
+      <span class="dday ${t.status === "done" ? "done" : n != null && n <= 3 ? "soon" : ""}">${ddayText(t)}</span></button>`;
+  }).join("") : `<p class="empty">${ts.length ? "여기에 해당하는 수행평가가 없어요." : "수행평가 공지를 사진으로 찍거나 글로 적어서 추가하세요.<br>수업 받아쓰기에서 선생님이 공지한 것도 자동으로 들어와요."}</p>`;
+}
+$("p-tasks").addEventListener("click", e => {
+  const tf = e.target.dataset.tf; if (tf) { tFilter = tf; renderTasks(); return; }
+  const it = e.target.closest("[data-tid]"); if (it) openTask(it.dataset.tid);
+});
+function openTask(id) { curTask = id; show("task"); renderTask(); window.scrollTo({ top: 0 }); }
+function renderTask() {
+  const t = state.tasks.find(x => x.id === curTask); if (!t) { show("tasks"); return; }
+  const steps = t.steps || [];
+  $("p-task").innerHTML = `
+    <div class="actions"><button class="btn ghost small" id="tBack">← 수행평가</button><button class="btn ghost small" id="tDel" style="margin-left:auto">삭제</button></div>
+    <div class="sheet">
+      <div class="actions" style="justify-content:space-between"><span class="tag solid" style="--c:${colorOf(t.subject)}">${esc(t.subject)}</span><span class="dday ${t.status === "done" ? "done" : (ddayOf(t.due) ?? 99) <= 3 ? "soon" : ""}">${ddayText(t)}</span></div>
+      <h2>${esc(t.title)}</h2>
+      <div class="row">
+        <div class="field"><label for="te-title">이름</label><input type="text" id="te-title" value="${esc(t.title)}"></div>
+        <div class="field"><label for="te-due">마감일${t.dueText ? ` (공지: ${esc(t.dueText)})` : ""}</label><input type="date" id="te-due" value="${esc(t.due)}"></div>
+      </div>
+      <div class="field"><label for="te-subj">과목</label><input type="text" id="te-subj" value="${esc(t.subject)}" list="subjList"></div>
+      <div class="chips">${[["todo", "할 일"], ["doing", "하는 중"], ["done", "완료"]].map(([k, v]) => `<button class="chip" data-st="${k}" aria-pressed="${t.status === k}">${v}</button>`).join("")}</div>
+      <div class="field"><label for="te-desc">내용</label><textarea id="te-desc" style="min-height:80px">${esc(t.desc || "")}</textarea></div>
+    </div>
+    ${t.criteria?.length ? `<div class="sheet note"><h4>평가 기준</h4><table class="crit">${t.criteria.map(c => `<tr><td>${esc(c.item)}</td><td>${esc(c.points)}</td></tr>`).join("")}</table></div>` : ""}
+    ${t.prepare?.length ? `<div class="sheet note"><h4>준비물 · 조건</h4><ul>${t.prepare.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+    <div class="sheet note"><h4>할 일 · ${steps.filter(x => x.done).length}/${steps.length}</h4>
+      <ul class="steps">${steps.map((s, i) => `<li class="${s.done ? "done" : ""}"><button class="check" data-step="${i}" aria-pressed="${s.done}" aria-label="완료 체크">${s.done ? "✓" : ""}</button><span>${esc(s.text)}</span><button class="x" data-rmstep="${i}" aria-label="빼기">×</button></li>`).join("")}</ul>
+      <div class="unitedit"><input id="te-step" placeholder="할 일 추가" autocomplete="off"><button class="btn ghost small" id="tAddStep">추가</button></div>
+    </div>
+    <div class="sheet note"><h4>사진 · ${(t.photos || []).length}</h4>
+      ${(t.photos || []).length ? `<div class="photos">${t.photos.map((p, i) => `<span style="display:grid;gap:4px;justify-items:center"><a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="수행평가 사진"></a><button class="x" data-rmphoto="${i}" style="font-size:13px">사진 빼기</button></span>`).join("")}</div>` : ""}
+      ${assets ? `<div class="actions"><label class="btn ghost small" for="te-img" style="letter-spacing:0">사진 추가 (안내문, 작업 중인 것, 결과물)</label><input type="file" id="te-img" accept="image/*" multiple hidden><span class="hint" id="tePhotoMsg"></span></div>` : `<p class="hint">이 화면에서는 사진을 저장할 수 없어요.</p>`}
+    </div>
+    <div class="sheet"><div class="field"><label for="te-note">메모</label><textarea id="te-note" style="min-height:90px" placeholder="모둠원, 주제 아이디어, 선생님이 덧붙인 말 등">${esc(t.note || "")}</textarea></div>
+      <div class="actions"><button class="btn" id="tSave">저장</button><span class="hint" id="tSaveMsg">${(t.sources || []).length ? "출처: " + esc(t.sources.join(", ")) : ""}</span></div></div>`;
+  const fi = $("te-img");
+  if (fi) fi.onchange = async e => {
+    $("tePhotoMsg").textContent = "올리는 중이에요.";
+    for (const f of [...e.target.files]) { try { const a = await assets.upload(await shrink(f)); t.photos = [...(t.photos || []), { id: a.id, url: a.url }]; } catch { $("tePhotoMsg").textContent = "사진을 올리지 못했어요."; } }
+    await saveTask(t); renderTask();
+  };
+}
+$("p-task").addEventListener("click", async e => {
+  const el = e.target, t = state.tasks.find(x => x.id === curTask); if (!t) return;
+  if (el.id === "tBack") { show("tasks"); return; }
+  if (el.id === "tDel") { if (el.dataset.sure) { await deleteTask(t.id); show("tasks"); } else { el.dataset.sure = 1; el.textContent = "한 번 더 누르면 삭제"; } return; }
+  if (el.dataset.st) { t.status = el.dataset.st; await saveTask(t); renderTask(); return; }
+  if (el.dataset.step) { const s = t.steps[+el.dataset.step]; s.done = !s.done; if (s.done && t.status === "todo") t.status = "doing"; await saveTask(t); renderTask(); return; }
+  if (el.dataset.rmphoto) { t.photos.splice(+el.dataset.rmphoto, 1); await saveTask(t); renderTask(); return; }
+  if (el.dataset.rmstep) { t.steps.splice(+el.dataset.rmstep, 1); await saveTask(t); renderTask(); return; }
+  if (el.id === "tAddStep") { const v = $("te-step").value.trim(); if (v) { t.steps = [...(t.steps || []), { text: v, done: false }]; await saveTask(t); renderTask(); } return; }
+  if (el.id === "tSave") {
+    t.title = $("te-title").value.trim() || t.title; t.due = $("te-due").value; t.subject = $("te-subj").value.trim() || t.subject; t.note = $("te-note").value; t.desc = $("te-desc").value;
+    await saveTask(t); renderTask(); $("tSaveMsg").textContent = "저장했어요."; return;
+  }
+});
+
+/* ---------- 자료 요청 ---------- */
+let matOpen = null, matBusy = null; // 글 입력 칸이 열린 자료, 읽는 중인 자료
+const matsOf = b => b.materials || [];
+const needCount = () => state.books.reduce((n, b) => n + matsOf(b).filter(m => m.status === "needed").length, 0);
+function matSort(a, b) { return (a.priority !== "시험") - (b.priority !== "시험") || (b.count || 1) - (a.count || 1) || (b.date || "").localeCompare(a.date || ""); }
+function matHtml(b, m) {
+  const key = b.id + "|" + m.id, busy = matBusy === key, done = m.status === "done", skipped = m.status === "skipped";
+  return `<div class="mat">
+    <div class="head"><span class="kind ${m.priority === "시험" ? "exam" : "emph"}">${m.priority === "시험" ? "시험 관련" : "참고"}</span>
+      <b>${esc(m.title)}</b>${m.where ? `<span>${esc(m.where)}</span>` : ""}${m.count > 1 ? `<span class="cnt">${m.count}번 언급</span>` : ""}
+      <span class="kind ${done ? "ok" : "need"}" style="margin-left:auto">${done ? "올림" : skipped ? "없음" : "필요"}</span></div>
+    ${m.quote ? `<span class="quote">“${esc(m.quote)}”</span>` : ""}
+    <span class="why">${esc(m.reason)}${m.date ? ` · ${md(m.date)}` : ""}${m.unit ? ` · ${esc(m.unit)}` : ""}</span>
+    ${(m.photos || []).length ? `<div class="photos">${m.photos.map(p => `<a href="${esc(p.url)}" target="_blank" rel="noopener"><img src="${esc(p.url)}" alt="${esc(m.title)}"></a>`).join("")}</div>` : ""}
+    ${done && (m.extracted || m.text) ? `<details><summary class="hint" style="cursor:pointer">읽은 내용 보기</summary><div class="matbody">
+      ${m.extracted?.focus ? `<p style="margin:0"><b>선생님이 말한 부분:</b> ${esc(m.extracted.focus)}</p>` : ""}
+      ${m.extracted?.points?.length ? `<ul style="margin:0">${m.extracted.points.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${m.text ? `<pre class="raw">${esc(m.text)}</pre>` : ""}
+      ${m.extracted?.content ? `<pre class="raw">${esc(m.extracted.content)}</pre>` : ""}</div></details>` : ""}
+    ${b.example ? "" : `<div class="actions">
+      <label class="btn ${done ? "ghost" : ""} small" for="mf-${m.id}" style="letter-spacing:0">${done ? "사진 더 올리기" : "사진 찍기/올리기"}</label>
+      <input type="file" id="mf-${m.id}" data-matfile="${key}" accept="image/*" multiple hidden>
+      <button class="btn ghost small" data-mattext="${key}">글로 입력</button>
+      ${done || skipped ? `<button class="btn ghost small" data-matstat="${key}|needed">다시 요청</button>` : `<button class="btn ghost small" data-matstat="${key}|skipped">없음 · 건너뛰기</button>`}
+      ${busy ? `<span class="hint">읽는 중이에요…</span>` : ""}</div>`}
+    ${matOpen === key ? `<div class="field"><textarea id="mt-${m.id}" placeholder="자료 내용을 적거나 붙여넣으세요. 문제와 보기, 답까지 적으면 문제 만들 때 그대로 써요.">${esc(m.text || "")}</textarea>
+      <div class="actions"><button class="btn small" data-matsave="${key}">저장</button></div></div>` : ""}
+    <span class="hint" id="mm-${m.id}"></span>
+  </div>`;
+}
+function matsSection(b) {
+  const ms = [...matsOf(b)].sort(matSort);
+  const need = ms.filter(m => m.status === "needed"), rest = ms.filter(m => m.status !== "needed");
+  if (!ms.length) return "";
+  return `<div class="sheet note" id="mats"><h4>자료 요청 · 필요 ${need.length}</h4>
+    ${need.length ? `<p class="hint">선생님이 말한 학습지, 교과서 쪽 같은 자료예요. 사진이나 글로 올리면 노트와 문제에 넣어요.</p>${need.map(m => matHtml(b, m)).join("")}` : `<p class="hint">필요한 자료를 다 올렸어요.</p>`}
+    ${rest.length ? `<details><summary class="hint" style="cursor:pointer">올렸거나 건너뛴 자료 ${rest.length}개</summary>${rest.map(m => matHtml(b, m)).join("")}</details>` : ""}
+  </div>`;
+}
+function renderMats() {
+  const books = state.books.length ? state.books : [EXAMPLE];
+  const withNeed = books.map(b => ({ b, ms: matsOf(b).filter(m => m.status === "needed").sort(matSort) })).filter(x => x.ms.length);
+  $("p-mats").innerHTML = withNeed.length
+    ? `` +
+      withNeed.map(({ b, ms }) => `<div class="sheet note"><div class="actions" style="justify-content:space-between"><h4 style="margin:0"><span class="tag solid" style="--c:${colorOf(b.subject)}">${esc(b.subject)}</span> ${esc(b.exam)}</h4>
+        <button class="btn ghost small" data-openbook="${b.id}">노트 열기</button></div>${ms.map(m => matHtml(b, m)).join("")}</div>`).join("")
+    : `<p class="empty">지금 올려야 할 자료가 없어요.<br>수업을 추가하면 선생님이 말한 학습지나 교과서 쪽을 여기에서 요청해요.</p>`;
+}
+function updateMatTab() {
+  const n = needCount(); $("badge-mats").textContent = n || "";
+  const soon = (state.tasks || []).filter(t => t.status !== "done" && t.due && ddayOf(t.due) <= 3).length;
+  $("badge-tasks").textContent = soon || "";
+}
+/* 사이드의 다음 시험 D-day */
+function renderCountdown() {
+  const e = sortedExams().find(x => x.until >= today());
+  if (!e) { $("countdown").hidden = true; return; }
+  const n = ddayOf(e.until); $("countdown").hidden = false;
+  $("countdown").innerHTML = `<span class="lbl">다음 시험까지</span><span class="nm">${esc(e.name)}</span><span class="d">${n === 0 ? "D-day" : "D-" + n}</span>`;
+}
+const PAGES = {
+  new: ["새 수업 추가", "받아쓰기나 필기를 넣으면 시험 범위의 과목 노트에 이어서 쌓여요."],
+  books: ["과목 노트", "시험마다 과목별로 한 권. 출제 예고와 강조, 단원별 정리, 문제가 모여 있어요."],
+  mats: ["자료 요청", "선생님이 말한 학습지와 교과서 쪽이에요. 올리면 노트와 문제에 들어가요."],
+  tasks: ["수행평가", "공지를 사진이나 글로 올리면 마감일, 평가 기준, 할 일로 정리해요."],
+  wrong: ["오답 모음", "마지막으로 풀었을 때 틀린 문제가 있는 노트예요."],
+  tt: ["시간표", "하루치 받아쓰기를 교시별로 나누고 과목을 붙이는 데 써요."]
+};
+function findMat(key) {
+  const [bid, mid] = key.split("|"); const b = visibleBooks().find(x => x.id === bid);
+  return { b, m: b && matsOf(b).find(x => x.id === mid) };
+}
+function rerenderMats() { if (state.tab === "mats") renderMats(); else if (state.tab === "view") renderView(); updateMatTab(); }
+async function readMaterial(b, m, images) {
+  if (!sample) throw { message: "이 화면에서는 자료를 읽을 수 없어요." };
+  const opts = { modelTier: "complex" }; if (images?.length) opts.images = images.slice(0, 5);
+  return sample.json(`학생이 "${b.subject}" 수업 자료를 ${images?.length ? "사진으로" : "글로"} 올렸어.
+자료: ${m.title}${m.where ? " / 선생님이 말한 부분: " + m.where : ""}${m.quote ? ` / 선생님 말: "${m.quote}"` : ""}
+요청한 이유: ${m.reason}
+
+할 일:
+- content: 자료의 글을 최대한 그대로 옮겨 적어. 문제는 문제·보기·답을 그대로, 표는 줄글로. 최대 4000자.
+- focus: 선생님이 말한 부분(${m.where || "중요 표시된 부분"})의 내용, 답과 풀이를 자세히. 사진에 그 부분이 없으면 "사진에 없음: 무엇이 더 필요한지"라고 써.
+- points: 시험 공부할 핵심 3~8개.
+- more: 더 올려 주면 좋은 것(예: 뒷면, 다음 쪽, 답지). 없으면 "".
+JSON만: {"content":"","focus":"","points":[""],"more":""}
+${m.text ? "\n--- 학생이 적은 내용 ---\n" + m.text : ""}`, opts);
+}
+async function attachMaterial(key, files, text) {
+  const { b, m } = findMat(key); if (!m || b.example) return;
+  matBusy = key; rerenderMats();
+  try {
+    const imgs = [];
+    for (const f of files || []) { try { imgs.push(await shrink(f)) } catch {} }
+    if (imgs.length && !imagesOk) throw { message: "이 화면에서는 사진을 보낼 수 없어요. 글로 입력해 주세요." };
+    if (text != null) m.text = text;
+    if (assets) for (const blob of imgs) { try { const a = await assets.upload(blob); m.photos = [...(m.photos || []), { id: a.id, url: a.url }]; } catch {} }
+    const r = await readMaterial(b, m, imgs);
+    m.extracted = { content: r.content || "", focus: r.focus || "", points: r.points || [] };
+    m.status = "done";
+    await saveBook(b);
+    matBusy = null; matOpen = null; rerenderMats();
+    if (r.more) { const el = $("mm-" + m.id); if (el) el.textContent = "더 있으면 좋아요: " + r.more; }
+  } catch (e) {
+    if (text != null && m.text) { m.status = "done"; await saveBook(b).catch(() => {}); } // 글은 읽지 못해도 저장
+    matBusy = null; rerenderMats();
+    const el = $("mm-" + m.id); if (el) el.textContent = e?.code ? sampleErr(e) : (e?.message || "자료를 읽지 못했어요.");
+  }
+}
+document.addEventListener("change", e => {
+  const key = e.target.dataset?.matfile; if (!key) return;
+  const files = [...e.target.files]; e.target.value = "";
+  if (files.length) attachMaterial(key, files, null);
+});
+document.addEventListener("click", async e => {
+  const t = e.target;
+  if (t.dataset.openbook) { openBook(t.dataset.openbook); return; }
+  if (t.dataset.mattext) { matOpen = matOpen === t.dataset.mattext ? null : t.dataset.mattext; rerenderMats(); return; }
+  if (t.dataset.matsave) { const { m } = findMat(t.dataset.matsave); const v = $("mt-" + m.id).value.trim(); if (v) attachMaterial(t.dataset.matsave, [], v); return; }
+  if (t.dataset.matstat) {
+    const [bid, mid, st] = t.dataset.matstat.split("|"), { b, m } = findMat(bid + "|" + mid);
+    if (m && !b.example) { m.status = st; await saveBook(b); rerenderMats(); }
+  }
+});
+
+/* ---------- 오답 모음 ---------- */
+function renderWrong() {
+  const rows = state.books.filter(b => wrongCount(b));
+  $("p-wrong").innerHTML = rows.length ? `<div class="list">${rows.map(b => `
+    <button class="item" data-id="${b.id}"><span class="bar" style="background:${colorOf(b.subject)}"></span>
+      <span style="min-width:0"><span class="tag">${esc(b.subject)}</span><h3 style="margin-top:4px">${esc(b.exam)} ${esc(b.subject)} 노트</h3><span class="meta">수업 ${b.lessons.length}개</span></span>
+      <span class="score" style="color:var(--bad)">${wrongCount(b)}개</span></button>`).join("")}</div>`
+    : `<p class="empty">아직 틀린 문제가 없어요.<br>과목 노트에서 문제를 풀고 채점하면, 틀린 문제가 여기에 모여요.</p>`;
+}
+$("p-wrong").onclick = e => { const b = e.target.closest(".item"); if (b) openBook(b.dataset.id, "wrong"); };
+
+/* ---------- 탭 ---------- */
+function show(tab) {
+  state.tab = tab;
+  const pg = PAGES[tab]; $("pagehead").hidden = !pg;
+  if (pg) { $("ph-title").textContent = pg[0]; $("ph-sub").textContent = pg[1]; }
+  window.scrollTo({ top: 0 });
+  for (const p of ["new", "books", "view", "wrong", "tt", "tasks", "task", "mats"]) $("p-" + p).hidden = p !== tab;
+  if (tab === "mats") renderMats();
+  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === ({ view: "books", task: "tasks" }[tab] || tab)));
+  if (tab === "tasks") renderTasks();
+  if (tab === "books") renderBooks();
+  if (tab === "wrong") renderWrong();
+}
+document.querySelector(".tabs").onclick = e => { const t = e.target.closest("[data-tab]"); if (t) show(t.dataset.tab) };
+function rerender() {
+  if (state.tab === "books") renderBooks();
+  if (state.tab === "wrong") renderWrong();
+  if (state.tab === "tasks") renderTasks();
+  if (state.tab === "mats" && !matBusy && !matOpen) renderMats();
+  updateMatTab();
+  if (state.tab === "task" && !document.activeElement?.closest?.("#p-task")) renderTask();
+  if (state.tab === "view" && !quiz && !genBusy && !draft && !matBusy && !matOpen && !document.activeElement?.closest?.("#p-view")) renderView();
+}
+
+/* ---------- 예전 버전 노트(수업마다 따로 저장된 것)를 과목 노트로 합치기 ---------- */
+const migrated = new Set();
+async function migrateOld(olds) {
+  for (const o of olds) {
+    if (migrated.has(o.id)) continue; migrated.add(o.id);
+    const exam = examOf(o.date), book = bookFor(exam, o.subject || "기타");
+    const hints = o.examHints?.length ? o.examHints : (o.emphasized || []).map(t => ({ kind: "강조", text: t }));
+    const lesson = { id: "l" + o.id, date: o.date, period: o.period || null, unit: "단원 미정", title: o.title, summary: o.summary || [], questions: o.questions || [] };
+    await saveBook(mergeLesson(book, lesson, hints, o.terms));
+    await col().doc(o.id).update({ migrated: true });
+  }
+}
+
+/* ---------- 시작 ---------- */
+renderSubjects();
+state.tt = JSON.parse(JSON.stringify(DEFAULT_TT));
+renderTT(); renderMode();
+state.books = lsLoad();
+try { state.tasks = JSON.parse(localStorage.getItem("class-review-tasks") || "[]") } catch { state.tasks = [] }
+updateMatTab(); renderCountdown(); show("new");
+(async () => {
+  if (!window.claude?.use) { $("goHint").textContent = "claude.ai에서 열어야 정리 기능을 쓸 수 있어요."; return; }
+  const [s, d, u, a] = await Promise.all([claude.use("sample"), claude.use("db"), claude.use("user"), claude.use("assets")]);
+  sample = s; assets = a;
+  if (!sample) $("goHint").textContent = "이 화면에서는 정리 기능을 쓸 수 없어요.";
+  try { imagesOk = !!(sample && (await sample.limits())?.images) } catch {}
+  if (d && u) {
+    uid = await u.id();
+    if (uid) {
+      db = d;
+      await loadExams(); await loadTT();
+      col().onSnapshot(snap => {
+        const docs = snap.docs.filter(x => !x.id.startsWith("_")).map(x => ({ id: x.id, ...x.data() }));
+        state.books = docs.filter(x => Array.isArray(x.lessons)).map(x => JSON.parse(JSON.stringify(x)));
+        state.tasks = docs.filter(x => x.kind === "task").map(x => JSON.parse(JSON.stringify(x)));
+        const olds = docs.filter(x => !Array.isArray(x.lessons) && Array.isArray(x.questions) && !x.migrated);
+        if (olds.length) migrateOld(olds).catch(() => {});
+        rerender();
+      }, () => {});
+    }
+  } else { await loadExams(); await loadTT(); }
+  renderMode(); renderCountdown(); updateMatTab();
+  if (!imagesOk) $("tImgLabel").hidden = true;
+  $("who").textContent = db ? "과목마다 한 권씩 쌓이는 노트 · 내 계정에만 저장돼요" : "과목마다 한 권씩 쌓이는 노트 · 이 기기에 저장돼요";
+})();
+</script>
