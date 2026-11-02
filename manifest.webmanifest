@@ -1,0 +1,17 @@
+{
+  "name": "목소리 다듬기",
+  "short_name": "목소리 다듬기",
+  "description": "음높이는 그대로 두고 허스키하고 듣기 좋은 목소리로 다듬는 마이크 효과",
+  "lang": "ko",
+  "id": "./voice-effects.html",
+  "start_url": "./voice-effects.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#15171b",
+  "theme_color": "#15171b",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
