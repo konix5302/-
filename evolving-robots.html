@@ -188,8 +188,8 @@ details table { font-size: 12.5px; margin-top: 6px; }
         <div class="lab"><span>돌연변이율</span><span>다음 세대부터 적용</span></div>
         <div class="seg" role="radiogroup" aria-label="돌연변이율">
           <input type="radio" name="mut" id="mu0" value="0"><label for="mu0">0%</label>
-          <input type="radio" name="mut" id="mu1" value="0.01" checked><label for="mu1">1%</label>
-          <input type="radio" name="mut" id="mu5" value="0.05"><label for="mu5">5%</label>
+          <input type="radio" name="mut" id="mu1" value="0.01"><label for="mu1">1%</label>
+          <input type="radio" name="mut" id="mu5" value="0.05" checked><label for="mu5">5%</label>
           <input type="radio" name="mut" id="mu20" value="0.2"><label for="mu20">20%</label>
         </div>
       </div>
@@ -197,8 +197,8 @@ details table { font-size: 12.5px; margin-top: 6px; }
         <div class="lab"><span>개체 수</span><span>바꾸면 처음부터</span></div>
         <div class="seg" role="radiogroup" aria-label="개체 수">
           <input type="radio" name="pop" id="po20" value="20"><label for="po20">20대</label>
-          <input type="radio" name="pop" id="po100" value="100"><label for="po100">100대</label>
-          <input type="radio" name="pop" id="po300" value="300" checked><label for="po300">300대</label>
+          <input type="radio" name="pop" id="po100" value="100" checked><label for="po100">100대</label>
+          <input type="radio" name="pop" id="po300" value="300"><label for="po300">300대</label>
         </div>
       </div>
       <div class="field">
@@ -209,7 +209,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
           <input type="radio" name="map" id="mpMaze" value="maze"><label for="mpMaze">미로</label>
           <input type="radio" name="map" id="mpDungeon" value="dungeon" checked><label for="mpDungeon">던전</label>
         </div>
-        <p class="note" id="dungeonNote">던전: 열쇠 → 퓨즈 ① → 퓨즈 ② → 깃발 순서로 모아야 해요. 열쇠가 있어야 나무 문을, 퓨즈 2개가 있어야 전기 게이트를 지나갈 수 있어요. 몬스터 4마리에게 닿으면 잡혀요. 수명은 900걸음, 벽에 부딪히면 멈칫하고 계속 가요. 아주 어려우니 300대 + 10× 이상을 추천해요.</p>
+        <p class="note" id="dungeonNote">던전: 열쇠 → 퓨즈 ① → 퓨즈 ② → 깃발 순서로 모아야 해요. 열쇠가 있어야 나무 문을, 퓨즈 2개가 있어야 전기 게이트를 지나갈 수 있어요. 몬스터 4마리에게 닿으면 잡혀요. 수명은 900걸음이고, 벽에 부딪히면 벽을 따라 미끄러져요. 보통 10~60세대 안에 첫 도착이 나와요. 결과만 빨리 보려면 "세대 단위"를 눌러 보세요.</p>
       </div>
       <div class="field">
         <div class="lab"><span>교차 방식</span></div>
@@ -311,9 +311,10 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <p style="margin-bottom:4px">점수 기준</p>
       <div class="formula">못 갔을 때: 100 ÷ (1 + 남은 거리)²<br>도착했을 때: 100 + 100 × (1 − 걸린 걸음 ÷ 200)<br>벽 감점 켜면: 부딪힌 로봇 점수 × 0.1</div>
       <p style="margin-bottom:4px">던전 점수 기준</p>
-      <div class="formula">아이템 하나 모을 때마다 25점<br>+ 다음 목표까지 "길 따라 거리"가 가까울수록 최대 25점<br>+ 마지막 아이템을 빨리 주울수록 최대 5점<br>도착: 100 + 50 × (1 − 걸린 걸음 ÷ 900)<br>몬스터에게 잡히면 × 0.5</div>
+      <div class="formula">아이템 하나 모을 때마다 25점<br>+ 다음 목표까지 "길 따라 거리"가 가까울수록 최대 25점 (살아 있는 동안 가장 멀리 간 순간 기준)<br>+ 마지막 아이템을 빨리 주울수록 최대 10점<br>도착: 100 + 50 × (1 − 걸린 걸음 ÷ 900)<br>몬스터에게 잡히면 × 0.5</div>
       <p>미로에서는 직선거리로 채점하면 로봇들이 벽 바로 뒤에서 멈춰 버려요(국소 최적). 그래서 던전은 길 찾기(BFS)로 미리 잰 "벽을 돌아가는 거리"로 채점해요. 채점 기준을 잘 정하는 것이 공학 설계의 핵심이라는 걸 보여 주는 부분이에요.</p>
-      <p>로봇의 유전자는 200칸(던전은 900칸)짜리 "힘 목록"이에요. 매 걸음 힘 → 속도 변화 → 위치 변화 순서로 움직여요 (통합과학 힘과 운동을 단순화).</p>
+      <p>던전 로봇의 유전자는 "15걸음마다 어느 방향으로 갈지" 적힌 60칸짜리 방향 목록이에요. 900걸음마다 힘을 하나씩 적으면 앞쪽 하나만 바뀌어도 뒤 경로가 통째로 틀어져서, 긴 미로에서는 거의 배우지 못했어요. 유전자를 단순하게 만들면 진화가 훨씬 빨라져요. 이것도 좋은 탐구 포인트예요.</p>
+      <p>다른 맵 로봇의 유전자는 200칸짜리 "힘 목록"이에요. 매 걸음 힘 → 속도 변화 → 위치 변화 순서로 움직여요 (통합과학 힘과 운동을 단순화).</p>
     </details>
   </aside>
 </div>
@@ -352,7 +353,7 @@ const MAPS = {
   wall:  { L: 200, rects: [{ x: 0, z: 0, w: 0.8, d: 10 }] },
   maze:  { L: 200, rects: [{ x: -4, z: -2, w: 0.8, d: 12 }, { x: 3, z: 2, w: 0.8, d: 12 }] },
   dungeon: {
-    L: 900, rects: [], bump: true, grid: buildDungeon(),
+    L: 900, seg: 15, rects: [], bump: true, grid: buildDungeon(),
     items: [ // 순서대로 모아야 함: 열쇠 → 퓨즈① → 퓨즈② → 깃발
       { kind: "key",   x: cellX(4),  z: cellZ(2) },
       { kind: "fuse1", x: cellX(16), z: cellZ(14) },
@@ -421,8 +422,9 @@ function hits(map, x, z, stage) {
 class Sim {
   constructor(o, genes) {
     this.n = o.pop; this.mut = o.mut; this.mapName = o.map; this.map = MAPS[o.map]; this.L = this.map.L;
+    this.seg = this.map.seg || 1; this.NG = Math.ceil(this.L / this.seg);   // 유전자 칸 수
     this.penalty = o.penalty; this.cross = o.cross; this.elite = o.elite;
-    this.genes = genes || new Float32Array(this.n * this.L * 2);
+    this.genes = genes || new Float32Array(this.n * this.NG * 2);
     if (!genes) for (let k = 0; k < this.genes.length; k += 2) randGene(this.genes, k);
     this.px = new Float32Array(this.n); this.pz = new Float32Array(this.n);
     this.vx = new Float32Array(this.n); this.vz = new Float32Array(this.n);
@@ -430,6 +432,7 @@ class Sim {
     this.stage = new Uint8Array(this.n); // 모은 아이템 수
     this.hitAt = new Uint16Array(this.n);
     this.stageAt = new Uint16Array(this.n); // 마지막 아이템을 주운 걸음
+    this.best = new Float32Array(this.n);    // 살아 있는 동안 가장 멀리 간 진행도
     this.score = new Float64Array(this.n);
     this.mpos = this.map.monsters.map(() => [0, 0]);
     this.gen = 1; this.firstReach = null; this.history = []; this.bestIdx = 0;
@@ -438,7 +441,7 @@ class Sim {
   resetRun() {
     this.t = 0;
     this.px.fill(START.x); this.pz.fill(START.z); this.vx.fill(0); this.vz.fill(0);
-    this.state.fill(0); this.hitAt.fill(0); this.stage.fill(0); this.stageAt.fill(0);
+    this.state.fill(0); this.hitAt.fill(0); this.stage.fill(0); this.stageAt.fill(0); this.best.fill(0);
     this.map.monsters.forEach((m, j) => monsterPos(m, 0, this.mpos[j]));
   }
   step() {
@@ -448,16 +451,24 @@ class Sim {
     map.monsters.forEach((m, j) => monsterPos(m, t + 1, this.mpos[j]));
     for (let i = 0; i < this.n; i++) {
       if (this.state[i]) continue;
-      const k = (i * L + t) * 2;
-      let vx = this.vx[i] + g[k], vz = this.vz[i] + g[k + 1];
+      const k = (i * this.NG + ((t / this.seg) | 0)) * 2;
+      let fx = g[k], fz = g[k + 1];
+      if (this.seg > 1) {   // 던전: 유전자 = "이 방향으로 가자" → 그쪽 속도가 되도록 힘을 줌
+        fx = g[k] / MAXF * MAXV - this.vx[i]; fz = g[k + 1] / MAXF * MAXV - this.vz[i];
+        const fm = Math.hypot(fx, fz), lim = MAXF * 1.5; if (fm > lim) { fx *= lim / fm; fz *= lim / fm; }
+      }
+      let vx = this.vx[i] + fx, vz = this.vz[i] + fz;
       const sp = Math.hypot(vx, vz);
       if (sp > MAXV) { vx *= MAXV / sp; vz *= MAXV / sp; }
-      const x = this.px[i] + vx, z = this.pz[i] + vz;
-      this.vx[i] = vx; this.vz[i] = vz;
+      let x = this.px[i] + vx, z = this.pz[i] + vz;
       if (hits(map, x, z, this.stage[i])) {
-        if (map.bump) { this.vx[i] = 0; this.vz[i] = 0; alive++; continue; }   // 던전: 벽에 쿵 → 멈칫하고 계속
-        this.state[i] = 1; this.hitAt[i] = t + 1; continue;
+        if (!map.bump) { this.vx[i] = vx; this.vz[i] = vz; this.state[i] = 1; this.hitAt[i] = t + 1; continue; }
+        // 던전: 벽을 따라 미끄러지기 (한쪽 방향만이라도 움직일 수 있으면 그쪽으로)
+        if (!hits(map, x, this.pz[i], this.stage[i])) { z = this.pz[i]; vz = 0; }
+        else if (!hits(map, this.px[i], z, this.stage[i])) { x = this.px[i]; vx = 0; }
+        else { x = this.px[i]; z = this.pz[i]; vx = vz = 0; }
       }
+      this.vx[i] = vx; this.vz[i] = vz;
       this.px[i] = x; this.pz[i] = z;
       let caught = false;
       for (const p of this.mpos) if ((x - p[0]) ** 2 + (z - p[1]) ** 2 < (R + MR) ** 2) { caught = true; break; }
@@ -465,22 +476,25 @@ class Sim {
       const s = this.stage[i];
       if (s < nItems) { if (Math.hypot(x - items[s].x, z - items[s].z) < 0.8) { this.stage[i] = s + 1; this.stageAt[i] = t + 1; } }
       else if (Math.hypot(x - GOAL.x, z - GOAL.z) < GOAL.r) { this.state[i] = 2; this.hitAt[i] = t + 1; continue; }
+      if (map.fields) { const pr = this.progress(i); if (pr > this.best[i]) this.best[i] = pr; }
       alive++;
     }
     this.t++;
     return alive > 0 && this.t < L;
   }
   runToEnd() { while (this.step()); }
+  progress(i) {   // 던전 진행도: 모은 아이템 수 + 다음 목표까지 길 따라 얼마나 왔는지(0~1)
+    const st = this.stage[i], f = this.map.fields[st];
+    const c = Math.min(COLS - 1, Math.floor(this.px[i] + HX)), r = Math.min(ROWS - 1, Math.floor(this.pz[i] + HZ));
+    return st + 1 - Math.min(f.d[r * COLS + c], f.max) / f.max;
+  }
   scoreOf(i) {
     const L = this.L, st = this.state[i];
     if (st === 2) return this.map.grid ? 100 + 50 * (1 - this.hitAt[i] / L) : 100 + 100 * (1 - this.hitAt[i] / L);
     let s;
     if (this.map.grid) {   // 던전: 단계마다 25점 + 다음 목표까지 길 따라 얼마나 가까운지
-      const f = this.map.fields[this.stage[i]];
-      const c = Math.min(COLS - 1, Math.floor(this.px[i] + HX)), r = Math.min(ROWS - 1, Math.floor(this.pz[i] + HZ));
-      const d = Math.min(f.d[r * COLS + c], f.max);
-      s = 25 * (this.stage[i] + 1 - d / f.max);
-      if (this.stage[i]) s += 5 * (1 - this.stageAt[i] / L);   // 아이템을 빨리 주울수록 보너스
+      s = 25 * Math.max(this.best[i], this.progress(i));   // 가장 멀리 갔던 순간 기준
+      if (this.stage[i]) s += 10 * (1 - this.stageAt[i] / L);   // 아이템을 빨리 주울수록 보너스
     } else {
       const d = Math.hypot(this.px[i] - GOAL.x, this.pz[i] - GOAL.z);
       s = 100 / ((1 + d) * (1 + d));
@@ -516,7 +530,7 @@ class Sim {
       while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] < r) lo = m + 1; else hi = m; }
       return lo;
     };
-    const old = this.genes, ng = new Float32Array(old.length), G = L * 2;
+    const NG = this.NG, old = this.genes, ng = new Float32Array(old.length), G = NG * 2;
     let start = 0;
     if (this.elite) {   // 엘리트 보존: 점수 상위 로봇은 그대로 다음 세대로
       const top = [...this.score.keys()].sort((x, y) => this.score[y] - this.score[x]).slice(0, Math.max(1, Math.round(n * 0.02)));
@@ -524,15 +538,15 @@ class Sim {
     }
     for (let c = start; c < n; c++) {
       const a = pick(), b = pick();
-      const mid = this.cross === "half" ? L / 2 : (Math.random() * L) | 0;
+      const mid = this.cross === "half" ? NG >> 1 : (Math.random() * NG) | 0;
       ng.set(old.subarray(a * G, a * G + mid * 2), c * G);
       ng.set(old.subarray(b * G + mid * 2, b * G + G), c * G + mid * 2);
-      if (this.mut > 0) for (let j = 0; j < L; j++) if (Math.random() < this.mut) randGene(ng, c * G + j * 2);
+      if (this.mut > 0) for (let j = 0; j < NG; j++) if (Math.random() < this.mut) randGene(ng, c * G + j * 2);
     }
     this.genes = ng; this.gen++; this.resetRun();
   }
   tracePath(i) {   // 한 로봇만 다시 달려 보며 경로 기록
-    const G = this.L * 2, one = new Sim({ ...this, pop: 1, map: this.mapName }, this.genes.slice(i * G, i * G + G));
+    const G = this.NG * 2, one = new Sim({ ...this, pop: 1, map: this.mapName }, this.genes.slice(i * G, i * G + G));
     const pts = [[START.x, START.z]];
     while (one.state[0] === 0 && one.t < one.L) { one.step(); pts.push([one.px[0], one.pz[0]]); }
     return pts;
