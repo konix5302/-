@@ -141,6 +141,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <span class="chip gen" id="hudGen">1세대</span>
       <span class="chip" id="hudStep">0 / 200걸음</span>
       <span class="chip" id="hudReach">도착 <b>0</b> / 100</span>
+      <span class="chip" id="hudItems" hidden></span>
     </div>
     <div class="hud cam">
       <button type="button" id="camTilt">비스듬히</button>
@@ -161,7 +162,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
     <header class="brand">
       <p class="eyebrow">주제탐구(R&amp;E) 기초 · 유전 알고리즘</p>
       <h1>진화하는 꼬마 로봇</h1>
-      <p>아무도 길을 알려 주지 않아요. 로봇 100대가 아무렇게나 움직이고, 잘 간 로봇끼리 움직임 목록을 섞어 다음 세대를 만들어요. 세대가 지날수록 스스로 벽을 피해 깃발까지 가는 길을 찾아냅니다.</p>
+      <p>아무도 길을 알려 주지 않아요. 로봇들이 아무렇게나 움직이고, 잘 간 로봇끼리 움직임 목록을 섞어 다음 세대를 만들어요. 던전에서는 몬스터를 피해 열쇠와 퓨즈를 모아 문과 전기 게이트를 열고 깃발까지 가는 길을 세대를 거듭하며 스스로 찾아냅니다.</p>
     </header>
 
     <section>
@@ -174,8 +175,8 @@ details table { font-size: 12.5px; margin-top: 6px; }
         <div class="lab"><span>재생 속도</span><span>세대 단위 = 결과만 빠르게</span></div>
         <div class="seg" role="radiogroup" aria-label="재생 속도">
           <input type="radio" name="speed" id="sp1" value="1"><label for="sp1">1×</label>
-          <input type="radio" name="speed" id="sp3" value="3" checked><label for="sp3">3×</label>
-          <input type="radio" name="speed" id="sp10" value="10"><label for="sp10">10×</label>
+          <input type="radio" name="speed" id="sp3" value="3"><label for="sp3">3×</label>
+          <input type="radio" name="speed" id="sp10" value="10" checked><label for="sp10">10×</label>
           <input type="radio" name="speed" id="spg" value="gen"><label for="spg">세대 단위</label>
         </div>
       </div>
@@ -196,17 +197,19 @@ details table { font-size: 12.5px; margin-top: 6px; }
         <div class="lab"><span>개체 수</span><span>바꾸면 처음부터</span></div>
         <div class="seg" role="radiogroup" aria-label="개체 수">
           <input type="radio" name="pop" id="po20" value="20"><label for="po20">20대</label>
-          <input type="radio" name="pop" id="po100" value="100" checked><label for="po100">100대</label>
-          <input type="radio" name="pop" id="po300" value="300"><label for="po300">300대</label>
+          <input type="radio" name="pop" id="po100" value="100"><label for="po100">100대</label>
+          <input type="radio" name="pop" id="po300" value="300" checked><label for="po300">300대</label>
         </div>
       </div>
       <div class="field">
         <div class="lab"><span>장애물</span><span>바꾸면 처음부터</span></div>
         <div class="seg" role="radiogroup" aria-label="장애물">
           <input type="radio" name="map" id="mpNone" value="none"><label for="mpNone">없음</label>
-          <input type="radio" name="map" id="mpWall" value="wall" checked><label for="mpWall">벽 1개</label>
+          <input type="radio" name="map" id="mpWall" value="wall"><label for="mpWall">벽 1개</label>
           <input type="radio" name="map" id="mpMaze" value="maze"><label for="mpMaze">미로</label>
+          <input type="radio" name="map" id="mpDungeon" value="dungeon" checked><label for="mpDungeon">던전</label>
         </div>
+        <p class="note" id="dungeonNote">던전: 열쇠 → 퓨즈 ① → 퓨즈 ② → 깃발 순서로 모아야 해요. 열쇠가 있어야 나무 문을, 퓨즈 2개가 있어야 전기 게이트를 지나갈 수 있어요. 몬스터 4마리에게 닿으면 잡혀요. 수명은 900걸음, 벽에 부딪히면 멈칫하고 계속 가요. 아주 어려우니 300대 + 10× 이상을 추천해요.</p>
       </div>
       <div class="field">
         <div class="lab"><span>교차 방식</span></div>
@@ -214,6 +217,9 @@ details table { font-size: 12.5px; margin-top: 6px; }
           <input type="radio" name="cross" id="crHalf" value="half" checked><label for="crHalf">반씩 이어 붙이기</label>
           <input type="radio" name="cross" id="crRand" value="rand"><label for="crRand">무작위 지점</label>
         </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="elite" checked> <span>엘리트 보존: 점수 상위 2% 로봇은 그대로 다음 세대로<br><span class="note" style="margin:0">끄면 잘 찾은 길을 교차·돌연변이로 잃어버리기도 해요. 던전에서는 켜 두는 게 좋아요.</span></span></label>
       </div>
       <div class="field">
         <label class="check"><input type="checkbox" id="penalty"> <span>벽에 부딪히면 점수 ×0.1 (크게 감점)<br><span class="note" style="margin:0">끄면 로봇들이 벽 바로 앞에 몰려 멈추는 "국소 최적"이 잘 보여요.</span></span></label>
@@ -234,7 +240,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
         <div class="tip" hidden></div>
       </div>
       <div class="chart" id="chReach">
-        <div class="legend"><span style="--c:var(--s3)">도착 비율 (%)</span></div>
+        <div class="legend" id="reachLegend"><span style="--c:var(--s3)">도착 (%)</span></div>
         <canvas aria-label="세대별 도착 비율 그래프"></canvas>
         <div class="tip" hidden></div>
       </div>
@@ -304,7 +310,10 @@ details table { font-size: 12.5px; margin-top: 6px; }
       </table></div>
       <p style="margin-bottom:4px">점수 기준</p>
       <div class="formula">못 갔을 때: 100 ÷ (1 + 남은 거리)²<br>도착했을 때: 100 + 100 × (1 − 걸린 걸음 ÷ 200)<br>벽 감점 켜면: 부딪힌 로봇 점수 × 0.1</div>
-      <p>로봇의 유전자는 200칸짜리 "힘 목록"이에요. 매 걸음 힘 → 속도 변화 → 위치 변화 순서로 움직여요 (통합과학 힘과 운동을 단순화).</p>
+      <p style="margin-bottom:4px">던전 점수 기준</p>
+      <div class="formula">아이템 하나 모을 때마다 25점<br>+ 다음 목표까지 "길 따라 거리"가 가까울수록 최대 25점<br>+ 마지막 아이템을 빨리 주울수록 최대 5점<br>도착: 100 + 50 × (1 − 걸린 걸음 ÷ 900)<br>몬스터에게 잡히면 × 0.5</div>
+      <p>미로에서는 직선거리로 채점하면 로봇들이 벽 바로 뒤에서 멈춰 버려요(국소 최적). 그래서 던전은 길 찾기(BFS)로 미리 잰 "벽을 돌아가는 거리"로 채점해요. 채점 기준을 잘 정하는 것이 공학 설계의 핵심이라는 걸 보여 주는 부분이에요.</p>
+      <p>로봇의 유전자는 200칸(던전은 900칸)짜리 "힘 목록"이에요. 매 걸음 힘 → 속도 변화 → 위치 변화 순서로 움직여요 (통합과학 힘과 운동을 단순화).</p>
     </details>
   </aside>
 </div>
@@ -314,51 +323,129 @@ details table { font-size: 12.5px; margin-top: 6px; }
 (() => {
 "use strict";
 /* ================= 시뮬레이션 (화면과 분리된 순수 계산) ================= */
-const L = 200;              // 유전자 길이 = 수명(걸음 수)
 const MAXF = 0.06;          // 한 걸음에 줄 수 있는 힘
 const MAXV = 0.32;          // 최고 속도
 const R = 0.35;             // 로봇 반지름
-const HX = 12, HZ = 8;      // 경기장 절반 크기
+const MR = 0.5;             // 몬스터 반지름
+const HX = 12, HZ = 8;      // 경기장 절반 크기 (칸 24 × 16)
+const COLS = HX * 2, ROWS = HZ * 2;
 const START = { x: -10, z: 0 };
 const GOAL = { x: 10, z: 0, r: 1.0 };
+const cellX = c => -HX + c + 0.5, cellZ = r => -HZ + r + 0.5;
+
+/* 던전: 칸 단위 지도. # 벽, D 문(열쇠 있어야 통과), E 전기 게이트(퓨즈 2개 있어야 통과) */
+function buildDungeon() {
+  const g = Array.from({ length: ROWS }, () => Array(COLS).fill("."));
+  const fill = (c0, r0, c1, r1, ch) => { for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) g[r][c] = ch; };
+  fill(7, 0, 7, 15, "#"); fill(7, 11, 7, 12, "D");        // 왼쪽 방과 가운데를 막는 벽 + 문
+  fill(2, 5, 6, 5, "#");                                    // 열쇠 방 벽
+  fill(0, 10, 4, 10, "#");                                  // 출발 방 아래 벽
+  fill(8, 9, 13, 9, "#"); fill(13, 3, 13, 8, "#");          // 가운데 미로
+  fill(10, 12, 11, 13, "#");                                // 기둥
+  fill(18, 0, 18, 15, "#"); fill(18, 0, 18, 1, "E");        // 전기 게이트
+  fill(19, 4, 21, 4, "#"); fill(19, 11, 21, 11, "#");       // 골 방
+  return g;
+}
+const PING = (ax, az, bx, bz, speed, offset = 0) => ({ ax, az, bx, bz, speed, offset, len: Math.hypot(bx - ax, bz - az) });
 const MAPS = {
-  none: [],
-  wall: [{ x: 0, z: 0, w: 0.8, d: 10 }],
-  maze: [{ x: -4, z: -2, w: 0.8, d: 12 }, { x: 3, z: 2, w: 0.8, d: 12 }],
+  none:  { L: 200, rects: [] },
+  wall:  { L: 200, rects: [{ x: 0, z: 0, w: 0.8, d: 10 }] },
+  maze:  { L: 200, rects: [{ x: -4, z: -2, w: 0.8, d: 12 }, { x: 3, z: 2, w: 0.8, d: 12 }] },
+  dungeon: {
+    L: 900, rects: [], bump: true, grid: buildDungeon(),
+    items: [ // 순서대로 모아야 함: 열쇠 → 퓨즈① → 퓨즈② → 깃발
+      { kind: "key",   x: cellX(4),  z: cellZ(2) },
+      { kind: "fuse1", x: cellX(16), z: cellZ(14) },
+      { kind: "fuse2", x: cellX(15.5), z: cellZ(1) },
+    ],
+    monsters: [
+      PING(cellX(8.2), cellZ(10.5), cellX(17.3), cellZ(10.5), 0.07),        // 아래 복도
+      PING(cellX(14.1), cellZ(5), cellX(17.9), cellZ(5), 0.05, 4),         // 오른쪽 복도 가로막기
+      PING(cellX(9), cellZ(1.5), cellX(12), cellZ(1.5), 0.04, 1),           // 위쪽 통로
+      PING(cellX(20), cellZ(5.5), cellX(20), cellZ(10.4), 0.05, 2),        // 깃발 옆 경비
+    ],
+  },
 };
-const MAP_NAMES = { none: "없음", wall: "벽 1개", maze: "미로" };
+const MAP_NAMES = { none: "없음", wall: "벽 1개", maze: "미로", dungeon: "던전" };
+const MAX_L = 900;
+
+function monsterPos(m, t, out) {
+  const u = (t * m.speed + m.offset) % (2 * m.len);
+  const f = (u < m.len ? u : 2 * m.len - u) / m.len;
+  out[0] = m.ax + (m.bx - m.ax) * f; out[1] = m.az + (m.bz - m.az) * f;
+  return out;
+}
+
+/* 칸 지도에서 각 목표까지 "길 따라 거리"를 미리 계산 (BFS). 직선거리를 쓰면 벽 뒤에 갇혀요. */
+function passable(ch, stage) { return ch !== "#" && !(ch === "D" && stage < 1) && !(ch === "E" && stage < 3); }
+function distanceField(grid, tx, tz, stage) {
+  const d = new Float32Array(COLS * ROWS).fill(Infinity), q = [];
+  const c0 = Math.floor(tx + HX), r0 = Math.floor(tz + HZ);
+  d[r0 * COLS + c0] = 0; q.push(r0 * COLS + c0);
+  for (let h = 0; h < q.length; h++) {
+    const id = q[h], c = id % COLS, r = (id / COLS) | 0;
+    for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nc = c + dc, nr = r + dr;
+      if (nc < 0 || nr < 0 || nc >= COLS || nr >= ROWS) continue;
+      const nid = nr * COLS + nc;
+      if (d[nid] !== Infinity || !passable(grid[nr][nc], stage)) continue;
+      d[nid] = d[id] + 1; q.push(nid);
+    }
+  }
+  let max = 0; for (const v of d) if (v !== Infinity && v > max) max = v;
+  return { d, max };
+}
+for (const m of Object.values(MAPS)) {
+  m.items = m.items || []; m.monsters = m.monsters || [];
+  m.targets = [...m.items, { kind: "goal", x: GOAL.x, z: GOAL.z }];
+  if (m.grid) m.fields = m.targets.map((t, k) => distanceField(m.grid, t.x, t.z, k));
+}
 
 function randGene(g, k) {
   const a = Math.random() * Math.PI * 2;
   g[k] = Math.cos(a) * MAXF; g[k + 1] = Math.sin(a) * MAXF;
 }
-function hits(walls, x, z) {
+function hits(map, x, z, stage) {
   if (x < -HX + R || x > HX - R || z < -HZ + R || z > HZ - R) return true;
-  for (const w of walls) if (Math.abs(x - w.x) < w.w / 2 + R && Math.abs(z - w.z) < w.d / 2 + R) return true;
+  for (const w of map.rects) if (Math.abs(x - w.x) < w.w / 2 + R && Math.abs(z - w.z) < w.d / 2 + R) return true;
+  if (map.grid) {
+    const r = R * 0.9;
+    for (const [ox, oz] of [[-r, -r], [r, -r], [-r, r], [r, r], [0, 0]]) {
+      const c = Math.floor(x + ox + HX), w = Math.floor(z + oz + HZ);
+      if (!passable(map.grid[w][c], stage)) return true;
+    }
+  }
   return false;
 }
 
 class Sim {
-  constructor(o) {
-    this.n = o.pop; this.mut = o.mut; this.walls = MAPS[o.map]; this.penalty = o.penalty; this.cross = o.cross;
-    this.genes = new Float32Array(this.n * L * 2);
-    for (let k = 0; k < this.genes.length; k += 2) randGene(this.genes, k);
+  constructor(o, genes) {
+    this.n = o.pop; this.mut = o.mut; this.mapName = o.map; this.map = MAPS[o.map]; this.L = this.map.L;
+    this.penalty = o.penalty; this.cross = o.cross; this.elite = o.elite;
+    this.genes = genes || new Float32Array(this.n * this.L * 2);
+    if (!genes) for (let k = 0; k < this.genes.length; k += 2) randGene(this.genes, k);
     this.px = new Float32Array(this.n); this.pz = new Float32Array(this.n);
     this.vx = new Float32Array(this.n); this.vz = new Float32Array(this.n);
-    this.state = new Uint8Array(this.n); // 0 주행 1 충돌 2 도착
+    this.state = new Uint8Array(this.n); // 0 주행 1 벽 충돌 2 도착 3 몬스터에게 잡힘
+    this.stage = new Uint8Array(this.n); // 모은 아이템 수
     this.hitAt = new Uint16Array(this.n);
+    this.stageAt = new Uint16Array(this.n); // 마지막 아이템을 주운 걸음
     this.score = new Float64Array(this.n);
+    this.mpos = this.map.monsters.map(() => [0, 0]);
     this.gen = 1; this.firstReach = null; this.history = []; this.bestIdx = 0;
     this.resetRun();
   }
   resetRun() {
     this.t = 0;
     this.px.fill(START.x); this.pz.fill(START.z); this.vx.fill(0); this.vz.fill(0);
-    this.state.fill(0); this.hitAt.fill(0);
+    this.state.fill(0); this.hitAt.fill(0); this.stage.fill(0); this.stageAt.fill(0);
+    this.map.monsters.forEach((m, j) => monsterPos(m, 0, this.mpos[j]));
   }
   step() {
+    const L = this.L, map = this.map, items = map.items, nItems = items.length;
     if (this.t >= L) return false;
     const t = this.t, g = this.genes; let alive = 0;
+    map.monsters.forEach((m, j) => monsterPos(m, t + 1, this.mpos[j]));
     for (let i = 0; i < this.n; i++) {
       if (this.state[i]) continue;
       const k = (i * L + t) * 2;
@@ -367,9 +454,17 @@ class Sim {
       if (sp > MAXV) { vx *= MAXV / sp; vz *= MAXV / sp; }
       const x = this.px[i] + vx, z = this.pz[i] + vz;
       this.vx[i] = vx; this.vz[i] = vz;
-      if (hits(this.walls, x, z)) { this.state[i] = 1; this.hitAt[i] = t + 1; continue; }
+      if (hits(map, x, z, this.stage[i])) {
+        if (map.bump) { this.vx[i] = 0; this.vz[i] = 0; alive++; continue; }   // 던전: 벽에 쿵 → 멈칫하고 계속
+        this.state[i] = 1; this.hitAt[i] = t + 1; continue;
+      }
       this.px[i] = x; this.pz[i] = z;
-      if (Math.hypot(x - GOAL.x, z - GOAL.z) < GOAL.r) { this.state[i] = 2; this.hitAt[i] = t + 1; continue; }
+      let caught = false;
+      for (const p of this.mpos) if ((x - p[0]) ** 2 + (z - p[1]) ** 2 < (R + MR) ** 2) { caught = true; break; }
+      if (caught) { this.state[i] = 3; this.hitAt[i] = t + 1; continue; }
+      const s = this.stage[i];
+      if (s < nItems) { if (Math.hypot(x - items[s].x, z - items[s].z) < 0.8) { this.stage[i] = s + 1; this.stageAt[i] = t + 1; } }
+      else if (Math.hypot(x - GOAL.x, z - GOAL.z) < GOAL.r) { this.state[i] = 2; this.hitAt[i] = t + 1; continue; }
       alive++;
     }
     this.t++;
@@ -377,36 +472,57 @@ class Sim {
   }
   runToEnd() { while (this.step()); }
   scoreOf(i) {
-    if (this.state[i] === 2) return 100 + 100 * (1 - this.hitAt[i] / L);
-    const d = Math.hypot(this.px[i] - GOAL.x, this.pz[i] - GOAL.z);
-    let s = 100 / ((1 + d) * (1 + d));
-    if (this.state[i] === 1 && this.penalty) s *= 0.1;
+    const L = this.L, st = this.state[i];
+    if (st === 2) return this.map.grid ? 100 + 50 * (1 - this.hitAt[i] / L) : 100 + 100 * (1 - this.hitAt[i] / L);
+    let s;
+    if (this.map.grid) {   // 던전: 단계마다 25점 + 다음 목표까지 길 따라 얼마나 가까운지
+      const f = this.map.fields[this.stage[i]];
+      const c = Math.min(COLS - 1, Math.floor(this.px[i] + HX)), r = Math.min(ROWS - 1, Math.floor(this.pz[i] + HZ));
+      const d = Math.min(f.d[r * COLS + c], f.max);
+      s = 25 * (this.stage[i] + 1 - d / f.max);
+      if (this.stage[i]) s += 5 * (1 - this.stageAt[i] / L);   // 아이템을 빨리 주울수록 보너스
+    } else {
+      const d = Math.hypot(this.px[i] - GOAL.x, this.pz[i] - GOAL.z);
+      s = 100 / ((1 + d) * (1 + d));
+    }
+    if (st === 1 && this.penalty) s *= 0.1;
+    if (st === 3) s *= 0.5;
     return s;
   }
+  weight(s) { return this.map.grid ? Math.pow(2, s / 6) : s; }   // 던전은 점수 차이를 더 크게 반영
   evaluate() {
     let sum = 0, max = -1, reached = 0;
+    const got = new Array(this.map.items.length + 1).fill(0);
     for (let i = 0; i < this.n; i++) {
       const s = this.scoreOf(i); this.score[i] = s; sum += s;
       if (s > max) { max = s; this.bestIdx = i; }
       if (this.state[i] === 2) reached++;
+      for (let k = 1; k <= this.stage[i]; k++) got[k]++;
     }
     if (reached > 0 && this.firstReach === null) this.firstReach = this.gen;
-    const st = { gen: this.gen, avg: sum / this.n, max, reach: reached / this.n * 100, reached };
+    const pct = v => v / this.n * 100;
+    const st = { gen: this.gen, avg: sum / this.n, max, reach: pct(reached), reached,
+      key: pct(got[1] || 0), fuses: pct(got[3] || 0) };
     this.history.push(st);
     return st;
   }
   evolve() {
-    const n = this.n, cum = new Float64Array(n);
+    const n = this.n, L = this.L, cum = new Float64Array(n);
     let acc = 0;
-    for (let i = 0; i < n; i++) { acc += this.score[i]; cum[i] = acc; }
+    for (let i = 0; i < n; i++) { acc += this.weight(this.score[i]); cum[i] = acc; }
     const pick = () => {
-      if (acc <= 0) return (Math.random() * n) | 0;
+      if (!(acc > 0)) return (Math.random() * n) | 0;
       const r = Math.random() * acc; let lo = 0, hi = n - 1;
       while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] < r) lo = m + 1; else hi = m; }
       return lo;
     };
     const old = this.genes, ng = new Float32Array(old.length), G = L * 2;
-    for (let c = 0; c < n; c++) {
+    let start = 0;
+    if (this.elite) {   // 엘리트 보존: 점수 상위 로봇은 그대로 다음 세대로
+      const top = [...this.score.keys()].sort((x, y) => this.score[y] - this.score[x]).slice(0, Math.max(1, Math.round(n * 0.02)));
+      for (const a of top) ng.set(old.subarray(a * G, a * G + G), (start++) * G);
+    }
+    for (let c = start; c < n; c++) {
       const a = pick(), b = pick();
       const mid = this.cross === "half" ? L / 2 : (Math.random() * L) | 0;
       ng.set(old.subarray(a * G, a * G + mid * 2), c * G);
@@ -415,17 +531,10 @@ class Sim {
     }
     this.genes = ng; this.gen++; this.resetRun();
   }
-  tracePath(i) {   // 한 로봇의 경로를 다시 계산
-    const pts = [[START.x, START.z]]; let x = START.x, z = START.z, vx = 0, vz = 0;
-    for (let t = 0; t < L; t++) {
-      const k = (i * L + t) * 2;
-      vx += this.genes[k]; vz += this.genes[k + 1];
-      const sp = Math.hypot(vx, vz); if (sp > MAXV) { vx *= MAXV / sp; vz *= MAXV / sp; }
-      const nx = x + vx, nz = z + vz;
-      if (hits(this.walls, nx, nz)) break;
-      x = nx; z = nz; pts.push([x, z]);
-      if (Math.hypot(x - GOAL.x, z - GOAL.z) < GOAL.r) break;
-    }
+  tracePath(i) {   // 한 로봇만 다시 달려 보며 경로 기록
+    const G = this.L * 2, one = new Sim({ ...this, pop: 1, map: this.mapName }, this.genes.slice(i * G, i * G + G));
+    const pts = [[START.x, START.z]];
+    while (one.state[0] === 0 && one.t < one.L) { one.step(); pts.push([one.px[0], one.pz[0]]); }
     return pts;
   }
 }
@@ -434,7 +543,7 @@ class Sim {
 const $ = s => document.querySelector(s);
 const radio = name => document.querySelector(`input[name="${name}"]:checked`).value;
 function readSettings() {
-  return { pop: +radio("pop"), mut: +radio("mut"), map: radio("map"), cross: radio("cross"), penalty: $("#penalty").checked };
+  return { pop: +radio("pop"), mut: +radio("mut"), map: radio("map"), cross: radio("cross"), penalty: $("#penalty").checked, elite: $("#elite").checked };
 }
 let S = readSettings();
 let sim = new Sim(S);
@@ -489,13 +598,123 @@ scene.add(box(T, BH, HZ * 2, -HX - T / 2, 0, wallMat));
 scene.add(box(T, BH, HZ * 2, HX + T / 2, 0, wallMat));
 
 const obstacleGroup = new THREE.Group(); scene.add(obstacleGroup);
+const capMat = new THREE.MeshStandardMaterial({ color: "#ffb38f", roughness: 0.6 });
+let anim = { items: [], monsters: [], lasers: [] };   // 던전에서 매 프레임 움직이는 것들
+
+function labelSprite(text, color) {
+  const c = document.createElement("canvas"); c.width = 256; c.height = 96;
+  const g = c.getContext("2d");
+  g.fillStyle = "rgba(255,255,255,.92)"; g.beginPath(); g.roundRect ? g.roundRect(8, 14, 240, 68, 34) : g.rect(8, 14, 240, 68); g.fill();
+  g.fillStyle = color; g.font = '44px "Jua", sans-serif'; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, 128, 50);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true }));
+  s.scale.set(1.6, 0.6, 1); s.renderOrder = 5; return s;
+}
+function makeKey() {
+  const gold = new THREE.MeshStandardMaterial({ color: "#ffcf3f", metalness: 0.6, roughness: 0.25, emissive: "#a86b00", emissiveIntensity: 0.35 });
+  const k = new THREE.Group();
+  const bow = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.07, 10, 24), gold); bow.position.x = -0.3; k.add(bow);
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.6, 10), gold); shaft.rotation.z = Math.PI / 2; shaft.position.x = 0.1; k.add(shaft);
+  for (const x of [0.25, 0.36]) { const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.16, 0.07), gold); tooth.position.set(x, -0.1, 0); k.add(tooth); }
+  k.traverse(o => o.castShadow = true); return k;
+}
+function makeFuse(color) {
+  const f = new THREE.Group();
+  const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.5, 18), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.6, transparent: true, opacity: 0.85, roughness: 0.15 }));
+  f.add(glass);
+  const metal = new THREE.MeshStandardMaterial({ color: "#c9d2d8", metalness: 0.8, roughness: 0.3 });
+  for (const y of [-0.3, 0.3]) { const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.12, 18), metal); cap.position.y = y; f.add(cap); }
+  const bolt = new THREE.Mesh(new THREE.OctahedronGeometry(0.09), new THREE.MeshBasicMaterial({ color: "#ffffff" })); f.add(bolt);
+  f.rotation.z = 0.5; f.traverse(o => o.castShadow = true); return f;
+}
+function makeMonster(hue) {
+  const m = new THREE.Group(), body = new THREE.Group(); m.add(body);
+  const skin = new THREE.MeshStandardMaterial({ color: hue, roughness: 0.35 });
+  const blob = new THREE.Mesh(new THREE.SphereGeometry(MR, 28, 18), skin); blob.scale.set(1, 0.85, 1); blob.position.y = MR * 0.85; blob.castShadow = true; body.add(blob);
+  const white = new THREE.Mesh(new THREE.SphereGeometry(0.2, 18, 12), new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.2 }));
+  white.position.set(0, MR * 1.0, MR * 0.72); body.add(white);
+  const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 10), new THREE.MeshStandardMaterial({ color: "#1d1430" }));
+  pupil.position.set(0, MR * 1.0, MR * 0.72 + 0.13); body.add(pupil);
+  const hornMat = new THREE.MeshStandardMaterial({ color: "#fff1c9", roughness: 0.5 });
+  for (const s of [-1, 1]) {
+    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.26, 10), hornMat);
+    horn.position.set(s * 0.24, MR * 1.65, 0); horn.rotation.z = -s * 0.35; body.add(horn);
+    const fang = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.09, 6), hornMat);
+    fang.position.set(s * 0.08, MR * 0.6, MR * 0.86); fang.rotation.x = Math.PI; body.add(fang);
+  }
+  m.userData.body = body; return m;
+}
+
 function buildObstacles() {
-  obstacleGroup.children.slice().forEach(m => { obstacleGroup.remove(m); m.geometry.dispose(); });
-  for (const w of MAPS[S.map]) {
+  obstacleGroup.children.slice().forEach(m => obstacleGroup.remove(m));
+  anim = { items: [], monsters: [], lasers: [] };
+  const map = MAPS[S.map];
+  for (const w of map.rects) {
     obstacleGroup.add(box(w.w, 1.7, w.d, w.x, w.z, obstacleMat));
-    const cap = new THREE.Mesh(new THREE.BoxGeometry(w.w + 0.04, 0.08, w.d + 0.04), new THREE.MeshStandardMaterial({ color: "#ffb38f", roughness: 0.6 }));
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(w.w + 0.04, 0.08, w.d + 0.04), capMat);
     cap.position.set(w.x, 1.74, w.z); obstacleGroup.add(cap);
   }
+  if (!map.grid) return;
+  // 벽 칸
+  const cells = []; map.grid.forEach((row, r) => row.forEach((ch, c) => { if (ch === "#") cells.push([c, r]); }));
+  const wallI = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1.0, 1), obstacleMat, cells.length);
+  const capI = new THREE.InstancedMesh(new THREE.BoxGeometry(1.02, 0.08, 1.02), capMat, cells.length);
+  cells.forEach(([c, r], k) => {
+    wallI.setMatrixAt(k, local(cellX(c), 0.5, cellZ(r)));
+    capI.setMatrixAt(k, local(cellX(c), 1.04, cellZ(r)));
+  });
+  wallI.castShadow = wallI.receiveShadow = true; obstacleGroup.add(wallI, capI);
+  // 문(D)과 전기 게이트(E): 칸 묶음마다 하나씩
+  const span = ch => { const p = []; map.grid.forEach((row, r) => row.forEach((x, c) => { if (x === ch) p.push([c, r]); }));
+    const cs = p.map(q => q[0]), rs = p.map(q => q[1]);
+    return { x: (Math.min(...cs) + Math.max(...cs) + 1) / 2 - HX, z: (Math.min(...rs) + Math.max(...rs) + 1) / 2 - HZ, w: Math.max(...cs) - Math.min(...cs) + 1, d: Math.max(...rs) - Math.min(...rs) + 1 }; };
+  const D = span("D");
+  const door = new THREE.Mesh(new THREE.BoxGeometry(D.w * 0.5, 1.5, D.d), new THREE.MeshStandardMaterial({ color: "#b5784a", roughness: 0.7, transparent: true, opacity: 0.85 }));
+  door.position.set(D.x, 0.75, D.z); door.castShadow = true; obstacleGroup.add(door);
+  for (const s of [-1, 1]) {
+    const plank = new THREE.Mesh(new THREE.BoxGeometry(D.w * 0.52, 0.08, D.d * 0.96), new THREE.MeshStandardMaterial({ color: "#8a5530" }));
+    plank.position.set(D.x, 0.35 + (s + 1) * 0.4, D.z); obstacleGroup.add(plank);
+  }
+  const lock = new THREE.Mesh(new THREE.BoxGeometry(D.w * 0.56, 0.3, 0.24), new THREE.MeshStandardMaterial({ color: "#ffcf3f", metalness: 0.6, roughness: 0.3 }));
+  lock.position.set(D.x, 0.8, D.z); obstacleGroup.add(lock);
+  const dl = labelSprite("열쇠 문", "#8a5530"); dl.position.set(D.x, 2.1, D.z); obstacleGroup.add(dl);
+  const E = span("E");
+  const postMat = new THREE.MeshStandardMaterial({ color: "#5c6b75", metalness: 0.5, roughness: 0.4 });
+  for (const s of [-1, 1]) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.6, 0.3), postMat); p.position.set(E.x, 0.8, E.z + s * (E.d / 2 - 0.1)); p.castShadow = true; obstacleGroup.add(p); }
+  for (let k = 0; k < 4; k++) {
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, E.d - 0.2, 8), new THREE.MeshBasicMaterial({ color: "#4fe3ff", transparent: true, opacity: 0.9 }));
+    beam.rotation.x = Math.PI / 2; beam.position.set(E.x, 0.25 + k * 0.35, E.z); obstacleGroup.add(beam); anim.lasers.push(beam);
+  }
+  const el = labelSprite("전기 게이트", "#1b8fb0"); el.position.set(E.x, 2.2, E.z); obstacleGroup.add(el);
+  // 아이템
+  const looks = { key: [makeKey, "열쇠", "#c58a00"], fuse1: [() => makeFuse("#ff8a3d"), "퓨즈 ①", "#e0661c"], fuse2: [() => makeFuse("#3cc8ff"), "퓨즈 ②", "#1b8fb0"] };
+  for (const it of map.items) {
+    const [make, name, col] = looks[it.kind];
+    const g = new THREE.Group(); g.position.set(it.x, 0, it.z);
+    const mesh = make(); mesh.position.y = 0.8; g.add(mesh);
+    const glow = new THREE.Mesh(new THREE.RingGeometry(0.45, 0.62, 32), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.5, side: THREE.DoubleSide }));
+    glow.rotation.x = -Math.PI / 2; glow.position.y = 0.03; g.add(glow);
+    const lab = labelSprite(name, col); lab.position.y = 1.65; g.add(lab);
+    obstacleGroup.add(g); anim.items.push({ mesh });
+  }
+  // 몬스터
+  const hues = ["#9b7bff", "#ff7b9c", "#6fd37a", "#ff9d4d"];
+  map.monsters.forEach((m, j) => {
+    const mon = makeMonster(hues[j % hues.length]); obstacleGroup.add(mon);
+    anim.monsters.push({ mon, last: [m.ax, m.az], heading: 0 });
+  });
+}
+function updateDungeon(time) {
+  anim.items.forEach((it, k) => { it.mesh.rotation.y = time * 1.8 + k; it.mesh.position.y = 0.8 + Math.sin(time * 2.4 + k) * 0.12; });
+  anim.lasers.forEach((b, k) => { b.material.opacity = 0.55 + 0.4 * Math.abs(Math.sin(time * 9 + k * 1.3)); });
+  anim.monsters.forEach((a, j) => {
+    const p = sim.mpos[j]; if (!p) return;
+    const dx = p[0] - a.last[0], dz = p[1] - a.last[1];
+    if (dx * dx + dz * dz > 1e-6) { const t = Math.atan2(dx, dz); let d = t - a.heading; d = Math.atan2(Math.sin(d), Math.cos(d)); a.heading += d * 0.25; }
+    a.last = [p[0], p[1]];
+    a.mon.position.set(p[0], 0, p[1]); a.mon.rotation.y = a.heading;
+    if (!reduceMotion) { const b = a.mon.userData.body; b.position.y = Math.abs(Math.sin(time * 7 + j)) * 0.12; b.scale.set(1 + Math.sin(time * 14 + j) * 0.04, 1 - Math.sin(time * 14 + j) * 0.04, 1); }
+  });
 }
 
 // 출발 패드
@@ -518,7 +737,7 @@ star.position.y = 1.4; star.castShadow = true; goal.add(star);
 
 // 직전 세대 1등 경로
 const pathGeo = new THREE.BufferGeometry();
-pathGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((L + 1) * 3), 3));
+pathGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((MAX_L + 2) * 3), 3));
 pathGeo.setDrawRange(0, 0);
 const pathLine = new THREE.Line(pathGeo, new THREE.LineBasicMaterial({ color: "#ff5fa2", transparent: true, opacity: 0.9 }));
 scene.add(pathLine);
@@ -543,8 +762,10 @@ const stickM = inst(new THREE.CylinderGeometry(0.018, 0.018, 0.2, 6), new THREE.
 const knobM = inst(new THREE.SphereGeometry(0.075, 12, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 }), MAXN);
 
 const PASTEL = ["#8ec5ff", "#ffb3c7", "#a8e6cf", "#ffd3a5", "#c7b8ff", "#9fe0f0", "#ffe08a"].map(c => new THREE.Color(c));
-const GREY = new THREE.Color("#a3aeb5"), GOLD = new THREE.Color("#ffc93c");
+const GREY = new THREE.Color("#a3aeb5"), GOLD = new THREE.Color("#ffc93c"), CAUGHT = new THREE.Color("#b9a6d9");
 const KNOB = [new THREE.Color("#f0703f"), new THREE.Color("#ff5fa2"), new THREE.Color("#2a9df4")];
+// 안테나 구슬 = 지금까지 모은 것 (없음 → 열쇠 노랑 → 퓨즈① 주황 → 퓨즈② 하늘)
+const STAGE_KNOB = [new THREE.Color("#ffffff"), new THREE.Color("#ffcf3f"), new THREE.Color("#ff8a3d"), new THREE.Color("#3cc8ff")];
 for (let i = 0; i < MAXN; i++) { bodyM.setColorAt(i, PASTEL[i % PASTEL.length]); knobM.setColorAt(i, KNOB[i % 3]); }
 
 const local = (x, y, z, sx = 1, sy = 1, sz = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion(), new THREE.Vector3(sx, sy, sz));
@@ -572,7 +793,7 @@ function updateRobots(time) {
     let y = R, sx = 1, sy = 0.94, sz = 1, spin = 0;
     const ph = time * 11 + i * 1.7;
     if (st === 0) { if (!reduceMotion) { y += Math.abs(Math.sin(ph)) * 0.12; sy = 0.94 + Math.sin(ph * 2) * 0.03; } }
-    else if (st === 1) { y = R * 0.55; sx = sz = 1.18; sy = 0.55; }
+    else if (st === 1 || st === 3) { y = R * 0.55; sx = sz = 1.18; sy = 0.55; }
     else { if (!reduceMotion) { y += Math.abs(Math.sin(time * 6 + i)) * 0.45; spin = time * 3; } }
     dummy.position.set(sim.px[i], y, sim.pz[i]);
     dummy.rotation.set(0, heading[i] + spin, 0);
@@ -586,10 +807,11 @@ function updateRobots(time) {
     }
     stickM.setMatrixAt(i, M.multiplyMatrices(dummy.matrix, L_STICK));
     knobM.setMatrixAt(i, M2.multiplyMatrices(dummy.matrix, L_KNOB));
-    bodyM.setColorAt(i, st === 1 ? GREY : st === 2 ? GOLD : PASTEL[i % PASTEL.length]);
+    bodyM.setColorAt(i, st === 1 ? GREY : st === 3 ? CAUGHT : st === 2 ? GOLD : PASTEL[i % PASTEL.length]);
+    if (sim.map.items.length) knobM.setColorAt(i, STAGE_KNOB[sim.stage[i]]); else knobM.setColorAt(i, KNOB[i % 3]);
   }
   for (const m of [bodyM, eyeM, shineM, cheekM, stickM, knobM]) m.instanceMatrix.needsUpdate = true;
-  bodyM.instanceColor.needsUpdate = true;
+  bodyM.instanceColor.needsUpdate = true; knobM.instanceColor.needsUpdate = true;
 }
 
 /* ---- 카메라 (드래그 회전 · 휠/핀치 확대) ---- */
@@ -702,7 +924,12 @@ const chExp = new LineChart($("#chExp"), { fmt: fmtPct });
 function drawCharts() {
   const h = sim.history;
   chScore.set([{ name: "최고", color: "--s2", data: h.map(d => d.max) }, { name: "평균", color: "--s1", data: h.map(d => d.avg) }]);
-  chReach.set([{ name: "도착", color: "--s3", data: h.map(d => d.reach) }]);
+  const dungeon = sim.map.items.length > 0;
+  const ser = dungeon
+    ? [{ name: "열쇠", color: "--s4", data: h.map(d => d.key) }, { name: "퓨즈 2개", color: "--s1", data: h.map(d => d.fuses) }, { name: "도착", color: "--s3", data: h.map(d => d.reach) }]
+    : [{ name: "도착", color: "--s3", data: h.map(d => d.reach) }];
+  $("#reachLegend").innerHTML = ser.map(x => `<span style="--c:var(${x.color})">${x.name} (%)</span>`).join("");
+  chReach.set(ser);
 }
 const redrawAll = () => { chScore.draw(); chReach.draw(); chExp.draw(); };
 new ResizeObserver(redrawAll).observe($(".panel"));
@@ -730,8 +957,14 @@ function updateStats(st) {
 function updateHud() {
   let reached = 0; for (let i = 0; i < sim.n; i++) if (sim.state[i] === 2) reached++;
   $("#hudGen").textContent = sim.gen + "세대";
-  $("#hudStep").textContent = sim.t + " / " + L + "걸음";
+  $("#hudStep").textContent = sim.t + " / " + sim.L + "걸음";
   $("#hudReach").innerHTML = `도착 <b>${reached}</b> / ${sim.n}`;
+  const hi = $("#hudItems");
+  if (sim.map.items.length) {
+    let key = 0, fuse = 0, caught = 0;
+    for (let i = 0; i < sim.n; i++) { if (sim.stage[i] >= 1) key++; if (sim.stage[i] >= 3) fuse++; if (sim.state[i] === 3) caught++; }
+    hi.hidden = false; hi.innerHTML = `열쇠 <b>${key}</b> · 퓨즈 2개 <b>${fuse}</b> · 몬스터에게 잡힘 <b>${caught}</b>`;
+  } else hi.hidden = true;
 }
 
 function resetSim() {
@@ -758,7 +991,7 @@ function frame(now) {
     setPhase(f < 0.25 ? "score" : f < 0.5 ? "select" : f < 0.75 ? "cross" : "mut");
   } else setPhase(sim.gen === 1 && sim.t < 25 ? "birth" : "drive");
   if (!reduceMotion) { star.rotation.y = time * 1.6; star.position.y = 1.4 + Math.sin(time * 2.2) * 0.12; ring.scale.setScalar(1 + Math.sin(time * 3) * 0.05); flag.rotation.y = Math.sin(time * 2.5) * 0.25; }
-  updateRobots(time); updateHud(); updateCamera();
+  updateRobots(time); updateDungeon(time); updateHud(); updateCamera();
   renderer.render(scene, camera);
 }
 
@@ -781,15 +1014,15 @@ async function copyText(text, btn) {
   setTimeout(() => btn.textContent = label, 1500);
 }
 $("#btnCsv").onclick = e => {
-  const rows = ["세대,평균 점수,최고 점수,도착 비율(%),도착 수", ...sim.history.map(h => [h.gen, h.avg.toFixed(3), h.max.toFixed(3), h.reach.toFixed(1), h.reached].join(","))];
-  copyText(`# 개체 수 ${S.pop}, 돌연변이율 ${S.mut * 100}%, 장애물 ${MAP_NAMES[S.map]}, 교차 ${S.cross === "half" ? "반씩" : "무작위"}, 벽 감점 ${S.penalty ? "켬" : "끔"}\n` + rows.join("\n"), e.currentTarget);
+  const rows = ["세대,평균 점수,최고 점수,도착 비율(%),도착 수,열쇠 비율(%),퓨즈 2개 비율(%)", ...sim.history.map(h => [h.gen, h.avg.toFixed(3), h.max.toFixed(3), h.reach.toFixed(1), h.reached, h.key.toFixed(1), h.fuses.toFixed(1)].join(","))];
+  copyText(`# 개체 수 ${S.pop}, 돌연변이율 ${S.mut * 100}%, 장애물 ${MAP_NAMES[S.map]}, 교차 ${S.cross === "half" ? "반씩" : "무작위"}, 벽 감점 ${S.penalty ? "켬" : "끔"}, 엘리트 보존 ${S.elite ? "켬" : "끔"}\n` + rows.join("\n"), e.currentTarget);
 };
 
 /* ================= 실험 자동 실행 ================= */
 const EXPS = {
   1: { label: "돌연변이율", key: "mut", values: [0, 0.01, 0.05, 0.2], fmt: v => v * 100 + "%" },
   2: { label: "개체 수", key: "pop", values: [20, 100, 300], fmt: v => v + "대" },
-  3: { label: "장애물", key: "map", values: ["none", "wall", "maze"], fmt: v => MAP_NAMES[v] },
+  3: { label: "장애물", key: "map", values: ["none", "wall", "maze", "dungeon"], fmt: v => MAP_NAMES[v] },
 };
 const SERIES = ["--s1", "--s2", "--s3", "--s4"];
 let expData = null, cancelExp = false;
