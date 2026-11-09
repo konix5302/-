@@ -1,0 +1,873 @@
+<title>진화하는 꼬마 로봇</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: 3D 실험실(왼쪽, 크게) + 조종 패널(오른쪽). 폰에서는 위아래로 쌓임. */
+:root {
+  --bg: #e9eff1;
+  --panel: #ffffff;
+  --panel-2: #f3f7f8;
+  --ink: #1f2b33;
+  --muted: #5a6872;
+  --line: #d6e0e4;
+  --accent: #f0703f;      /* 산호색: 버튼, 강조 */
+  --accent-ink: #ffffff;
+  --mint: #12a088;        /* 도착/성공 */
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --font-display: "Jua", "Gowun Dodum", system-ui, sans-serif;
+  --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12191d; --panel: #1a2328; --panel-2: #212c32; --ink: #e7eef1; --muted: #9eadb6;
+    --line: #2f3d45; --accent: #ff8257; --accent-ink: #1a1210; --mint: #3cc7ad;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12191d; --panel: #1a2328; --panel-2: #212c32; --ink: #e7eef1; --muted: #9eadb6;
+  --line: #2f3d45; --accent: #ff8257; --accent-ink: #1a1210; --mint: #3cc7ad;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+* { box-sizing: border-box; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { display: grid; grid-template-columns: minmax(0, 1fr) 380px; height: 100%; }
+.stage { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: #dfe7ea; }
+.stage canvas#three { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.stage canvas#three:active { cursor: grabbing; }
+
+.hud { position: absolute; display: flex; gap: 8px; flex-wrap: wrap; pointer-events: none; }
+.hud > * { pointer-events: auto; }
+.hud-top { top: max(14px, env(safe-area-inset-top, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); right: 14px; align-items: center; }
+.chip { background: rgba(255,255,255,.88); color: #1f2b33; border-radius: 999px; padding: 6px 14px; font-family: var(--font-display); font-size: 17px; box-shadow: 0 2px 10px rgba(30,50,60,.12); backdrop-filter: blur(6px); font-variant-numeric: tabular-nums; }
+.chip b { font-weight: 400; color: #e05a2a; }
+.chip.gen { font-size: 20px; }
+
+.pipeline { bottom: max(14px, env(safe-area-inset-bottom, 0px)); left: max(14px, env(safe-area-inset-left, 0px)); right: 14px; gap: 6px; }
+.pipeline span { background: rgba(255,255,255,.75); color: #5a6872; border-radius: 10px; padding: 4px 10px; font-family: var(--font-display); font-size: 14px; transition: background .2s, color .2s, transform .2s; }
+.pipeline span.on { background: #f0703f; color: #fff; transform: translateY(-2px); }
+.pipeline i { font-style: normal; color: #8796a0; align-self: center; font-size: 12px; }
+
+.cam { top: max(14px, env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); flex-direction: column; left: auto; }
+.cam button { background: rgba(255,255,255,.88); color: #1f2b33; border: 0; border-radius: 10px; padding: 5px 10px; font-family: var(--font-display); font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px rgba(30,50,60,.12); }
+.hud-top { right: 120px; }
+
+.panel { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; min-width: 0;
+  padding-block: 20px 28px; padding-left: max(18px, env(safe-area-inset-left, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px; }
+.brand h1 { font-family: var(--font-display); font-weight: 400; font-size: 30px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.brand p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.eyebrow { font-family: var(--font-display); font-size: 13px; letter-spacing: .06em; color: var(--accent); margin: 0 0 4px; }
+
+h2 { font-family: var(--font-display); font-weight: 400; font-size: 19px; margin: 0 0 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+h2 small { font-family: var(--font-body); font-size: 12.5px; color: var(--muted); }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: var(--panel-2); border-radius: 12px; padding: 8px 14px; cursor: pointer; font-family: var(--font-display); font-size: 16px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; min-width: 120px; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.small { font-size: 14px; padding: 5px 10px; border-radius: 10px; }
+
+.field { display: grid; gap: 6px; }
+.field + .field { margin-top: 12px; }
+.field > .lab { font-size: 13.5px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.seg { display: flex; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 2px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { flex: 1; text-align: center; padding: 6px 4px; border-radius: 9px; cursor: pointer; font-family: var(--font-display); font-size: 15px; color: var(--muted); white-space: nowrap; }
+.seg input:checked + label { background: var(--panel); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.seg input:focus-visible + label { outline: 2px solid var(--accent); }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; cursor: pointer; }
+.check input { margin-top: 4px; accent-color: var(--accent); }
+.note { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
+
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.stat { background: var(--panel-2); border-radius: 12px; padding: 8px 6px; text-align: center; min-width: 0; }
+.stat .v { font-family: var(--font-data); font-size: 17px; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 11.5px; color: var(--muted); }
+
+.chart { position: relative; }
+.chart canvas { width: 100%; height: 150px; display: block; }
+.legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); margin-bottom: 4px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend span::before { content: ""; width: 14px; height: 3px; border-radius: 2px; background: var(--c); }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 12.5px; box-shadow: 0 4px 14px rgba(0,0,0,.14); white-space: nowrap; z-index: 2; }
+.tip .t { font-family: var(--font-display); font-size: 14px; }
+.tip .r { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.tip .r::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.chart + .chart { margin-top: 12px; }
+
+.progress { height: 8px; background: var(--panel-2); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+.progress div { height: 100%; width: 0; background: var(--mint); transition: width .15s; }
+.table-wrap { overflow-x: auto; margin-top: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 400; color: var(--muted); font-size: 12px; }
+td.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--c); margin-right: 6px; vertical-align: -1px; }
+
+details { background: var(--panel-2); border-radius: 14px; padding: 10px 14px; }
+details summary { cursor: pointer; font-family: var(--font-display); font-size: 17px; }
+details p, details li { font-size: 14px; }
+details table { font-size: 12.5px; margin-top: 6px; }
+.formula { font-family: var(--font-data); font-size: 12.5px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; overflow-x: auto; }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; height: auto; }
+  .stage { height: 62vh; min-height: 340px; }
+  .panel { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .chip { font-size: 14px; padding: 4px 10px; }
+  .chip.gen { font-size: 16px; }
+  .pipeline span { font-size: 12px; padding: 3px 7px; }
+  .pipeline i { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .pipeline span { transition: none; } }
+</style>
+
+<div class="app">
+  <section class="stage" id="stage" aria-label="3D 시뮬레이션 화면">
+    <canvas id="three"></canvas>
+    <div class="hud hud-top" aria-live="polite">
+      <span class="chip gen" id="hudGen">1세대</span>
+      <span class="chip" id="hudStep">0 / 200걸음</span>
+      <span class="chip" id="hudReach">도착 <b>0</b> / 100</span>
+    </div>
+    <div class="hud cam">
+      <button type="button" id="camTilt">비스듬히</button>
+      <button type="button" id="camTop">위에서</button>
+      <button type="button" id="camSide">옆에서</button>
+    </div>
+    <div class="hud pipeline" id="pipeline">
+      <span data-ph="birth">① 무작위 생성</span><i>→</i>
+      <span data-ph="drive">② 시험 주행</span><i>→</i>
+      <span data-ph="score">③ 점수 평가</span><i>→</i>
+      <span data-ph="select">④ 선택</span><i>→</i>
+      <span data-ph="cross">⑤ 교차</span><i>→</i>
+      <span data-ph="mut">⑥ 돌연변이</span>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <header class="brand">
+      <p class="eyebrow">주제탐구(R&amp;E) 기초 · 유전 알고리즘</p>
+      <h1>진화하는 꼬마 로봇</h1>
+      <p>아무도 길을 알려 주지 않아요. 로봇 100대가 아무렇게나 움직이고, 잘 간 로봇끼리 움직임 목록을 섞어 다음 세대를 만들어요. 세대가 지날수록 스스로 벽을 피해 깃발까지 가는 길을 찾아냅니다.</p>
+    </header>
+
+    <section>
+      <div class="row">
+        <button class="btn primary" id="btnPlay" type="button">❚❚ 일시정지</button>
+        <button class="btn" id="btnReset" type="button">처음부터</button>
+        <button class="btn" id="btnCsv" type="button">기록 복사 (CSV)</button>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <div class="lab"><span>재생 속도</span><span>세대 단위 = 결과만 빠르게</span></div>
+        <div class="seg" role="radiogroup" aria-label="재생 속도">
+          <input type="radio" name="speed" id="sp1" value="1"><label for="sp1">1×</label>
+          <input type="radio" name="speed" id="sp3" value="3" checked><label for="sp3">3×</label>
+          <input type="radio" name="speed" id="sp10" value="10"><label for="sp10">10×</label>
+          <input type="radio" name="speed" id="spg" value="gen"><label for="spg">세대 단위</label>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>실험 조건 <small>한 번에 하나만 바꿔요</small></h2>
+      <div class="field">
+        <div class="lab"><span>돌연변이율</span><span>다음 세대부터 적용</span></div>
+        <div class="seg" role="radiogroup" aria-label="돌연변이율">
+          <input type="radio" name="mut" id="mu0" value="0"><label for="mu0">0%</label>
+          <input type="radio" name="mut" id="mu1" value="0.01" checked><label for="mu1">1%</label>
+          <input type="radio" name="mut" id="mu5" value="0.05"><label for="mu5">5%</label>
+          <input type="radio" name="mut" id="mu20" value="0.2"><label for="mu20">20%</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="lab"><span>개체 수</span><span>바꾸면 처음부터</span></div>
+        <div class="seg" role="radiogroup" aria-label="개체 수">
+          <input type="radio" name="pop" id="po20" value="20"><label for="po20">20대</label>
+          <input type="radio" name="pop" id="po100" value="100" checked><label for="po100">100대</label>
+          <input type="radio" name="pop" id="po300" value="300"><label for="po300">300대</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="lab"><span>장애물</span><span>바꾸면 처음부터</span></div>
+        <div class="seg" role="radiogroup" aria-label="장애물">
+          <input type="radio" name="map" id="mpNone" value="none"><label for="mpNone">없음</label>
+          <input type="radio" name="map" id="mpWall" value="wall" checked><label for="mpWall">벽 1개</label>
+          <input type="radio" name="map" id="mpMaze" value="maze"><label for="mpMaze">미로</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="lab"><span>교차 방식</span></div>
+        <div class="seg" role="radiogroup" aria-label="교차 방식">
+          <input type="radio" name="cross" id="crHalf" value="half" checked><label for="crHalf">반씩 이어 붙이기</label>
+          <input type="radio" name="cross" id="crRand" value="rand"><label for="crRand">무작위 지점</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="penalty"> <span>벽에 부딪히면 점수 ×0.1 (크게 감점)<br><span class="note" style="margin:0">끄면 로봇들이 벽 바로 앞에 몰려 멈추는 "국소 최적"이 잘 보여요.</span></span></label>
+      </div>
+    </section>
+
+    <section>
+      <h2>지금 진화 상황</h2>
+      <div class="stats">
+        <div class="stat"><div class="v" id="stGen">1</div><div class="k">세대</div></div>
+        <div class="stat"><div class="v" id="stFirst">–</div><div class="k">처음 도착</div></div>
+        <div class="stat"><div class="v" id="stReach">–</div><div class="k">도착 비율</div></div>
+        <div class="stat"><div class="v" id="stMax">–</div><div class="k">최고 점수</div></div>
+      </div>
+      <div class="chart" id="chScore" style="margin-top:14px">
+        <div class="legend"><span style="--c:var(--s2)">최고 점수</span><span style="--c:var(--s1)">평균 점수</span></div>
+        <canvas aria-label="세대별 최고·평균 점수 그래프"></canvas>
+        <div class="tip" hidden></div>
+      </div>
+      <div class="chart" id="chReach">
+        <div class="legend"><span style="--c:var(--s3)">도착 비율 (%)</span></div>
+        <canvas aria-label="세대별 도착 비율 그래프"></canvas>
+        <div class="tip" hidden></div>
+      </div>
+      <p class="note">분홍 선은 바로 앞 세대에서 점수가 가장 높았던 로봇이 지나간 길이에요.</p>
+    </section>
+
+    <section>
+      <h2>실험 자동 실행 <small>조건마다 여러 번 돌려 평균</small></h2>
+      <div class="field">
+        <div class="lab"><span>바꿀 조건</span><span>나머지는 위 설정 그대로</span></div>
+        <div class="seg" role="radiogroup" aria-label="실험 종류">
+          <input type="radio" name="exp" id="ex1" value="1" checked><label for="ex1">① 돌연변이율</label>
+          <input type="radio" name="exp" id="ex2" value="2"><label for="ex2">② 개체 수</label>
+          <input type="radio" name="exp" id="ex3" value="3"><label for="ex3">③ 장애물</label>
+        </div>
+      </div>
+      <div class="field">
+        <div class="lab"><span>반복 횟수 · 최대 세대</span></div>
+        <div class="row">
+          <div class="seg" style="flex:1" role="radiogroup" aria-label="반복 횟수">
+            <input type="radio" name="trials" id="tr3" value="3" checked><label for="tr3">3회</label>
+            <input type="radio" name="trials" id="tr5" value="5"><label for="tr5">5회</label>
+          </div>
+          <div class="seg" style="flex:1.4" role="radiogroup" aria-label="최대 세대">
+            <input type="radio" name="maxgen" id="mg50" value="50"><label for="mg50">50</label>
+            <input type="radio" name="maxgen" id="mg100" value="100" checked><label for="mg100">100</label>
+            <input type="radio" name="maxgen" id="mg200" value="200"><label for="mg200">200</label>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px; align-items:center">
+        <button class="btn primary" id="btnExp" type="button">실험 시작</button>
+        <button class="btn small" id="btnExpCsv" type="button" disabled>결과 복사 (CSV)</button>
+      </div>
+      <div style="margin-top:10px" id="expProgWrap" hidden>
+        <div class="progress"><div id="expProg"></div></div>
+        <p class="note" id="expMsg"></p>
+      </div>
+      <div id="expResult" hidden>
+        <div class="table-wrap"><table id="expTable"></table></div>
+        <div class="field" style="margin-top:12px">
+          <div class="lab"><span>조건별 그래프</span></div>
+          <div class="seg" role="radiogroup" aria-label="그래프 지표">
+            <input type="radio" name="expMetric" id="emReach" value="reach" checked><label for="emReach">도착 비율</label>
+            <input type="radio" name="expMetric" id="emMax" value="max"><label for="emMax">최고 점수</label>
+            <input type="radio" name="expMetric" id="emAvg" value="avg"><label for="emAvg">평균 점수</label>
+          </div>
+        </div>
+        <div class="chart" id="chExp" style="margin-top:8px">
+          <div class="legend" id="expLegend"></div>
+          <canvas aria-label="조건별 세대 그래프"></canvas>
+          <div class="tip" hidden></div>
+        </div>
+      </div>
+    </section>
+
+    <details>
+      <summary>쉬운 설명 · 발표용</summary>
+      <p>유전 알고리즘은 "아무렇게나 해 보기 → 채점 → 잘한 것끼리 섞기 → 가끔 실수 섞기"를 반복해 답을 찾는 방법이에요. 필요한 건 정답이 아니라 채점 기준뿐입니다.</p>
+      <div class="table-wrap"><table>
+        <tr><th>자연선택 (통합과학)</th><th>유전 알고리즘</th><th>이 프로그램에서</th></tr>
+        <tr><td>변이</td><td>무작위 해답 여러 개</td><td>움직임 목록이 제각각인 로봇들</td></tr>
+        <tr><td>생존 경쟁</td><td>점수(적합도) 평가</td><td>깃발에 얼마나 가까이 갔는지 채점</td></tr>
+        <tr><td>자연선택</td><td>점수 높은 해답을 부모로</td><td>점수가 높을수록 부모로 뽑힐 확률↑</td></tr>
+        <tr><td>유전</td><td>교차</td><td>부모 움직임 목록을 반씩 이어 붙임</td></tr>
+        <tr><td>새로운 변이</td><td>돌연변이</td><td>움직임 일부를 무작위로 바꿈</td></tr>
+      </table></div>
+      <p style="margin-bottom:4px">점수 기준</p>
+      <div class="formula">못 갔을 때: 100 ÷ (1 + 남은 거리)²<br>도착했을 때: 100 + 100 × (1 − 걸린 걸음 ÷ 200)<br>벽 감점 켜면: 부딪힌 로봇 점수 × 0.1</div>
+      <p>로봇의 유전자는 200칸짜리 "힘 목록"이에요. 매 걸음 힘 → 속도 변화 → 위치 변화 순서로 움직여요 (통합과학 힘과 운동을 단순화).</p>
+    </details>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+"use strict";
+/* ================= 시뮬레이션 (화면과 분리된 순수 계산) ================= */
+const L = 200;              // 유전자 길이 = 수명(걸음 수)
+const MAXF = 0.06;          // 한 걸음에 줄 수 있는 힘
+const MAXV = 0.32;          // 최고 속도
+const R = 0.35;             // 로봇 반지름
+const HX = 12, HZ = 8;      // 경기장 절반 크기
+const START = { x: -10, z: 0 };
+const GOAL = { x: 10, z: 0, r: 1.0 };
+const MAPS = {
+  none: [],
+  wall: [{ x: 0, z: 0, w: 0.8, d: 10 }],
+  maze: [{ x: -4, z: -2, w: 0.8, d: 12 }, { x: 3, z: 2, w: 0.8, d: 12 }],
+};
+const MAP_NAMES = { none: "없음", wall: "벽 1개", maze: "미로" };
+
+function randGene(g, k) {
+  const a = Math.random() * Math.PI * 2;
+  g[k] = Math.cos(a) * MAXF; g[k + 1] = Math.sin(a) * MAXF;
+}
+function hits(walls, x, z) {
+  if (x < -HX + R || x > HX - R || z < -HZ + R || z > HZ - R) return true;
+  for (const w of walls) if (Math.abs(x - w.x) < w.w / 2 + R && Math.abs(z - w.z) < w.d / 2 + R) return true;
+  return false;
+}
+
+class Sim {
+  constructor(o) {
+    this.n = o.pop; this.mut = o.mut; this.walls = MAPS[o.map]; this.penalty = o.penalty; this.cross = o.cross;
+    this.genes = new Float32Array(this.n * L * 2);
+    for (let k = 0; k < this.genes.length; k += 2) randGene(this.genes, k);
+    this.px = new Float32Array(this.n); this.pz = new Float32Array(this.n);
+    this.vx = new Float32Array(this.n); this.vz = new Float32Array(this.n);
+    this.state = new Uint8Array(this.n); // 0 주행 1 충돌 2 도착
+    this.hitAt = new Uint16Array(this.n);
+    this.score = new Float64Array(this.n);
+    this.gen = 1; this.firstReach = null; this.history = []; this.bestIdx = 0;
+    this.resetRun();
+  }
+  resetRun() {
+    this.t = 0;
+    this.px.fill(START.x); this.pz.fill(START.z); this.vx.fill(0); this.vz.fill(0);
+    this.state.fill(0); this.hitAt.fill(0);
+  }
+  step() {
+    if (this.t >= L) return false;
+    const t = this.t, g = this.genes; let alive = 0;
+    for (let i = 0; i < this.n; i++) {
+      if (this.state[i]) continue;
+      const k = (i * L + t) * 2;
+      let vx = this.vx[i] + g[k], vz = this.vz[i] + g[k + 1];
+      const sp = Math.hypot(vx, vz);
+      if (sp > MAXV) { vx *= MAXV / sp; vz *= MAXV / sp; }
+      const x = this.px[i] + vx, z = this.pz[i] + vz;
+      this.vx[i] = vx; this.vz[i] = vz;
+      if (hits(this.walls, x, z)) { this.state[i] = 1; this.hitAt[i] = t + 1; continue; }
+      this.px[i] = x; this.pz[i] = z;
+      if (Math.hypot(x - GOAL.x, z - GOAL.z) < GOAL.r) { this.state[i] = 2; this.hitAt[i] = t + 1; continue; }
+      alive++;
+    }
+    this.t++;
+    return alive > 0 && this.t < L;
+  }
+  runToEnd() { while (this.step()); }
+  scoreOf(i) {
+    if (this.state[i] === 2) return 100 + 100 * (1 - this.hitAt[i] / L);
+    const d = Math.hypot(this.px[i] - GOAL.x, this.pz[i] - GOAL.z);
+    let s = 100 / ((1 + d) * (1 + d));
+    if (this.state[i] === 1 && this.penalty) s *= 0.1;
+    return s;
+  }
+  evaluate() {
+    let sum = 0, max = -1, reached = 0;
+    for (let i = 0; i < this.n; i++) {
+      const s = this.scoreOf(i); this.score[i] = s; sum += s;
+      if (s > max) { max = s; this.bestIdx = i; }
+      if (this.state[i] === 2) reached++;
+    }
+    if (reached > 0 && this.firstReach === null) this.firstReach = this.gen;
+    const st = { gen: this.gen, avg: sum / this.n, max, reach: reached / this.n * 100, reached };
+    this.history.push(st);
+    return st;
+  }
+  evolve() {
+    const n = this.n, cum = new Float64Array(n);
+    let acc = 0;
+    for (let i = 0; i < n; i++) { acc += this.score[i]; cum[i] = acc; }
+    const pick = () => {
+      if (acc <= 0) return (Math.random() * n) | 0;
+      const r = Math.random() * acc; let lo = 0, hi = n - 1;
+      while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] < r) lo = m + 1; else hi = m; }
+      return lo;
+    };
+    const old = this.genes, ng = new Float32Array(old.length), G = L * 2;
+    for (let c = 0; c < n; c++) {
+      const a = pick(), b = pick();
+      const mid = this.cross === "half" ? L / 2 : (Math.random() * L) | 0;
+      ng.set(old.subarray(a * G, a * G + mid * 2), c * G);
+      ng.set(old.subarray(b * G + mid * 2, b * G + G), c * G + mid * 2);
+      if (this.mut > 0) for (let j = 0; j < L; j++) if (Math.random() < this.mut) randGene(ng, c * G + j * 2);
+    }
+    this.genes = ng; this.gen++; this.resetRun();
+  }
+  tracePath(i) {   // 한 로봇의 경로를 다시 계산
+    const pts = [[START.x, START.z]]; let x = START.x, z = START.z, vx = 0, vz = 0;
+    for (let t = 0; t < L; t++) {
+      const k = (i * L + t) * 2;
+      vx += this.genes[k]; vz += this.genes[k + 1];
+      const sp = Math.hypot(vx, vz); if (sp > MAXV) { vx *= MAXV / sp; vz *= MAXV / sp; }
+      const nx = x + vx, nz = z + vz;
+      if (hits(this.walls, nx, nz)) break;
+      x = nx; z = nz; pts.push([x, z]);
+      if (Math.hypot(x - GOAL.x, z - GOAL.z) < GOAL.r) break;
+    }
+    return pts;
+  }
+}
+
+/* ================= 설정 ================= */
+const $ = s => document.querySelector(s);
+const radio = name => document.querySelector(`input[name="${name}"]:checked`).value;
+function readSettings() {
+  return { pop: +radio("pop"), mut: +radio("mut"), map: radio("map"), cross: radio("cross"), penalty: $("#penalty").checked };
+}
+let S = readSettings();
+let sim = new Sim(S);
+
+/* ================= 3D 장면 ================= */
+const canvas = $("#three"), stage = $("#stage");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#dfe7ea");
+scene.fog = new THREE.Fog("#dfe7ea", 40, 75);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xa9bac2, 0.75));
+const sun = new THREE.DirectionalLight(0xffffff, 0.75);
+sun.position.set(-6, 20, 10); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -17, right: 17, top: 13, bottom: -13, near: 1, far: 50 });
+sun.shadow.radius = 4; sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+// 바닥 타일 텍스처
+function tileTexture() {
+  const c = document.createElement("canvas"); c.width = c.height = 128;
+  const g = c.getContext("2d");
+  g.fillStyle = "#f4f7f8"; g.fillRect(0, 0, 128, 128);
+  g.strokeStyle = "#dbe3e7"; g.lineWidth = 4; g.strokeRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(HX * 2, HZ * 2); t.anisotropy = 4;
+  t.encoding = THREE.sRGBEncoding;
+  return t;
+}
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(HX * 2, HZ * 2), new THREE.MeshStandardMaterial({ map: tileTexture(), roughness: 0.95 }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+const outer = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), new THREE.MeshStandardMaterial({ color: "#cdd8dc", roughness: 1 }));
+outer.rotation.x = -Math.PI / 2; outer.position.y = -0.02; outer.receiveShadow = true; scene.add(outer);
+
+const wallMat = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.7 });
+const obstacleMat = new THREE.MeshStandardMaterial({ color: "#f7fafb", roughness: 0.6 });
+function box(w, h, d, x, z, mat) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, h / 2, z); m.castShadow = true; m.receiveShadow = true; return m;
+}
+const BH = 1.1, T = 0.4;
+scene.add(box(HX * 2 + T * 2, BH, T, 0, -HZ - T / 2, wallMat));
+scene.add(box(HX * 2 + T * 2, BH, T, 0, HZ + T / 2, wallMat));
+scene.add(box(T, BH, HZ * 2, -HX - T / 2, 0, wallMat));
+scene.add(box(T, BH, HZ * 2, HX + T / 2, 0, wallMat));
+
+const obstacleGroup = new THREE.Group(); scene.add(obstacleGroup);
+function buildObstacles() {
+  obstacleGroup.children.slice().forEach(m => { obstacleGroup.remove(m); m.geometry.dispose(); });
+  for (const w of MAPS[S.map]) {
+    obstacleGroup.add(box(w.w, 1.7, w.d, w.x, w.z, obstacleMat));
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(w.w + 0.04, 0.08, w.d + 0.04), new THREE.MeshStandardMaterial({ color: "#ffb38f", roughness: 0.6 }));
+    cap.position.set(w.x, 1.74, w.z); obstacleGroup.add(cap);
+  }
+}
+
+// 출발 패드
+const startPad = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.25, 0.08, 48), new THREE.MeshStandardMaterial({ color: "#9fe2d2", roughness: 0.6 }));
+startPad.position.set(START.x, 0.04, START.z); startPad.receiveShadow = true; scene.add(startPad);
+
+// 목표: 패드 + 깃발 + 빙글빙글 별
+const goal = new THREE.Group(); goal.position.set(GOAL.x, 0, GOAL.z); scene.add(goal);
+const goalPad = new THREE.Mesh(new THREE.CylinderGeometry(GOAL.r, GOAL.r + 0.05, 0.08, 48), new THREE.MeshStandardMaterial({ color: "#ffd77a", roughness: 0.5 }));
+goalPad.position.y = 0.04; goalPad.receiveShadow = true; goal.add(goalPad);
+const ring = new THREE.Mesh(new THREE.TorusGeometry(GOAL.r + 0.2, 0.05, 12, 64), new THREE.MeshBasicMaterial({ color: "#ffb020", transparent: true, opacity: 0.7 }));
+ring.rotation.x = -Math.PI / 2; ring.position.y = 0.1; goal.add(ring);
+const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.4, 12), new THREE.MeshStandardMaterial({ color: "#8a6a4a" }));
+pole.position.set(0.55, 1.2, -0.3); pole.castShadow = true; goal.add(pole);
+const flagShape = new THREE.Shape(); flagShape.moveTo(0, 0); flagShape.lineTo(0.9, -0.3); flagShape.lineTo(0, -0.6); flagShape.lineTo(0, 0);
+const flag = new THREE.Mesh(new THREE.ShapeGeometry(flagShape), new THREE.MeshStandardMaterial({ color: "#f0703f", side: THREE.DoubleSide }));
+flag.position.set(0.57, 2.35, -0.3); flag.castShadow = true; goal.add(flag);
+const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.32), new THREE.MeshStandardMaterial({ color: "#ffd23f", emissive: "#ff9d00", emissiveIntensity: 0.45, roughness: 0.3 }));
+star.position.y = 1.4; star.castShadow = true; goal.add(star);
+
+// 직전 세대 1등 경로
+const pathGeo = new THREE.BufferGeometry();
+pathGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((L + 1) * 3), 3));
+pathGeo.setDrawRange(0, 0);
+const pathLine = new THREE.Line(pathGeo, new THREE.LineBasicMaterial({ color: "#ff5fa2", transparent: true, opacity: 0.9 }));
+scene.add(pathLine);
+function setPath(pts) {
+  const a = pathGeo.attributes.position.array;
+  pts.forEach((p, i) => { a[i * 3] = p[0]; a[i * 3 + 1] = 0.1; a[i * 3 + 2] = p[1]; });
+  pathGeo.attributes.position.needsUpdate = true; pathGeo.setDrawRange(0, pts.length);
+}
+
+/* ---- 꼬마 로봇들 (인스턴싱으로 300대까지) ---- */
+const MAXN = 300;
+function inst(geo, mat, count, shadow) {
+  const m = new THREE.InstancedMesh(geo, mat, count);
+  m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  m.castShadow = !!shadow; m.frustumCulled = false; scene.add(m); return m;
+}
+const bodyM = inst(new THREE.SphereGeometry(R, 28, 18), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.42 }), MAXN, true);
+const eyeM = inst(new THREE.SphereGeometry(0.058, 12, 8), new THREE.MeshStandardMaterial({ color: "#1d232a", roughness: 0.2 }), MAXN * 2);
+const shineM = inst(new THREE.SphereGeometry(0.02, 8, 6), new THREE.MeshBasicMaterial({ color: "#ffffff" }), MAXN * 2);
+const cheekM = inst(new THREE.SphereGeometry(0.06, 12, 8), new THREE.MeshStandardMaterial({ color: "#ff8fa8", roughness: 0.8, transparent: true, opacity: 0.85 }), MAXN * 2);
+const stickM = inst(new THREE.CylinderGeometry(0.018, 0.018, 0.2, 6), new THREE.MeshStandardMaterial({ color: "#6b7a84" }), MAXN);
+const knobM = inst(new THREE.SphereGeometry(0.075, 12, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 }), MAXN);
+
+const PASTEL = ["#8ec5ff", "#ffb3c7", "#a8e6cf", "#ffd3a5", "#c7b8ff", "#9fe0f0", "#ffe08a"].map(c => new THREE.Color(c));
+const GREY = new THREE.Color("#a3aeb5"), GOLD = new THREE.Color("#ffc93c");
+const KNOB = [new THREE.Color("#f0703f"), new THREE.Color("#ff5fa2"), new THREE.Color("#2a9df4")];
+for (let i = 0; i < MAXN; i++) { bodyM.setColorAt(i, PASTEL[i % PASTEL.length]); knobM.setColorAt(i, KNOB[i % 3]); }
+
+const local = (x, y, z, sx = 1, sy = 1, sz = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion(), new THREE.Vector3(sx, sy, sz));
+const L_EYE = [local(-0.125, 0.07, 0.3), local(0.125, 0.07, 0.3)];
+const L_SHINE = [local(-0.105, 0.095, 0.352), local(0.145, 0.095, 0.352)];
+const L_CHEEK = [local(-0.2, -0.05, 0.25, 1, 0.55, 0.45), local(0.2, -0.05, 0.25, 1, 0.55, 0.45)];
+const L_STICK = local(0, 0.42, 0), L_KNOB = local(0, 0.54, 0);
+
+const heading = new Float32Array(MAXN).fill(Math.PI / 2);
+const dummy = new THREE.Object3D(), M = new THREE.Matrix4(), M2 = new THREE.Matrix4();
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function updateRobots(time) {
+  const n = sim.n;
+  for (const m of [bodyM, stickM, knobM]) m.count = n;
+  for (const m of [eyeM, shineM, cheekM]) m.count = n * 2;
+  for (let i = 0; i < n; i++) {
+    const st = sim.state[i];
+    const vx = sim.vx[i], vz = sim.vz[i];
+    if (st === 0 && (vx || vz)) {
+      const target = Math.atan2(vx, vz);
+      let d = target - heading[i]; d = Math.atan2(Math.sin(d), Math.cos(d));
+      heading[i] += d * 0.35;
+    }
+    let y = R, sx = 1, sy = 0.94, sz = 1, spin = 0;
+    const ph = time * 11 + i * 1.7;
+    if (st === 0) { if (!reduceMotion) { y += Math.abs(Math.sin(ph)) * 0.12; sy = 0.94 + Math.sin(ph * 2) * 0.03; } }
+    else if (st === 1) { y = R * 0.55; sx = sz = 1.18; sy = 0.55; }
+    else { if (!reduceMotion) { y += Math.abs(Math.sin(time * 6 + i)) * 0.45; spin = time * 3; } }
+    dummy.position.set(sim.px[i], y, sim.pz[i]);
+    dummy.rotation.set(0, heading[i] + spin, 0);
+    dummy.scale.set(sx * 1.15, sy * 1.15, sz * 1.15);
+    dummy.updateMatrix();
+    bodyM.setMatrixAt(i, dummy.matrix);
+    for (let e = 0; e < 2; e++) {
+      eyeM.setMatrixAt(i * 2 + e, M.multiplyMatrices(dummy.matrix, L_EYE[e]));
+      shineM.setMatrixAt(i * 2 + e, M.multiplyMatrices(dummy.matrix, L_SHINE[e]));
+      cheekM.setMatrixAt(i * 2 + e, M.multiplyMatrices(dummy.matrix, L_CHEEK[e]));
+    }
+    stickM.setMatrixAt(i, M.multiplyMatrices(dummy.matrix, L_STICK));
+    knobM.setMatrixAt(i, M2.multiplyMatrices(dummy.matrix, L_KNOB));
+    bodyM.setColorAt(i, st === 1 ? GREY : st === 2 ? GOLD : PASTEL[i % PASTEL.length]);
+  }
+  for (const m of [bodyM, eyeM, shineM, cheekM, stickM, knobM]) m.instanceMatrix.needsUpdate = true;
+  bodyM.instanceColor.needsUpdate = true;
+}
+
+/* ---- 카메라 (드래그 회전 · 휠/핀치 확대) ---- */
+const target = new THREE.Vector3(0, 0, 0);
+const cam = { theta: 0.12, phi: 0.8, r: 23 };
+const camGoal = { ...cam };
+const PRESETS = { tilt: { theta: 0.12, phi: 0.8, r: 23 }, top: { theta: 0, phi: 0.02, r: 25 }, side: { theta: -0.9, phi: 1.12, r: 25 } };
+function setPreset(p) { Object.assign(camGoal, PRESETS[p]); camGoal.r *= aspectBoost(); }
+function aspectBoost() { return camera.aspect < 1.3 ? Math.min(1.9, 1.3 / camera.aspect * 1.05) : 1; }
+$("#camTilt").onclick = () => setPreset("tilt");
+$("#camTop").onclick = () => setPreset("top");
+$("#camSide").onclick = () => setPreset("side");
+const ptrs = new Map(); let pinch0 = 0, r0 = 0;
+canvas.addEventListener("pointerdown", e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); r0 = camGoal.r; } });
+canvas.addEventListener("pointermove", e => {
+  if (!ptrs.has(e.pointerId)) return;
+  const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (ptrs.size === 1) {
+    camGoal.theta -= (e.clientX - prev[0]) * 0.006;
+    camGoal.phi = Math.min(1.45, Math.max(0.02, camGoal.phi - (e.clientY - prev[1]) * 0.005));
+  } else if (ptrs.size === 2) {
+    const [a, b] = [...ptrs.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (pinch0) camGoal.r = Math.min(60, Math.max(8, r0 * pinch0 / d));
+  }
+});
+const endPtr = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = 0; };
+canvas.addEventListener("pointerup", endPtr); canvas.addEventListener("pointercancel", endPtr);
+canvas.addEventListener("wheel", e => { e.preventDefault(); camGoal.r = Math.min(60, Math.max(8, camGoal.r * (1 + Math.sign(e.deltaY) * 0.08))); }, { passive: false });
+function updateCamera() {
+  for (const k of ["theta", "phi", "r"]) cam[k] += (camGoal[k] - cam[k]) * 0.12;
+  camera.position.set(target.x + cam.r * Math.sin(cam.phi) * Math.sin(cam.theta), cam.r * Math.cos(cam.phi), target.z + cam.r * Math.sin(cam.phi) * Math.cos(cam.theta));
+  camera.lookAt(target);
+}
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
+  const before = aspectBoost();
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  const ratio = aspectBoost() / before; camGoal.r *= ratio; cam.r *= ratio;
+}
+new ResizeObserver(resize).observe(stage);
+
+/* ================= 그래프 ================= */
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))); for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p; return 10 * p; }
+class LineChart {
+  constructor(wrap, opts) {
+    this.wrap = wrap; this.c = wrap.querySelector("canvas"); this.tip = wrap.querySelector(".tip");
+    this.opts = opts; this.series = []; this.hover = -1;
+    this.c.addEventListener("pointermove", e => this.onMove(e));
+    this.c.addEventListener("pointerleave", () => { this.hover = -1; this.tip.hidden = true; this.draw(); });
+  }
+  set(series) { this.series = series; this.draw(); }
+  geom() {
+    const w = this.c.clientWidth, h = this.c.clientHeight, pad = { l: 38, r: 12, t: 8, b: 22 };
+    const n = Math.max(0, ...this.series.map(s => s.data.length));
+    return { w, h, pad, n, x: i => pad.l + (n <= 1 ? 0 : i / (n - 1)) * (w - pad.l - pad.r) };
+  }
+  onMove(e) {
+    const g = this.geom(); if (!g.n) return;
+    const rect = this.c.getBoundingClientRect(), mx = e.clientX - rect.left;
+    const i = Math.round((mx - g.pad.l) / Math.max(1, g.w - g.pad.l - g.pad.r) * (g.n - 1));
+    this.hover = Math.max(0, Math.min(g.n - 1, i)); this.draw();
+    const fmt = this.opts.fmt;
+    this.tip.innerHTML = `<div class="t">${this.hover + 1}세대</div>` + this.series.filter(s => s.data[this.hover] != null)
+      .map(s => `<div class="r" style="--c:${css(s.color)}">${s.name} ${fmt(s.data[this.hover])}</div>`).join("");
+    this.tip.hidden = false;
+    const tx = g.x(this.hover), tw = this.tip.offsetWidth;
+    this.tip.style.left = Math.min(Math.max(0, tx + 12 > g.w - tw ? tx - tw - 12 : tx + 12), Math.max(0, g.w - tw)) + "px";
+    this.tip.style.top = (this.c.offsetTop + 4) + "px";
+  }
+  draw() {
+    const c = this.c, dpr = Math.min(devicePixelRatio || 1, 2), g = this.geom(), ctx = c.getContext("2d");
+    if (!g.w) return;
+    c.width = g.w * dpr; c.height = g.h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, g.w, g.h);
+    const ink = css("--muted"), line = css("--line"), panel = css("--panel");
+    ctx.font = `11px ${css("--font-data")}`; ctx.fillStyle = ink;
+    if (!g.n) { ctx.textAlign = "center"; ctx.fillText("첫 세대가 끝나면 그래프가 그려져요", g.w / 2, g.h / 2); return; }
+    let ymax = this.opts.yMax;
+    if (!ymax) { let m = 0; for (const s of this.series) for (const v of s.data) if (v > m) m = v; ymax = niceMax(m * 1.05); }
+    const y = v => g.pad.t + (1 - v / ymax) * (g.h - g.pad.t - g.pad.b);
+    ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+    for (let k = 0; k <= 4; k++) {
+      const v = ymax * k / 4, yy = Math.round(y(v)) + 0.5;
+      ctx.beginPath(); ctx.moveTo(g.pad.l, yy); ctx.lineTo(g.w - g.pad.r, yy); ctx.stroke();
+      ctx.fillText(+v.toFixed(v < 10 ? 1 : 0), g.pad.l - 6, yy);
+    }
+    ctx.textAlign = "center"; ctx.textBaseline = "top";
+    const step = niceMax(g.n / 5);
+    for (let gen = 1; gen <= g.n; gen++) if (gen === 1 || gen % step === 0) ctx.fillText(gen, g.x(gen - 1), g.h - g.pad.b + 6);
+    for (const s of this.series) {
+      const col = css(s.color); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.beginPath();
+      s.data.forEach((v, i) => { const X = g.x(i), Y = y(v); i ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); });
+      ctx.stroke();
+      const li = s.data.length - 1;
+      if (li >= 0) { ctx.beginPath(); ctx.arc(g.x(li), y(s.data[li]), 4, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = panel; ctx.stroke(); }
+    }
+    if (this.hover >= 0) {
+      const X = Math.round(g.x(this.hover)) + 0.5;
+      ctx.strokeStyle = ink; ctx.globalAlpha = 0.5; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X, g.pad.t); ctx.lineTo(X, g.h - g.pad.b); ctx.stroke(); ctx.globalAlpha = 1;
+      for (const s of this.series) { const v = s.data[this.hover]; if (v == null) continue;
+        ctx.beginPath(); ctx.arc(X, y(v), 4, 0, 7); ctx.fillStyle = css(s.color); ctx.fill(); ctx.strokeStyle = panel; ctx.lineWidth = 2; ctx.stroke(); }
+    }
+  }
+}
+const fmtScore = v => v.toFixed(v < 10 ? 2 : 1) + "점", fmtPct = v => v.toFixed(0) + "%";
+const chScore = new LineChart($("#chScore"), { fmt: fmtScore });
+const chReach = new LineChart($("#chReach"), { fmt: fmtPct, yMax: 100 });
+const chExp = new LineChart($("#chExp"), { fmt: fmtPct });
+function drawCharts() {
+  const h = sim.history;
+  chScore.set([{ name: "최고", color: "--s2", data: h.map(d => d.max) }, { name: "평균", color: "--s1", data: h.map(d => d.avg) }]);
+  chReach.set([{ name: "도착", color: "--s3", data: h.map(d => d.reach) }]);
+}
+const redrawAll = () => { chScore.draw(); chReach.draw(); chExp.draw(); };
+new ResizeObserver(redrawAll).observe($(".panel"));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redrawAll);
+new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+/* ================= 진행 루프 ================= */
+let running = true, phase = "run", pauseStart = 0, pauseUntil = 0, expRunning = false;
+let speed = radio("speed");
+const phEls = [...document.querySelectorAll("#pipeline span")];
+function setPhase(name) { for (const el of phEls) el.classList.toggle("on", el.dataset.ph === name); }
+
+function finishGen(now, delay) {
+  const st = sim.evaluate();
+  setPath(sim.tracePath(sim.bestIdx));
+  drawCharts(); updateStats(st);
+  phase = "pause"; pauseStart = now; pauseUntil = now + delay;
+}
+function updateStats(st) {
+  $("#stGen").textContent = sim.gen;
+  $("#stFirst").textContent = sim.firstReach ? sim.firstReach + "세대" : "–";
+  if (st) { $("#stReach").textContent = st.reach.toFixed(0) + "%"; $("#stMax").textContent = st.max.toFixed(1); }
+  else { $("#stReach").textContent = "–"; $("#stMax").textContent = "–"; }
+}
+function updateHud() {
+  let reached = 0; for (let i = 0; i < sim.n; i++) if (sim.state[i] === 2) reached++;
+  $("#hudGen").textContent = sim.gen + "세대";
+  $("#hudStep").textContent = sim.t + " / " + L + "걸음";
+  $("#hudReach").innerHTML = `도착 <b>${reached}</b> / ${sim.n}`;
+}
+
+function resetSim() {
+  S = readSettings(); sim = new Sim(S); buildObstacles();
+  heading.fill(Math.PI / 2); pathGeo.setDrawRange(0, 0);
+  phase = "run"; drawCharts(); updateStats(null); updateHud();
+}
+
+const clock = new THREE.Clock();
+function frame(now) {
+  requestAnimationFrame(frame);
+  const time = clock.getElapsedTime();
+  if (running && !expRunning) {
+    if (phase === "run") {
+      if (speed === "gen") { sim.runToEnd(); finishGen(now, 0); }
+      else {
+        const k = +speed;
+        for (let s = 0; s < k; s++) if (!sim.step()) { finishGen(now, k >= 10 ? 300 : 900); break; }
+      }
+    } else if (now >= pauseUntil) { sim.evolve(); phase = "run"; }
+  }
+  if (phase === "pause" && speed !== "gen") {
+    const f = (now - pauseStart) / Math.max(1, pauseUntil - pauseStart);
+    setPhase(f < 0.25 ? "score" : f < 0.5 ? "select" : f < 0.75 ? "cross" : "mut");
+  } else setPhase(sim.gen === 1 && sim.t < 25 ? "birth" : "drive");
+  if (!reduceMotion) { star.rotation.y = time * 1.6; star.position.y = 1.4 + Math.sin(time * 2.2) * 0.12; ring.scale.setScalar(1 + Math.sin(time * 3) * 0.05); flag.rotation.y = Math.sin(time * 2.5) * 0.25; }
+  updateRobots(time); updateHud(); updateCamera();
+  renderer.render(scene, camera);
+}
+
+/* ================= 조작 ================= */
+const btnPlay = $("#btnPlay");
+function setRunning(v) { running = v; btnPlay.textContent = v ? "❚❚ 일시정지" : "▶ 계속"; }
+btnPlay.onclick = () => setRunning(!running);
+$("#btnReset").onclick = () => { resetSim(); setRunning(true); };
+document.querySelectorAll('input[name="speed"]').forEach(el => el.onchange = () => { speed = radio("speed"); });
+document.querySelectorAll('input[name="mut"]').forEach(el => el.onchange = () => { S.mut = sim.mut = +radio("mut"); });
+document.querySelectorAll('input[name="cross"]').forEach(el => el.onchange = () => { S.cross = sim.cross = radio("cross"); });
+$("#penalty").onchange = () => { S.penalty = sim.penalty = $("#penalty").checked; };
+document.querySelectorAll('input[name="pop"], input[name="map"]').forEach(el => el.onchange = () => resetSim());
+
+async function copyText(text, btn) {
+  const label = btn.textContent;
+  try { await navigator.clipboard.writeText(text); btn.textContent = "복사했어요"; }
+  catch { const ta = document.createElement("textarea"); ta.value = text; ta.style.cssText = "position:fixed;left:-9999px"; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); btn.textContent = "복사했어요"; } catch { btn.textContent = "복사 안 됨"; } ta.remove(); }
+  setTimeout(() => btn.textContent = label, 1500);
+}
+$("#btnCsv").onclick = e => {
+  const rows = ["세대,평균 점수,최고 점수,도착 비율(%),도착 수", ...sim.history.map(h => [h.gen, h.avg.toFixed(3), h.max.toFixed(3), h.reach.toFixed(1), h.reached].join(","))];
+  copyText(`# 개체 수 ${S.pop}, 돌연변이율 ${S.mut * 100}%, 장애물 ${MAP_NAMES[S.map]}, 교차 ${S.cross === "half" ? "반씩" : "무작위"}, 벽 감점 ${S.penalty ? "켬" : "끔"}\n` + rows.join("\n"), e.currentTarget);
+};
+
+/* ================= 실험 자동 실행 ================= */
+const EXPS = {
+  1: { label: "돌연변이율", key: "mut", values: [0, 0.01, 0.05, 0.2], fmt: v => v * 100 + "%" },
+  2: { label: "개체 수", key: "pop", values: [20, 100, 300], fmt: v => v + "대" },
+  3: { label: "장애물", key: "map", values: ["none", "wall", "maze"], fmt: v => MAP_NAMES[v] },
+};
+const SERIES = ["--s1", "--s2", "--s3", "--s4"];
+let expData = null, cancelExp = false;
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+$("#btnExp").onclick = async () => {
+  if (expRunning) { cancelExp = true; return; }
+  const ex = EXPS[radio("exp")], trials = +radio("trials"), maxGen = +radio("maxgen"), base = readSettings();
+  expRunning = true; cancelExp = false;
+  $("#btnExp").textContent = "실험 멈추기"; $("#expProgWrap").hidden = false; $("#btnExpCsv").disabled = true;
+  const total = ex.values.length * trials * maxGen; let done = 0;
+  const results = [];
+  outer:
+  for (const v of ex.values) {
+    const row = { v, label: ex.fmt(v), trials: [] };
+    for (let tr = 0; tr < trials; tr++) {
+      const s = new Sim({ ...base, [ex.key]: v });
+      let ms = 0, last = performance.now();
+      for (let g = 0; g < maxGen; g++) {
+        const t0 = performance.now();
+        s.runToEnd(); s.evaluate(); if (g < maxGen - 1) s.evolve();
+        ms += performance.now() - t0; done++;
+        if (performance.now() - last > 30) {
+          $("#expProg").style.width = (done / total * 100) + "%";
+          $("#expMsg").textContent = `${ex.label} ${row.label} · ${tr + 1}/${trials}회 · ${g + 1}세대`;
+          await tick(); last = performance.now();
+          if (cancelExp) break outer;
+        }
+      }
+      row.trials.push({ first: s.firstReach, finalReach: s.history[s.history.length - 1].reach, ms, history: s.history });
+    }
+    results.push(row);
+  }
+  expRunning = false; $("#btnExp").textContent = "실험 시작";
+  $("#expProg").style.width = cancelExp ? $("#expProg").style.width : "100%";
+  $("#expMsg").textContent = cancelExp ? "중간에 멈췄어요. 끝난 조건까지만 보여요." : `끝! 조건마다 ${trials}회씩, 각 ${maxGen}세대까지 돌렸어요.`;
+  if (results.length) { expData = { ex, trials, maxGen, base, results }; renderExp(); }
+};
+
+function renderExp() {
+  const { ex, results, trials } = expData;
+  const mean = a => a.reduce((x, y) => x + y, 0) / a.length;
+  let html = `<tr><th>${ex.label}</th><th>처음 도착 세대<br>(평균 · 성공)</th><th>최종 도착 비율</th><th>실행 시간</th></tr>`;
+  results.forEach((r, i) => {
+    const ok = r.trials.filter(t => t.first !== null);
+    html += `<tr><td><span class="swatch" style="--c:var(${SERIES[i]})"></span>${r.label}</td>
+      <td class="num">${ok.length ? mean(ok.map(t => t.first)).toFixed(1) : "못 찾음"} · ${ok.length}/${r.trials.length}</td>
+      <td class="num">${mean(r.trials.map(t => t.finalReach)).toFixed(1)}%</td>
+      <td class="num">${mean(r.trials.map(t => t.ms)).toFixed(0)}ms</td></tr>`;
+  });
+  $("#expTable").innerHTML = html;
+  $("#expLegend").innerHTML = results.map((r, i) => `<span style="--c:var(${SERIES[i]})">${r.label}</span>`).join("");
+  $("#expResult").hidden = false; $("#btnExpCsv").disabled = false;
+  drawExpChart();
+}
+function drawExpChart() {
+  if (!expData) return;
+  const metric = radio("expMetric");
+  chExp.opts.yMax = metric === "reach" ? 100 : null;
+  chExp.opts.fmt = metric === "reach" ? fmtPct : fmtScore;
+  chExp.set(expData.results.map((r, i) => {
+    const n = Math.min(...r.trials.map(t => t.history.length)), data = [];
+    for (let g = 0; g < n; g++) data.push(r.trials.reduce((a, t) => a + t.history[g][metric], 0) / r.trials.length);
+    return { name: r.label, color: SERIES[i], data };
+  }));
+}
+document.querySelectorAll('input[name="expMetric"]').forEach(el => el.onchange = drawExpChart);
+$("#btnExpCsv").onclick = e => {
+  const { ex, results, base } = expData;
+  const lines = [`# 바꾼 조건: ${ex.label} / 고정: 개체 수 ${base.pop}, 돌연변이율 ${base.mut * 100}%, 장애물 ${MAP_NAMES[base.map]}, 벽 감점 ${base.penalty ? "켬" : "끔"}`,
+    `${ex.label},회차,처음 도착 세대,최종 도착 비율(%),실행 시간(ms)`];
+  for (const r of results) r.trials.forEach((t, k) => lines.push([r.label, k + 1, t.first ?? "", t.finalReach.toFixed(1), t.ms.toFixed(0)].join(",")));
+  copyText(lines.join("\n"), e.currentTarget);
+};
+
+/* ================= 시작 ================= */
+buildObstacles(); resize(); setPreset("tilt"); Object.assign(cam, camGoal);
+drawCharts(); updateStats(null);
+requestAnimationFrame(frame);
+})();
+</script>
