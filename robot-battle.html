@@ -163,7 +163,32 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
 .stat .k { font-size: 12px; color: var(--muted); }
 .evo-msg { margin: 6px 0 0; font-size: 14px; line-height: 1.5; color: #3c3552; }
 
+.specbar { position: absolute; left: 50%; transform: translateX(-50%); bottom: max(12px, env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center;
+  background: var(--panel); border: 2px solid rgba(255, 255, 255, .14); border-radius: 16px; padding: 6px 8px; z-index: 3; max-width: calc(100% - 28px); }
+.specbar .sb-t { font-family: var(--font-display); font-size: 15px; color: var(--gold); padding: 0 4px; }
+.specbar .sb-g { display: flex; gap: 3px; }
+.specbar button { border: 0; border-radius: 9px; padding: 5px 10px; background: rgba(255, 255, 255, .14); color: #fff; font-family: var(--font-display); font-size: 14px; }
+.specbar button.on { background: var(--gold); color: var(--ink); }
+body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: none; }
+.pick-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: end; margin: 0 0 12px; }
+.pick { display: grid; gap: 4px; font-family: var(--font-display); font-size: 15px; min-width: 0; }
+.pick.inline { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.pick.blue span, .c-blue { color: var(--p1); }
+.pick.red span, .c-red { color: var(--p2); }
+.pick select { width: 100%; min-width: 0; font-family: var(--font-body); font-size: 14px; padding: 8px 10px; border-radius: 12px; border: 2px solid #d9d1ee; background: #fff; color: var(--ink); }
+.pick.inline select { width: auto; }
+.vs { font-family: var(--font-display); font-size: 26px; color: #ff4b3e; padding-bottom: 6px; }
+.two-genes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }
+.two-genes .ai-box { margin: 0; }
+.two-genes .genes { grid-template-columns: 1fr; }
+.simres { margin-top: 12px; font-size: 14px; color: #3c3552; }
+.simres p { margin: 6px 0 0; }
+.simbar { display: flex; height: 16px; border-radius: 8px; overflow: hidden; background: #eee6d6; }
+.simbar i { display: block; height: 100%; width: 0; transition: width .2s; }
+.simbar .l { background: var(--p1); } .simbar .d { background: #c9c3d9; } .simbar .r { background: var(--p2); }
+
 @media (max-width: 640px) {
+  .pick-row { grid-template-columns: 1fr; } .vs { text-align: center; padding: 0; } .two-genes { grid-template-columns: 1fr; }
   .nm { font-size: 14px; }
   .fp { padding: 6px 9px 7px; border-radius: 12px; }
   .bar { height: 14px; }
@@ -184,7 +209,7 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
 
   <div class="hud">
     <div class="fp p1">
-      <div class="nm"><span class="tag">나</span><span>파랑 로봇</span></div>
+      <div class="nm"><span class="tag" id="p1tag">나</span><span id="p1name">파랑 로봇</span></div>
       <div class="bar"><i class="lag" id="lag0"></i><i class="fill" id="hp0"></i></div>
       <div class="spb" id="spw0"><i id="sp0"></i></div>
       <div class="meta"><span class="pips" id="pips0"><i></i><i></i></span><span class="ready" id="rdy0">필살 OK! U</span></div>
@@ -198,7 +223,7 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
       </div>
     </div>
     <div class="fp p2">
-      <div class="nm"><span id="p2name">진화 AI</span><span class="tag">AI</span></div>
+      <div class="nm"><span id="p2name">진화 AI</span><span class="tag" id="p2tag">AI</span></div>
       <div class="bar"><i class="lag" id="lag1"></i><i class="fill" id="hp1"></i></div>
       <div class="spb" id="spw1"><i id="sp1"></i></div>
       <div class="meta"><span class="pips" id="pips1"><i></i><i></i></span><span class="ready" id="rdy1">필살 OK!</span></div>
@@ -213,6 +238,13 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
   <div class="flash" id="flash"></div>
   <div class="notice" id="notice" hidden></div>
   <div class="keys" id="keys">전체 화면 <b>F</b> · 이동 <b>WASD</b> · 점프 <b>Space</b>(2단·벽차기) · 약 <b>J</b> · 강 <b>K</b> · 가드 <b>L</b> · 대시 <b>Shift</b> · 필살 <b>U</b> · 벽 쪽으로 달리면 <b>벽 타기</b></div>
+
+  <div class="specbar" id="specBar" hidden>
+    <span class="sb-t">AI끼리 관전</span>
+    <span class="sb-g" role="group" aria-label="시점"><button type="button" data-cam="broadcast">중계 (3)</button><button type="button" data-cam="0">파랑 시점 (1)</button><button type="button" data-cam="1">빨강 시점 (2)</button></span>
+    <span class="sb-g" role="group" aria-label="속도"><button type="button" data-spd="1">1×</button><button type="button" data-spd="2">2×</button><button type="button" data-spd="4">4×</button></span>
+    <button type="button" id="specStop">그만 보기</button>
+  </div>
 
   <div class="touch" id="touch">
     <div class="joy" id="joy"><div class="knob" id="knob"></div></div>
@@ -246,6 +278,7 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
       <div class="row">
         <button class="big" id="btnStart" type="button">▶ 대결 시작</button>
         <button class="ghost" id="btnTrain" type="button">AI 연습 10세대 (내 유령 상대)</button>
+        <button class="ghost" id="btnSpec" type="button">AI끼리 대결 보기</button>
       </div>
       <div class="train" id="trainBox" hidden><div class="tbar"><i id="trainBar"></i></div><span id="trainMsg"></span></div>
       <details class="howto" id="howto" open>
@@ -273,6 +306,33 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
     </div>
   </div>
 
+  <div class="overlay" id="specSetup" hidden>
+    <div class="card">
+      <p class="eyebrow">AI끼리 대결</p>
+      <h2>누구와 누구를 붙여 볼까요?</h2>
+      <p class="lead">두 로봇을 고르면 AI끼리 3판 2선승으로 싸워요. 옛날 세대 대표와 지금 대표를 붙이면 진화가 얼마나 강하게 만들었는지 볼 수 있어요. 관전 경기는 진화 기록에 남지 않아요.</p>
+      <div class="pick-row">
+        <label class="pick blue"><span>파랑</span><select id="pickL"></select></label>
+        <span class="vs">VS</span>
+        <label class="pick red"><span>빨강</span><select id="pickR"></select></label>
+      </div>
+      <div class="two-genes">
+        <div class="ai-box"><div class="ai-head"><b class="c-blue">파랑</b><span id="specLInfo"></span></div><div class="genes" id="specLGenes"></div></div>
+        <div class="ai-box"><div class="ai-head"><b class="c-red">빨강</b><span id="specRInfo"></span></div><div class="genes" id="specRGenes"></div></div>
+      </div>
+      <label class="pick inline">실력 <select id="pickDiff"><option value="hard">유전자 그대로 (어려움)</option><option value="normal">보통</option><option value="easy">쉬움</option></select></label>
+      <div class="row" style="margin-top:12px">
+        <button class="big" id="btnSpecGo" type="button">▶ 대결 보기</button>
+        <button class="ghost" id="btnSpecSim" type="button">100판 빠르게 돌려 보기</button>
+        <button class="link" id="btnSpecBack" type="button">돌아가기</button>
+      </div>
+      <div class="simres" id="specSim" hidden>
+        <div class="simbar"><i class="l" id="simL"></i><i class="d" id="simD"></i><i class="r" id="simR"></i></div>
+        <p id="simMsg"></p>
+      </div>
+    </div>
+  </div>
+
   <div class="overlay" id="pauseMenu" hidden>
     <div class="card mini">
       <h2>일시정지</h2>
@@ -286,12 +346,12 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
       <p class="score" id="rScore">2 : 1</p>
       <div class="stats" id="rStats"></div>
       <div class="ai-box">
-        <div class="ai-head"><b>AI의 진화</b><span id="rGenLabel"></span></div>
+        <div class="ai-head"><b id="rBoxTitle">AI의 진화</b><span id="rGenLabel"></span></div>
         <p class="evo-msg" id="rEvo"></p>
         <div class="genes" id="rGenes"></div>
         <p class="hist" id="rGhost"></p>
       </div>
-      <div class="row"><button class="big" id="btnAgain" type="button">▶ 다시 대결</button><button class="ghost" id="btnToTitle" type="button">타이틀로</button></div>
+      <div class="row"><button class="big" id="btnAgain" type="button">▶ 다시 대결</button><button class="ghost" id="btnSpecChange" type="button" hidden>조합 바꾸기</button><button class="ghost" id="btnToTitle" type="button">타이틀로</button></div>
     </div>
   </div>
 </div>
@@ -739,7 +799,7 @@ function evolveAI() {
   const order = [...Array(POP).keys()].sort((a, b) => meanFit(b) - meanFit(a));
   const scored = order.filter(i => evo.n[i] > 0), best = order[0];
   const avg = scored.reduce((s, i) => s + meanFit(i), 0) / Math.max(1, scored.length);
-  evo.hist.push({ gen: evo.gen, best: +meanFit(best).toFixed(1), avg: +avg.toFixed(1), win: Math.round(winRate(best) * 100) });
+  evo.hist.push({ gen: evo.gen, best: +meanFit(best).toFixed(1), avg: +avg.toFixed(1), win: Math.round(winRate(best) * 100), g: evo.pop[best].slice() });
   if (evo.hist.length > 80) evo.hist.shift();
   evo.champ = evo.pop[best].slice();
   // 엘리트 2개체는 점수 기록을 들고 다음 세대로 (오래 살아남을수록 점수가 정확해짐). 내 실력이 변하니 옛 기록은 60%만 남김
@@ -984,7 +1044,7 @@ function segHitsBox(ax, ay, az, bx, by, bz, b) {   // 카메라 → 로봇 선�
 function updateOccluders(dt) {   // 내 로봇을 가리는 구조물은 반투명하게
   const c = camera.position, p = F[0].root.position, q = F[1].root.position, k = 1 - Math.pow(0.0005, dt);
   for (const o of occluders) {
-    const hide = G.phase !== "title" && (segHitsBox(c.x, c.y, c.z, p.x, p.y + 0.7, p.z, o.b) || segHitsBox(c.x, c.y, c.z, q.x, q.y + 0.7, q.z, o.b) && Math.hypot(q.x - p.x, q.z - p.z) < 8);
+    const hide = G.phase !== "title" && (segHitsBox(c.x, c.y, c.z, p.x, p.y + 0.7, p.z, o.b) || segHitsBox(c.x, c.y, c.z, q.x, q.y + 0.7, q.z, o.b) && (G.mode === "spectate" || Math.hypot(q.x - p.x, q.z - p.z) < 8));
     o.op += ((hide ? 0.25 : 1) - o.op) * k;
     for (const m of o.mats) { m.opacity = o.op; m.depthWrite = o.op > 0.95; }
   }
@@ -1201,6 +1261,12 @@ const KEYMAP = { KeyW: "up", ArrowUp: "up", KeyS: "down", ArrowDown: "down", Key
 addEventListener("keydown", e => {
   if (e.code === "KeyF" && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); toggleFull(); return; }
   if (e.code === "Escape" || e.code === "KeyP") { if (G.paused) setPause(false); else setPause(true); return; }
+  if (G.mode === "spectate") {   // 관전: 1 파랑 시점, 2 빨강 시점, 3 중계, Q 속도
+    const cam = { Digit1: 0, Digit2: 1, Digit3: "broadcast" }[e.code];
+    if (cam !== undefined) { G.camMode = cam; syncSpecBar(); }
+    else if (e.code === "KeyQ") { G.specSpeed = G.specSpeed >= 4 ? 1 : G.specSpeed * 2; syncSpecBar(); }
+    return;
+  }
   const a = KEYMAP[e.code]; if (!a) return;
   if (G.phase === "title" || G.phase === "result") return;
   e.preventDefault();
@@ -1244,6 +1310,26 @@ function playerInput() {
   addEventListener("touchstart", markTouch, { once: true, passive: true });
 })();
 
+/* ---- 조종하는 쪽: 진화 AI(유전자) 또는 내 유령(습관) ---- */
+function makeCtrl(spec, D) { return spec.kind === "ghost" ? { kind: "ghost", M: spec.M, st: newGhost() } : { kind: "ai", g: spec.g, D, b: newBrain() }; }
+function ctrlThink(c, me, op) { return c.kind === "ghost" ? ghostThink(me, op, c.st, c.M) : aiThink(me, op, c.g, c.b, c.D); }
+function* matchupSim(L, R, D, n) {   // 관전 조합을 한 라운드씩 n번 (그림 없이)
+  const res = { l: 0, r: 0, d: 0, frames: 0, done: 0, n };
+  for (let k = 0; k < n; k++) {
+    const W2 = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }, cl = makeCtrl(L, D), cr = makeCtrl(R, D);
+    let fr = 0;
+    for (; fr < 3600; fr++) {
+      if (W2.freeze > 0) { W2.freeze--; continue; }
+      stepWorld(W2, ctrlThink(cl, W2.f[0], W2.f[1]), ctrlThink(cr, W2.f[1], W2.f[0]), NOCB);
+      if (W2.f[0].state === "ko" || W2.f[1].state === "ko") break;
+    }
+    const a = W2.f[0], b = W2.f[1];
+    if (a.hp > b.hp + 0.01) res.l++; else if (b.hp > a.hp + 0.01) res.r++; else res.d++;
+    res.frames += fr; res.done++;
+    yield res;
+  }
+}
+
 /* ---- 전체 화면 ---- */
 const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
 let noticeTimer = 0;
@@ -1274,7 +1360,8 @@ document.addEventListener("webkitfullscreenchange", onFullChange);
    7. 경기 흐름: 타이틀(AI끼리 데모) → 라운드 소개 → 대결 → K.O. → 결과
    ===================================================================== */
 const G = { phase: "title", paused: false, round: 1, wins: [0, 0], timeF: 0, time: 60, acc: 0, alpha: 1, slow: 0, shake: 0,
-  introT: 0, koT: 0, roundWinner: -1, match: null, ghostT: [0, 0], demoT: 0, demoKo: 0, trainer: null };
+  introT: 0, koT: 0, roundWinner: -1, match: null, ghostT: [0, 0], demoT: 0, demoKo: 0, trainer: null, simJob: null,
+  mode: "play", spec: null, ctrls: null, camMode: "broadcast", camSide: 1, specSpeed: 1 };
 let aiIdx = champIdx(), aiGenome = evo.pop[aiIdx].slice(), aiBrain = newBrain(), demo = null, F = [], obs = newObserver();
 let W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 };
 let diffKey = store.get("rbDiff"); if (!DIFFS[diffKey]) diffKey = "normal";
@@ -1284,13 +1371,92 @@ const TIPS = [
   "상대가 가드하면 <b>K</b>로 가드 브레이크", "벽 쪽으로 날려 보내면 <b>벽 꽝!</b> 추가타 기회", "<b>Shift</b> 대시는 잠깐 무적",
 ];
 function setPhase(p) { G.phase = p; document.body.dataset.phase = p; }
+function setMode(m) { G.mode = m; document.body.dataset.mode = m; $("#specBar").hidden = m !== "spectate"; }
+
+/* ---- AI끼리 대결: 고르기 → 관전 ---- */
+let specOpts = [], specChoice = null;
+const specResolved = { L: null, R: null };
+function specOptions() {
+  const o = [{ id: "champ", label: `진화 AI 대표 (${evo.gen}세대, 지금 가장 강한 개체)`, spec: () => ({ kind: "ai", g: evo.pop[champIdx()].slice(), name: `${evo.gen}세대 대표` }) }];
+  for (let i = 0; i < POP; i++) o.push({ id: "pop" + i, label: `${evo.gen}세대 ${i + 1}번 개체${evo.n[i] ? ` (평균 ${meanFit(i).toFixed(0)}점)` : " (아직 채점 전)"}`, spec: () => ({ kind: "ai", g: evo.pop[i].slice(), name: `${evo.gen}세대 ${i + 1}번` }) });
+  const past = evo.hist.filter(h => Array.isArray(h.g));
+  const pick = [...new Set([past[0], ...past.slice(-8)])].filter(Boolean).sort((a, b) => b.gen - a.gen);   // 최근 8세대 + 맨 처음
+  for (const h of pick) o.push({ id: "hist" + h.gen, label: `${h.gen}세대 대표 (그때 유령 상대 승률 ${h.win}%)`, spec: () => ({ kind: "ai", g: h.g.slice(), name: `${h.gen}세대 대표` }) });
+  o.push({ id: "ghost", label: "내 유령 (내 습관을 따라 하는 나)", spec: () => ({ kind: "ghost", M: { ...PM }, name: "내 유령" }) });
+  o.push({ id: "random", label: "무작위 신인 (진화 전 유전자)", spec: () => ({ kind: "ai", g: randGenome(), name: "무작위 신인" }) });
+  return o;
+}
+function openSpecSetup() {
+  if (G.trainer) return;
+  specOpts = specOptions();
+  const hists = specOpts.filter(o => o.id.startsWith("hist"));
+  const def = { L: "champ", R: hists.length ? hists[hists.length - 1].id : "random" };   // 기본: 지금 대표 vs 가장 옛날 대표
+  for (const side of ["L", "R"]) {
+    const sel = $("#pick" + side), want = specChoice && specOpts.some(o => o.id === specChoice[side]) ? specChoice[side] : def[side];
+    sel.innerHTML = specOpts.map(o => `<option value="${o.id}">${o.label}</option>`).join("");
+    sel.value = want;
+    specResolved[side] = specOpts.find(o => o.id === want).spec();
+  }
+  specChoice = { L: $("#pickL").value, R: $("#pickR").value };
+  renderSpecPreview(); $("#specSim").hidden = true;
+  $("#title").hidden = true; $("#result").hidden = true; $("#specBar").hidden = true; $("#specSetup").hidden = false;
+}
+function resolvePick(side) {
+  const id = $("#pick" + side).value; specChoice[side] = id;
+  specResolved[side] = specOpts.find(o => o.id === id).spec();
+  renderSpecPreview(); $("#specSim").hidden = true;
+}
+function renderSpecPreview() {
+  for (const side of ["L", "R"]) {
+    const sp = specResolved[side], other = specResolved[side === "L" ? "R" : "L"];
+    $("#spec" + side + "Info").textContent = sp.name;
+    if (sp.kind === "ghost") $("#spec" + side + "Genes").innerHTML = `<p class="hist">${ghostSummary()}</p>`;
+    else renderGenes($("#spec" + side + "Genes"), sp.g, other && other.kind === "ai" ? other.g : null);
+  }
+}
+function startSpectate() {
+  if (G.trainer || G.simJob) return;
+  ensureAudio();
+  G.spec = { L: specResolved.L, R: specResolved.R, D: DIFFS[$("#pickDiff").value] || DIFFS.hard };
+  setMode("spectate");
+  G.match = { rounds: [], maxCombo: 0, maxCombo2: 0, dealt: 0, taken: 0, parkour: 0, genome: null };
+  G.wins = [0, 0]; G.round = 1; G.camMode = "broadcast"; G.camSide = 1; G.specSpeed = 1; syncSpecBar();
+  $("#specSetup").hidden = true; $("#title").hidden = true; $("#result").hidden = true;
+  newRound(true);
+}
+function syncSpecBar() {
+  document.querySelectorAll("#specBar [data-cam]").forEach(b => b.classList.toggle("on", b.dataset.cam === String(G.camMode)));
+  document.querySelectorAll("#specBar [data-spd]").forEach(b => b.classList.toggle("on", +b.dataset.spd === G.specSpeed));
+}
+function runMatchupSim() {
+  if (G.trainer || G.simJob) return;
+  const n = 100;
+  G.simJob = { it: matchupSim(specResolved.L, specResolved.R, DIFFS[$("#pickDiff").value] || DIFFS.hard, n), last: null };
+  $("#btnSpecSim").disabled = $("#btnSpecGo").disabled = true; $("#specSim").hidden = false; $("#simMsg").textContent = "돌려 보는 중…";
+}
+function pumpSim() {
+  const J = G.simJob; if (!J) return;
+  const t0 = performance.now();
+  while (performance.now() - t0 < 8) { const r = J.it.next(); if (r.done) { G.simJob = null; break; } J.last = r.value; }
+  const r = J.last; if (!r) return;
+  const pl = r.l / r.done * 100, pd = r.d / r.done * 100, pr = r.r / r.done * 100;
+  $("#simL").style.width = pl + "%"; $("#simD").style.width = pd + "%"; $("#simR").style.width = pr + "%";
+  const L = specResolved.L.name, R = specResolved.R.name;
+  if (G.simJob) { $("#simMsg").textContent = `돌려 보는 중… ${r.done}/${r.n}판`; return; }
+  const gap = r.l - r.r;
+  $("#simMsg").textContent = `${r.n}판 중 파랑(${L}) ${r.l}승 · 빨강(${R}) ${r.r}승 · 무승부 ${r.d}판 (한 판 평균 ${(r.frames / r.done / 60).toFixed(1)}초). `
+    + (Math.abs(gap) < 10 ? "실력이 비슷해요. 한 판 결과는 운이 커서 판마다 바뀔 수 있어요." : `${gap > 0 ? "파랑" : "빨강"}이 확실히 더 강해요.`);
+  $("#btnSpecSim").disabled = $("#btnSpecGo").disabled = false;
+}
 function startDemo() {
   W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 };
   demo = { g: [evo.champ || randGenome(), evo.pop[champIdx()]], b: [newBrain(), newBrain()] };
   G.demoT = 0; G.demoKo = 0; G.slow = 0;
 }
 function showTitle() {
-  setPhase("title"); G.paused = false;
+  setPhase("title"); setMode("play"); G.paused = false;
+  $("#specSetup").hidden = true;
+  $("#p1tag").textContent = "나"; $("#p1name").textContent = "파랑 로봇"; $("#p2tag").textContent = "AI";
   $("#btnStart").disabled = $("#btnTrain").disabled = !!G.trainer;
   $("#title").hidden = false; $("#result").hidden = true; $("#pauseMenu").hidden = true;
   hideBanner(); $("#combo0").hidden = $("#combo1").hidden = true;
@@ -1298,8 +1464,8 @@ function showTitle() {
 }
 const lastWin = () => (evo.hist.length ? evo.hist[evo.hist.length - 1].win : null);
 function startMatch() {
-  if (G.trainer) return;   // 연습이 끝나야 시작
-  ensureAudio();
+  if (G.trainer || G.simJob) return;   // 연습이 끝나야 시작
+  ensureAudio(); setMode("play");
   G.match = { rounds: [], maxCombo: 0, dealt: 0, taken: 0, parkour: 0, genBefore: evo.gen, winBefore: lastWin(), genome: null };
   G.wins = [0, 0]; G.round = 1; $("#title").hidden = true; $("#result").hidden = true;
   newRound(true);
@@ -1307,14 +1473,22 @@ function startMatch() {
 function newRound(first) {
   const sp = first ? [0, 0] : [W.f[0].sp, W.f[1].sp];   // 필살 게이지는 다음 라운드로 이어짐
   W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }; W.f[0].sp = sp[0]; W.f[1].sp = sp[1];
-  aiIdx = champIdx(); aiGenome = evo.pop[aiIdx].slice(); aiBrain = newBrain(); obs = newObserver();   // 지금까지 가장 강한 대표 개체가 나옴
-  if (!G.match.genome) G.match.genome = aiGenome.slice();
+  if (G.mode === "spectate") {   // 관전: 양쪽 다 AI(또는 유령)가 조종
+    G.ctrls = [makeCtrl(G.spec.L, G.spec.D), makeCtrl(G.spec.R, G.spec.D)];
+    $("#p1tag").textContent = "파랑"; $("#p1name").textContent = G.spec.L.name; $("#p2tag").textContent = "빨강"; $("#p2name").textContent = G.spec.R.name;
+  } else {
+    aiIdx = champIdx(); aiGenome = evo.pop[aiIdx].slice(); aiBrain = newBrain(); obs = newObserver();   // 지금까지 가장 강한 대표 개체가 나옴
+    if (!G.match.genome) G.match.genome = aiGenome.slice();
+    $("#p1tag").textContent = "나"; $("#p1name").textContent = "파랑 로봇"; $("#p2tag").textContent = "AI";
+    $("#p2name").textContent = `진화 AI ${evo.gen}세대 · ${diff().label}`;
+  }
   setPhase("intro"); G.introT = 0; G.timeF = 0; G.time = 60; G.koT = 0; G.slow = 0; lagHp[0] = lagHp[1] = 100;
-  $("#p2name").textContent = `진화 AI ${evo.gen}세대 · ${diff().label}`;
   $("#roundLabel").textContent = `ROUND ${G.round}`;
   updatePips();
   showBanner(`ROUND ${G.round}`);
-  const tip = $("#tipline"); tip.innerHTML = TIPS[(G.round - 1 + (evo.gen * 2)) % TIPS.length]; tip.hidden = false;
+  const tip = $("#tipline");
+  tip.innerHTML = G.mode === "spectate" ? `<b>${G.spec.L.name}</b> VS <b>${G.spec.R.name}</b>` : TIPS[(G.round - 1 + (evo.gen * 2)) % TIPS.length];
+  tip.hidden = false;
   sfx("round");
 }
 function endRound(reason) {
@@ -1327,6 +1501,11 @@ function endRound(reason) {
   if (reason === "time") showBanner("TIME!");
   else if (w === -1) showBanner("DOUBLE K.O.!");
   if (w >= 0) G.wins[w]++;
+  if (G.mode === "spectate") {   // 관전 경기는 진화 기록에 넣지 않음
+    m.rounds.push({ w }); m.maxCombo = Math.max(m.maxCombo, P.maxCombo); m.maxCombo2 = Math.max(m.maxCombo2, A.maxCombo); m.parkour += P.parkour + A.parkour;
+    updatePips(); G.matchOver = G.wins[0] >= 2 || G.wins[1] >= 2 || G.round >= 5;
+    return;
+  }
   const fit = aiFitness(A, P, w === 1);
   addSample(aiIdx, fit, w === 1, 2);   // 실제로 나와 싸운 결과는 2판 몫으로 채점
   savePM(); saveEvo();
@@ -1357,7 +1536,7 @@ function pumpTrainer() {   // 한 프레임에 8ms씩만 계산
   else if (T.kind === "title") { $("#trainBar").style.width = pct + "%"; $("#trainMsg").textContent = `AI가 내 유령과 연습 중… ${evo.gen}세대 (${pct}%)`; renderTitleInfo(); }
 }
 function trainingDone(T) {
-  $("#btnAgain").disabled = $("#btnStart").disabled = $("#btnTrain").disabled = false;
+  $("#btnAgain").disabled = $("#btnStart").disabled = $("#btnTrain").disabled = $("#btnSpec").disabled = false;
   if (G.phase === "title") renderTitleInfo();
   if (T.kind === "between" && G.phase === "between") { G.round++; newRound(false); }
   else if (T.kind === "result" && G.phase === "result") renderResultEvo();
@@ -1379,8 +1558,31 @@ function renderResultEvo() {
   renderGenes($("#rGenes"), evo.pop[champIdx()], m.genome);
   $("#rGhost").textContent = ghostSummary();
 }
+function endSpectateMatch() {
+  setPhase("result"); hideBanner(); $("#specBar").hidden = true;
+  const m = G.match, L = G.spec.L, R = G.spec.R, lw = G.wins[0] > G.wins[1], rw = G.wins[1] > G.wins[0];
+  $("#rTitle").textContent = lw ? "파랑 승리!" : rw ? "빨강 승리!" : "무승부";
+  $("#rTitle").style.color = lw ? "#2f8bff" : rw ? "#ff4b3e" : "#1d1636";
+  $("#rScore").textContent = `${L.name} ${G.wins[0]} : ${G.wins[1]} ${R.name}`;
+  $("#rStats").innerHTML = [["파랑 최대 콤보", m.maxCombo + "HIT"], ["빨강 최대 콤보", m.maxCombo2 + "HIT"], ["벽 기술 (둘 합)", m.parkour + "번"]]
+    .map(([k, v]) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
+  const win = lw ? L : rw ? R : null, lose = lw ? R : rw ? L : null;
+  $("#rBoxTitle").textContent = win ? `이긴 쪽: ${win.name}` : "무승부";
+  $("#rGenLabel").textContent = "관전 경기는 진화 기록에 남지 않아요";
+  $("#rEvo").textContent = win
+    ? `이긴 쪽 ${win.name}의 ${win.kind === "ghost" ? "습관" : "유전자"}예요${win.kind === "ai" && lose.kind === "ai" ? "(진 쪽과 비교: ▲ 더 높음, ▼ 더 낮음)" : ""}. 한 경기는 운이 섞이니, 조합 바꾸기에서 "100판 빠르게 돌려 보기"로 확인해 보세요.`
+    : "비겼어요. 실력이 비슷한지 \"100판 빠르게 돌려 보기\"로 확인해 보세요.";
+  if (win && win.kind === "ai") renderGenes($("#rGenes"), win.g, lose.kind === "ai" ? lose.g : null);
+  else $("#rGenes").innerHTML = "";
+  $("#rGhost").textContent = win && win.kind === "ghost" ? ghostSummary() : "";
+  $("#btnAgain").textContent = "▶ 다시 보기"; $("#btnAgain").disabled = false; $("#btnSpecChange").hidden = false;
+  $("#result").hidden = false;
+  $("#combo0").hidden = $("#combo1").hidden = true;
+}
 function endMatch() {
+  if (G.mode === "spectate") return endSpectateMatch();
   setPhase("result"); hideBanner();
+  $("#btnAgain").textContent = "▶ 다시 대결"; $("#btnSpecChange").hidden = true; $("#rBoxTitle").textContent = "AI의 진화";
   const m = G.match, win = G.wins[0] > G.wins[1], lose = G.wins[1] > G.wins[0];
   const rec = (() => { try { return JSON.parse(store.get("robotBattleRecord") || "null") || { w: 0, l: 0, d: 0 }; } catch { return { w: 0, l: 0, d: 0 }; } })();
   if (win) rec.w++; else if (lose) rec.l++; else rec.d++;
@@ -1423,13 +1625,23 @@ function renderTitleInfo() {
 }
 function trainAI(gens) {
   if (G.trainer) return;
-  $("#btnTrain").disabled = $("#btnStart").disabled = true; $("#trainBox").hidden = false; $("#trainBar").style.width = "0%";
+  $("#btnTrain").disabled = $("#btnStart").disabled = $("#btnSpec").disabled = true; $("#trainBox").hidden = false; $("#trainBar").style.width = "0%";
   startTraining(gens, "title");
 }
 
 $("#btnStart").onclick = startMatch;
 $("#btnTrain").onclick = () => trainAI(10);
-$("#btnAgain").onclick = startMatch;
+$("#btnAgain").onclick = () => (G.mode === "spectate" ? startSpectate() : startMatch());
+$("#btnSpec").onclick = openSpecSetup;
+$("#btnSpecChange").onclick = () => { setPhase("title"); setMode("play"); hideBanner(); startDemo(); openSpecSetup(); };
+$("#btnSpecBack").onclick = () => { if (G.simJob) return; $("#specSetup").hidden = true; showTitle(); };
+$("#btnSpecGo").onclick = startSpectate;
+$("#btnSpecSim").onclick = runMatchupSim;
+$("#pickL").onchange = () => resolvePick("L");
+$("#pickR").onchange = () => resolvePick("R");
+$("#specStop").onclick = showTitle;
+document.querySelectorAll("#specBar [data-cam]").forEach(b => b.onclick = () => { G.camMode = b.dataset.cam === "broadcast" ? "broadcast" : +b.dataset.cam; syncSpecBar(); });
+document.querySelectorAll("#specBar [data-spd]").forEach(b => b.onclick = () => { G.specSpeed = +b.dataset.spd; syncSpecBar(); });
 $("#btnToTitle").onclick = showTitle;
 $("#btnPause").onclick = () => setPause(!G.paused);
 $("#btnFull").onclick = toggleFull;
@@ -1458,7 +1670,8 @@ function simFrame() {
   }
   if (W.freeze > 0) { W.freeze--; return; }
   let ip = BLANK, iq = BLANK;
-  if (G.phase === "fight") { ip = playerInput(); observe(obs, W.f[0], W.f[1], ip, G.timeF); iq = aiThink(W.f[1], W.f[0], aiGenome, aiBrain, diff()); }
+  if (G.phase === "fight" && G.mode === "spectate") { ip = ctrlThink(G.ctrls[0], W.f[0], W.f[1]); iq = ctrlThink(G.ctrls[1], W.f[1], W.f[0]); edges.clear(); }
+  else if (G.phase === "fight") { ip = playerInput(); observe(obs, W.f[0], W.f[1], ip, G.timeF); iq = aiThink(W.f[1], W.f[0], aiGenome, aiBrain, diff()); }
   else if (G.phase === "title") { ip = aiThink(W.f[0], W.f[1], demo.g[0], demo.b[0], DIFFS.normal); iq = aiThink(W.f[1], W.f[0], demo.g[1], demo.b[1], DIFFS.normal); }
   else edges.clear();
   stepWorld(W, ip, iq, CB);
@@ -1557,12 +1770,23 @@ function animFighter(fm, f, time) {
 const camPos = new THREE.Vector3(0, 6, -18), camLook = new THREE.Vector3(0, 1, 0);
 let camFx = 0, camFz = 1;
 function updateCamera(dt, time) {
-  const a = F[0].root.position, b = F[1].root.position;
+  let a = F[0].root.position, b = F[1].root.position;
   let tx, ty, tz, lx, ly, lz;
   if (G.phase === "title") {   // 타이틀: 데모 경기를 천천히 돌며 보여 줌
     const ang = time * 0.13, mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
     tx = mx + Math.sin(ang) * 10; tz = mz + Math.cos(ang) * 10; ty = 5.5; lx = mx; ly = 1.2 + (a.y + b.y) / 2; lz = mz;
-  } else {   // 대결: 내 로봇 뒤에서 상대를 바라봄
+  } else if (G.mode === "spectate" && G.camMode === "broadcast") {   // 중계: 두 로봇을 잇는 선의 옆에서 둘 다 보이게
+    const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2, dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
+    if (d > 0.6) { camFx = lerp(camFx, dx / d, 0.08); camFz = lerp(camFz, dz / d, 0.08); const l = Math.hypot(camFx, camFz) || 1; camFx /= l; camFz /= l; }
+    const px = -camFz, pz = camFx, dist = 7 + d * 0.7, lim0 = HALF - 0.8;
+    tx = mx + px * G.camSide * dist; tz = mz + pz * G.camSide * dist;
+    outer: for (const sd of [G.camSide, -G.camSide]) for (const sc of [1, 0.8, 0.62]) {
+      const cx = mx + px * sd * dist * sc, cz = mz + pz * sd * dist * sc;
+      if (Math.abs(cx) <= lim0 && Math.abs(cz) <= lim0) { tx = cx; tz = cz; G.camSide = sd; break outer; }
+    }
+    ty = 3.4 + d * 0.12 + (a.y + b.y) * 0.4; lx = mx; lz = mz; ly = 0.9 + (a.y + b.y) * 0.45;
+  } else {   // 대결: 내 로봇(관전이면 고른 쪽) 뒤에서 상대를 바라봄
+    if (G.mode === "spectate" && G.camMode === 1) { const t = a; a = b; b = t; }
     const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
     if (d > 0.6) { camFx = lerp(camFx, dx / d, 0.2); camFz = lerp(camFz, dz / d, 0.2); const l = Math.hypot(camFx, camFz) || 1; camFx /= l; camFz /= l; }
     const back = 5.4 + Math.min(4, d * 0.35), lim0 = HALF - 0.8;
@@ -1604,10 +1828,11 @@ function loop(now) {
   requestAnimationFrame(loop);
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   if (!G.paused && G.phase !== "result") {
-    G.acc += dt * (G.slow > 0 ? 0.3 : 1);
+    const mul = G.mode === "spectate" && G.phase !== "title" ? G.specSpeed : 1, maxSteps = 5 * mul;
+    G.acc += dt * (G.slow > 0 ? 0.3 : 1) * mul;
     let n = 0;
-    while (G.acc >= DT && n < 5) { G.acc -= DT; simFrame(); n++; }
-    if (n >= 5) G.acc = 0;
+    while (G.acc >= DT && n < maxSteps) { G.acc -= DT; simFrame(); n++; }
+    if (n >= maxSteps) G.acc = 0;
     G.alpha = clamp(G.acc / DT, 0, 1);
   }
   const time = now / 1000;
@@ -1619,7 +1844,7 @@ function loop(now) {
     if (comboTimer[s] > 0 && (comboTimer[s] -= dt) <= 0) $("#combo" + s).hidden = true;
   }
   balloons.forEach(b => { b.position.y = b.userData.y0 + Math.sin(time * 0.8 + b.userData.ph) * 0.6; });
-  pumpTrainer();
+  pumpTrainer(); pumpSim();
   updateFx(dt); updateCamera(dt, time); updateOccluders(dt);
   if (G.phase !== "title") updateHud();
   renderer.render(scene, camera);
