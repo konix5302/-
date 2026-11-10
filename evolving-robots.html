@@ -87,6 +87,7 @@ h2 small { font-family: var(--font-body); font-size: 12.5px; color: var(--muted)
 .seg label { flex: 1; text-align: center; padding: 6px 4px; border-radius: 9px; cursor: pointer; font-family: var(--font-display); font-size: 15px; color: var(--muted); white-space: nowrap; }
 .seg input:checked + label { background: var(--panel); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
 .seg input:focus-visible + label { outline: 2px solid var(--accent); }
+body.mode-tag .path-only { display: none; }
 .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; cursor: pointer; }
 .check input { margin-top: 4px; accent-color: var(--accent); }
 .note { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
@@ -162,7 +163,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
     <header class="brand">
       <p class="eyebrow">주제탐구(R&amp;E) 기초 · 유전 알고리즘</p>
       <h1>진화하는 꼬마 로봇</h1>
-      <p>아무도 길을 알려 주지 않아요. 로봇들이 아무렇게나 움직이고, 잘 간 로봇끼리 움직임 목록을 섞어 다음 세대를 만들어요. 던전에서는 몬스터를 피해 열쇠와 퓨즈를 모아 문과 전기 게이트를 열고 깃발까지 가는 길을 세대를 거듭하며 스스로 찾아냅니다.</p>
+      <p>아무도 길을 알려 주지 않아요. 로봇들이 아무렇게나 움직이고, 잘 간 로봇끼리 움직임 목록을 섞어 다음 세대를 만들어요. 던전에서는 몬스터를 피해 열쇠와 퓨즈를 모아 깃발까지 가는 길을, 술래잡기에서는 술래와 도망자가 서로를 이기는 법을 세대를 거듭하며 스스로 찾아냅니다.</p>
     </header>
 
     <section>
@@ -183,6 +184,17 @@ details table { font-size: 12.5px; margin-top: 6px; }
     </section>
 
     <section>
+      <div class="field">
+        <div class="lab"><span>모드</span></div>
+        <div class="seg" role="radiogroup" aria-label="모드">
+          <input type="radio" name="mode" id="moPath" value="path" checked><label for="moPath">길 찾기</label>
+          <input type="radio" name="mode" id="moTag" value="tag"><label for="moTag">술래잡기</label>
+        </div>
+        <p class="note" id="tagNote" hidden>빨간 술래 2명 vs 도망자 4명. 술래는 처음 90걸음 동안 눈을 감고 기다려요(연한 빨강). 로봇마다 작은 신경망 뇌(가중치 182개)가 있고, 이 가중치가 유전자예요. 뇌는 주변 벽까지 거리 8방향, 자기 속도, 벽에 가려지지 않고 보이는 가장 가까운 상대(안 보이면 마지막으로 본 위치)를 보고 어느 쪽으로 갈지 정해요. 안테나가 빨개지면 상대가 보인다는 뜻이에요. 한 세대에 12경기를 치르고, 술래 팀과 도망자 팀이 따로 진화해요. 화면에 보이는 경기는 지난 세대 1등끼리 붙는 경기예요.</p>
+      </div>
+    </section>
+
+    <section id="secCond">
       <h2>실험 조건 <small>한 번에 하나만 바꿔요</small></h2>
       <div class="field">
         <div class="lab"><span>돌연변이율</span><span>다음 세대부터 적용</span></div>
@@ -193,7 +205,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
           <input type="radio" name="mut" id="mu20" value="0.2"><label for="mu20">20%</label>
         </div>
       </div>
-      <div class="field">
+      <div class="field path-only">
         <div class="lab"><span>개체 수</span><span>바꾸면 처음부터</span></div>
         <div class="seg" role="radiogroup" aria-label="개체 수">
           <input type="radio" name="pop" id="po20" value="20"><label for="po20">20대</label>
@@ -201,7 +213,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
           <input type="radio" name="pop" id="po300" value="300"><label for="po300">300대</label>
         </div>
       </div>
-      <div class="field">
+      <div class="field path-only">
         <div class="lab"><span>장애물</span><span>바꾸면 처음부터</span></div>
         <div class="seg" role="radiogroup" aria-label="장애물">
           <input type="radio" name="map" id="mpNone" value="none"><label for="mpNone">없음</label>
@@ -221,7 +233,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <div class="field">
         <label class="check"><input type="checkbox" id="elite" checked> <span>엘리트 보존: 점수 상위 2% 로봇은 그대로 다음 세대로<br><span class="note" style="margin:0">끄면 잘 찾은 길을 교차·돌연변이로 잃어버리기도 해요. 던전에서는 켜 두는 게 좋아요.</span></span></label>
       </div>
-      <div class="field">
+      <div class="field path-only">
         <label class="check"><input type="checkbox" id="penalty"> <span>벽에 부딪히면 점수 ×0.1 (크게 감점)<br><span class="note" style="margin:0">끄면 로봇들이 벽 바로 앞에 몰려 멈추는 "국소 최적"이 잘 보여요.</span></span></label>
       </div>
     </section>
@@ -230,12 +242,12 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <h2>지금 진화 상황</h2>
       <div class="stats">
         <div class="stat"><div class="v" id="stGen">1</div><div class="k">세대</div></div>
-        <div class="stat"><div class="v" id="stFirst">–</div><div class="k">처음 도착</div></div>
-        <div class="stat"><div class="v" id="stReach">–</div><div class="k">도착 비율</div></div>
-        <div class="stat"><div class="v" id="stMax">–</div><div class="k">최고 점수</div></div>
+        <div class="stat"><div class="v" id="stFirst">–</div><div class="k" id="kFirst">처음 도착</div></div>
+        <div class="stat"><div class="v" id="stReach">–</div><div class="k" id="kReach">도착 비율</div></div>
+        <div class="stat"><div class="v" id="stMax">–</div><div class="k" id="kMax">최고 점수</div></div>
       </div>
       <div class="chart" id="chScore" style="margin-top:14px">
-        <div class="legend"><span style="--c:var(--s2)">최고 점수</span><span style="--c:var(--s1)">평균 점수</span></div>
+        <div class="legend" id="scoreLegend"><span style="--c:var(--s2)">최고 점수</span><span style="--c:var(--s1)">평균 점수</span></div>
         <canvas aria-label="세대별 최고·평균 점수 그래프"></canvas>
         <div class="tip" hidden></div>
       </div>
@@ -247,7 +259,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <p class="note">분홍 선은 바로 앞 세대에서 점수가 가장 높았던 로봇이 지나간 길이에요.</p>
     </section>
 
-    <section>
+    <section class="path-only">
       <h2>실험 자동 실행 <small>조건마다 여러 번 돌려 평균</small></h2>
       <div class="field">
         <div class="lab"><span>바꿀 조건</span><span>나머지는 위 설정 그대로</span></div>
@@ -313,6 +325,8 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <p style="margin-bottom:4px">던전 점수 기준</p>
       <div class="formula">아이템 하나 모을 때마다 25점<br>+ 다음 목표까지 "길 따라 거리"가 가까울수록 최대 25점 (살아 있는 동안 가장 멀리 간 순간 기준)<br>+ 마지막 아이템을 빨리 주울수록 최대 10점<br>도착: 100 + 50 × (1 − 걸린 걸음 ÷ 900)<br>몬스터에게 잡히면 × 0.5</div>
       <p>미로에서는 직선거리로 채점하면 로봇들이 벽 바로 뒤에서 멈춰 버려요(국소 최적). 그래서 던전은 길 찾기(BFS)로 미리 잰 "벽을 돌아가는 거리"로 채점해요. 채점 기준을 잘 정하는 것이 공학 설계의 핵심이라는 걸 보여 주는 부분이에요.</p>
+      <p style="margin-bottom:4px">술래잡기 (공진화)</p>
+      <p>술래와 도망자는 정해진 길이 없고, 상대를 보고 반응해야 해요. 그래서 로봇마다 작은 신경망 뇌를 주고, 뇌의 가중치 182개를 유전자로 삼아 진화시켜요. 술래 팀은 "빨리 많이 잡기", 도망자 팀은 "오래 살아남기"로 따로 채점하고 따로 진화해요. 한쪽이 잘하면 다른 쪽의 점수가 떨어지니, 잡힌 비율 그래프가 오르락내리락하는 "군비 경쟁"이 생겨요. 자연에서 치타와 가젤이 함께 빨라지는 것과 같은 원리예요(공진화).</p>
       <p>던전 로봇의 유전자는 "15걸음마다 어느 방향으로 갈지" 적힌 60칸짜리 방향 목록이에요. 900걸음마다 힘을 하나씩 적으면 앞쪽 하나만 바뀌어도 뒤 경로가 통째로 틀어져서, 긴 미로에서는 거의 배우지 못했어요. 유전자를 단순하게 만들면 진화가 훨씬 빨라져요. 이것도 좋은 탐구 포인트예요.</p>
       <p>다른 맵 로봇의 유전자는 200칸짜리 "힘 목록"이에요. 매 걸음 힘 → 속도 변화 → 위치 변화 순서로 움직여요 (통합과학 힘과 운동을 단순화).</p>
     </details>
@@ -553,14 +567,211 @@ class Sim {
   }
 }
 
+/* ================= 술래잡기: 신경망 뇌 + 두 팀 함께 진화(공진화) ================= */
+const TAG = {
+  L: 600, PREP: 90,          // 경기 길이, 술래가 눈 감고 기다리는 걸음 수
+  NC: 2, NR: 4, M: 12,       // 한 경기에 술래 2 · 도망자 4, 한 세대에 12경기
+  VC: 0.32, VR: 0.30,        // 최고 속도 (술래가 조금 빠름)
+  TAGD: 0.85,                // 이만큼 가까우면 잡힘
+  NI: 16, NH: 10,            // 신경망 입력 16 · 숨은층 10 · 출력 2
+};
+TAG.NW = TAG.NI * TAG.NH + (TAG.NH + 1) * 2;   // 유전자(가중치) 개수
+TAG.PC = TAG.NC * TAG.M; TAG.PR = TAG.NR * TAG.M;
+MAPS.tag = {
+  L: TAG.L, tag: true, items: [], monsters: [], targets: [],
+  rects: [   // 숨을 곳
+    { x: -4, z: -4, w: 5, d: 0.6 }, { x: -4, z: 4, w: 5, d: 0.6 },
+    { x: 0, z: 0, w: 0.6, d: 4.4 },
+    { x: 5, z: -4.6, w: 0.6, d: 5 }, { x: 5, z: 4.6, w: 0.6, d: 5 },
+    { x: -9.5, z: 0, w: 1.6, d: 1.6 }, { x: 9, z: -5.5, w: 1.4, d: 1.4 }, { x: 9, z: 5.5, w: 1.4, d: 1.4 },
+  ],
+};
+MAP_NAMES.tag = "술래잡기";
+const SPAWN = [[9.5, -1.6], [9.5, 1.6], [-7, -6], [-7, -2], [-7, 2], [-7, 6]];
+
+function slab(x, z, dx, dz, w) {   // 반직선이 상자에 들어가는 지점 (없으면 -1)
+  const x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, z0 = w.z - w.d / 2, z1 = w.z + w.d / 2;
+  let tmin = -Infinity, tmax = Infinity;
+  if (Math.abs(dx) < 1e-9) { if (x < x0 || x > x1) return -1; }
+  else { let a = (x0 - x) / dx, b = (x1 - x) / dx; if (a > b) { const q = a; a = b; b = q; } tmin = a; tmax = b; }
+  if (Math.abs(dz) < 1e-9) { if (z < z0 || z > z1) return -1; }
+  else { let a = (z0 - z) / dz, b = (z1 - z) / dz; if (a > b) { const q = a; a = b; b = q; } tmin = Math.max(tmin, a); tmax = Math.min(tmax, b); }
+  if (tmax < Math.max(tmin, 0)) return -1;
+  return Math.max(tmin, 0);
+}
+function rayDist(rects, x, z, dx, dz, maxD) {
+  let best = maxD;
+  if (dx > 0) best = Math.min(best, (HX - x) / dx); else if (dx < 0) best = Math.min(best, (-HX - x) / dx);
+  if (dz > 0) best = Math.min(best, (HZ - z) / dz); else if (dz < 0) best = Math.min(best, (-HZ - z) / dz);
+  for (const w of rects) { const t = slab(x, z, dx, dz, w); if (t >= 0 && t < best) best = t; }
+  return best;
+}
+function canSee(rects, ax, az, bx, bz) {
+  for (const w of rects) { const t = slab(ax, az, bx - ax, bz - az, w); if (t >= 0 && t <= 1) return false; }
+  return true;
+}
+function gauss() { return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random()); }
+const RAYS = Array.from({ length: 8 }, (_, k) => [Math.cos(k * Math.PI / 4), Math.sin(k * Math.PI / 4)]);
+
+class Match {
+  constructor(ts, ci, ri) {
+    this.ts = ts; this.ci = ci; this.ri = ri; const n = 6;
+    this.px = new Float32Array(n); this.pz = new Float32Array(n); this.vx = new Float32Array(n); this.vz = new Float32Array(n);
+    this.state = new Uint8Array(n); this.caughtAt = new Uint16Array(n);
+    this.tagScore = new Float32Array(n); this.minD = new Float32Array(n).fill(99);
+    this.sumD = new Float32Array(n); this.seen = new Uint8Array(n);
+    this.lastX = new Float32Array(n); this.lastZ = new Float32Array(n); this.memo = new Float32Array(n);   // 마지막으로 본 상대 위치 기억
+    SPAWN.forEach((p, a) => { this.px[a] = p[0]; this.pz[a] = p[1]; });
+    this.t = 0; this.done = false;
+  }
+  weights(a) { const NW = TAG.NW; return a < TAG.NC ? this.ts.cg.subarray(this.ci[a] * NW, this.ci[a] * NW + NW) : this.ts.rg.subarray(this.ri[a - TAG.NC] * NW, this.ri[a - TAG.NC] * NW + NW); }
+  step() {
+    if (this.done) return;
+    const t = this.t, rects = MAPS.tag.rects, inp = this.ts.inp, hid = this.ts.hid, { NI, NH, NC } = TAG;
+    const px = this.px, pz = this.pz;
+    for (let a = 0; a < 6; a++) {
+      if (this.state[a]) continue;
+      const chaser = a < NC, maxV = chaser ? TAG.VC : TAG.VR;
+      if (chaser && t < TAG.PREP) continue;           // 술래는 눈 감고 기다리는 중
+      const x = px[a], z = pz[a];
+      let best = -1, bd = 1e9;
+      for (let b = 0; b < 6; b++) {
+        if ((b < NC) === chaser || this.state[b]) continue;
+        const d = Math.hypot(px[b] - x, pz[b] - z);
+        if (d < bd && canSee(rects, x, z, px[b], pz[b])) { bd = d; best = b; }
+      }
+      this.seen[a] = best >= 0 ? 1 : 0;
+      for (let k = 0; k < 8; k++) inp[k] = 1 - rayDist(rects, x, z, RAYS[k][0], RAYS[k][1], 8) / 8;
+      inp[8] = this.vx[a] / maxV; inp[9] = this.vz[a] / maxV;
+      if (best >= 0) { this.lastX[a] = px[best]; this.lastZ[a] = pz[best]; this.memo[a] = 1; }
+      else this.memo[a] *= 0.99;   // 안 보이면 기억이 조금씩 흐려짐
+      if (this.memo[a] > 0.05) {   // 상대(또는 기억 속 위치) 쪽 방향 (길이 1)
+        const ddx = this.lastX[a] - x, ddz = this.lastZ[a] - z, dl = Math.hypot(ddx, ddz) || 1;
+        inp[10] = ddx / dl; inp[11] = ddz / dl;
+      }
+      else { inp[10] = inp[11] = 0; }
+      inp[12] = best >= 0 ? 1 : 0; inp[13] = best >= 0 ? 1 - Math.min(bd, 16) / 16 : this.memo[a] * 0.3;
+      inp[14] = t < TAG.PREP ? 1 : 0; inp[15] = 1;
+      const w = this.weights(a);
+      for (let h = 0; h < NH; h++) { let s = 0; for (let i = 0; i < NI; i++) s += inp[i] * w[h * NI + i]; hid[h] = Math.tanh(s); }
+      const o = NI * NH; let o0 = w[o + NH], o1 = w[o + 2 * NH + 1];
+      for (let h = 0; h < NH; h++) { o0 += hid[h] * w[o + h]; o1 += hid[h] * w[o + NH + 1 + h]; }
+      let dvx = Math.tanh(o0) * maxV, dvz = Math.tanh(o1) * maxV;
+      const dm = Math.hypot(dvx, dvz); if (dm > maxV) { dvx *= maxV / dm; dvz *= maxV / dm; }
+      let fx = dvx - this.vx[a], fz = dvz - this.vz[a];
+      const fm = Math.hypot(fx, fz), lim = MAXF * 1.5; if (fm > lim) { fx *= lim / fm; fz *= lim / fm; }
+      let vx = this.vx[a] + fx, vz = this.vz[a] + fz;
+      let nx = x + vx, nz = z + vz;
+      if (hits(MAPS.tag, nx, nz, 0)) {
+        if (!hits(MAPS.tag, nx, z, 0)) { nz = z; vz = 0; }
+        else if (!hits(MAPS.tag, x, nz, 0)) { nx = x; vx = 0; }
+        else { nx = x; nz = z; vx = vz = 0; }
+      }
+      this.vx[a] = vx; this.vz[a] = vz; px[a] = nx; pz[a] = nz;
+    }
+    let alive = 0;
+    for (let r = NC; r < 6; r++) {
+      if (this.state[r]) continue;
+      let nd = 1e9, nc = -1;
+      for (let c = 0; c < NC; c++) { const d = Math.hypot(px[c] - px[r], pz[c] - pz[r]); if (d < nd) { nd = d; nc = c; } if (d < this.minD[c]) this.minD[c] = d; }
+      if (t >= TAG.PREP && nd < TAG.TAGD) {
+        this.state[r] = 3; this.caughtAt[r] = t + 1; this.tagScore[nc] += 1 + (1 - t / TAG.L);
+        continue;
+      }
+      this.sumD[r] += Math.min(nd, 12); alive++;
+    }
+    this.t++;
+    if (alive === 0 || this.t >= TAG.L) this.done = true;
+  }
+  run() { while (!this.done) this.step(); }
+}
+
+class TagSim {
+  constructor(o) {
+    this.mode = "tag"; this.map = MAPS.tag; this.mapName = "tag"; this.L = TAG.L; this.n = 6;
+    this.mut = o.mut; this.cross = o.cross; this.elite = o.elite; this.penalty = o.penalty;
+    this.cg = new Float32Array(TAG.PC * TAG.NW).map(() => gauss() * 0.8);
+    this.rg = new Float32Array(TAG.PR * TAG.NW).map(() => gauss() * 0.8);
+    this.inp = new Float32Array(TAG.NI); this.hid = new Float32Array(TAG.NH);
+    this.stage = new Uint8Array(6); this.mpos = []; this.team = new Uint8Array(6).fill(0, 0, TAG.NC);
+    this.team.fill(1, 0, TAG.NC);
+    this.gen = 1; this.firstReach = null; this.history = []; this.bestIdx = 0;
+    this.permC = [...Array(TAG.PC).keys()]; this.permR = [...Array(TAG.PR).keys()];
+    this.makeMatches();
+  }
+  makeMatches() {
+    const { NC, NR, M } = TAG;
+    this.matches = [];
+    for (let m = 0; m < M; m++) this.matches.push(new Match(this, this.permC.slice(m * NC, m * NC + NC), this.permR.slice(m * NR, m * NR + NR)));
+    this.featured = this.matches[0];   // 화면에 보여 주는 경기 = 지난 세대 1등끼리
+  }
+  get px() { return this.featured.px; } get pz() { return this.featured.pz; }
+  get vx() { return this.featured.vx; } get vz() { return this.featured.vz; }
+  get state() { return this.featured.state; } get t() { return this.featured.t; }
+  get prep() { return this.featured.t < TAG.PREP; }
+  step() { this.featured.step(); return !this.featured.done; }
+  runToEnd() { this.featured.run(); }
+  evaluate() {
+    const { NC, NR, L } = TAG;
+    for (const m of this.matches) m.run();
+    this.fc = new Float64Array(TAG.PC); this.fr = new Float64Array(TAG.PR);
+    let caught = 0, catchT = 0;
+    for (const m of this.matches) {
+      let teamCaught = 0;
+      for (let r = NC; r < 6; r++) if (m.state[r]) { teamCaught++; caught++; catchT += m.caughtAt[r]; }
+      for (let c = 0; c < NC; c++)   // 술래 점수: 직접 잡은 만큼 + 팀이 잡은 수 + 가장 가까이 간 거리
+        this.fc[m.ci[c]] = 40 * m.tagScore[c] + 8 * teamCaught + 20 * Math.max(0, 1 - m.minD[c] / 20);
+      for (let r = NC; r < 6; r++) {   // 도망자 점수: 오래 살아남을수록 + 끝까지 안 잡히면 보너스 + 술래와 거리
+        const alive = m.state[r] ? m.caughtAt[r] : L;
+        this.fr[m.ri[r - NC]] = 100 * alive / L + (m.state[r] ? 0 : 20) + 10 * Math.min(1, m.sumD[r] / Math.max(1, alive) / 10);
+      }
+    }
+    const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+    const st = { gen: this.gen, cAvg: avg(this.fc), rAvg: avg(this.fr), cMax: Math.max(...this.fc), rMax: Math.max(...this.fr),
+      caught: caught / TAG.PR * 100, catchT: caught ? catchT / caught : null,
+      featCaught: [2, 3, 4, 5].filter(r => this.featured.state[r]).length };
+    if (st.featCaught === NR && this.firstReach === null) this.firstReach = this.gen;
+    this.history.push(st);
+    return st;
+  }
+  breed(G, fit, P, keep) {
+    const NW = TAG.NW, order = [...fit.keys()].sort((a, b) => fit[b] - fit[a]);
+    const ng = new Float32Array(G.length); let c = 0;
+    if (this.elite) for (; c < keep; c++) ng.set(G.subarray(order[c] * NW, order[c] * NW + NW), c * NW);
+    else { // 엘리트 보존을 꺼도 화면 경기는 1등끼리 보여 주도록 순서만 맞춤
+    }
+    const tour = () => { let b = (Math.random() * P) | 0; for (let k = 0; k < 2; k++) { const o = (Math.random() * P) | 0; if (fit[o] > fit[b]) b = o; } return b; };
+    for (; c < P; c++) {
+      const a = tour(), b = tour();
+      const mid = this.cross === "half" ? NW >> 1 : (Math.random() * NW) | 0;
+      ng.set(G.subarray(a * NW, a * NW + mid), c * NW);
+      ng.set(G.subarray(b * NW + mid, b * NW + NW), c * NW + mid);
+      if (this.mut > 0) for (let j = 0; j < NW; j++) if (Math.random() < this.mut) ng[c * NW + j] += gauss() * 0.5;
+    }
+    return ng;
+  }
+  evolve() {
+    this.cg = this.breed(this.cg, this.fc, TAG.PC, TAG.NC);
+    this.rg = this.breed(this.rg, this.fr, TAG.PR, TAG.NR);
+    const shuffle = (arr, fixed) => { const head = arr.slice(0, fixed), rest = arr.slice(fixed);
+      for (let i = rest.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [rest[i], rest[j]] = [rest[j], rest[i]]; } return head.concat(rest); };
+    const base = n => [...Array(n).keys()];
+    this.permC = shuffle(base(TAG.PC), TAG.NC); this.permR = shuffle(base(TAG.PR), TAG.NR);
+    this.gen++; this.makeMatches();
+  }
+  tracePath() { return []; }
+}
+
 /* ================= 설정 ================= */
 const $ = s => document.querySelector(s);
 const radio = name => document.querySelector(`input[name="${name}"]:checked`).value;
 function readSettings() {
-  return { pop: +radio("pop"), mut: +radio("mut"), map: radio("map"), cross: radio("cross"), penalty: $("#penalty").checked, elite: $("#elite").checked };
+  return { pop: +radio("pop"), mut: +radio("mut"), map: radio("map"), mode: radio("mode"), cross: radio("cross"), penalty: $("#penalty").checked, elite: $("#elite").checked };
 }
 let S = readSettings();
-let sim = new Sim(S);
+const mapKey = () => S.mode === "tag" ? "tag" : S.map;
+const makeSim = () => S.mode === "tag" ? new TagSim(S) : new Sim(S);
+let sim = makeSim();
 
 /* ================= 3D 장면 ================= */
 const canvas = $("#three"), stage = $("#stage");
@@ -662,11 +873,13 @@ function makeMonster(hue) {
 function buildObstacles() {
   obstacleGroup.children.slice().forEach(m => obstacleGroup.remove(m));
   anim = { items: [], monsters: [], lasers: [] };
-  const map = MAPS[S.map];
+  const map = MAPS[mapKey()];
+  startPad.visible = goal.visible = !map.tag;
   for (const w of map.rects) {
-    obstacleGroup.add(box(w.w, 1.7, w.d, w.x, w.z, obstacleMat));
+    const h = map.tag ? 1.0 : 1.7;   // 술래잡기는 로봇이 잘 보이게 낮은 벽
+    obstacleGroup.add(box(w.w, h, w.d, w.x, w.z, obstacleMat));
     const cap = new THREE.Mesh(new THREE.BoxGeometry(w.w + 0.04, 0.08, w.d + 0.04), capMat);
-    cap.position.set(w.x, 1.74, w.z); obstacleGroup.add(cap);
+    cap.position.set(w.x, h + 0.04, w.z); obstacleGroup.add(cap);
   }
   if (!map.grid) return;
   // 벽 칸
@@ -779,6 +992,9 @@ const PASTEL = ["#8ec5ff", "#ffb3c7", "#a8e6cf", "#ffd3a5", "#c7b8ff", "#9fe0f0"
 const GREY = new THREE.Color("#a3aeb5"), GOLD = new THREE.Color("#ffc93c"), CAUGHT = new THREE.Color("#b9a6d9");
 const KNOB = [new THREE.Color("#f0703f"), new THREE.Color("#ff5fa2"), new THREE.Color("#2a9df4")];
 // 안테나 구슬 = 지금까지 모은 것 (없음 → 열쇠 노랑 → 퓨즈① 주황 → 퓨즈② 하늘)
+// 술래잡기 팀 색: 술래 빨강(눈 감는 동안 연하게), 도망자 하늘·민트. 안테나가 빨개지면 "상대가 보인다"
+const CHASER = new THREE.Color("#ff6b5e"), CHASER_SLEEP = new THREE.Color("#f2b3ad"), CHASER_KNOB = new THREE.Color("#c4122f");
+const RUNNERS = ["#8ec5ff", "#a8e6cf", "#9fe0f0", "#c7b8ff"].map(c => new THREE.Color(c)), ALERT = new THREE.Color("#ff2d55");
 const STAGE_KNOB = [new THREE.Color("#ffffff"), new THREE.Color("#ffcf3f"), new THREE.Color("#ff8a3d"), new THREE.Color("#3cc8ff")];
 for (let i = 0; i < MAXN; i++) { bodyM.setColorAt(i, PASTEL[i % PASTEL.length]); knobM.setColorAt(i, KNOB[i % 3]); }
 
@@ -805,8 +1021,11 @@ function updateRobots(time) {
       heading[i] += d * 0.35;
     }
     let y = R, sx = 1, sy = 0.94, sz = 1, spin = 0;
+    const chaser = sim.team && sim.team[i];
+    if (chaser) { sx = sz = 1.2; sy = 1.13; }
     const ph = time * 11 + i * 1.7;
-    if (st === 0) { if (!reduceMotion) { y += Math.abs(Math.sin(ph)) * 0.12; sy = 0.94 + Math.sin(ph * 2) * 0.03; } }
+    if (chaser && sim.prep) { /* 술래는 눈 감고 기다리는 중: 가만히 */ }
+    else if (st === 0) { if (!reduceMotion) { y += Math.abs(Math.sin(ph)) * 0.12; sy = 0.94 + Math.sin(ph * 2) * 0.03; } }
     else if (st === 1 || st === 3) { y = R * 0.55; sx = sz = 1.18; sy = 0.55; }
     else { if (!reduceMotion) { y += Math.abs(Math.sin(time * 6 + i)) * 0.45; spin = time * 3; } }
     dummy.position.set(sim.px[i], y, sim.pz[i]);
@@ -821,18 +1040,23 @@ function updateRobots(time) {
     }
     stickM.setMatrixAt(i, M.multiplyMatrices(dummy.matrix, L_STICK));
     knobM.setMatrixAt(i, M2.multiplyMatrices(dummy.matrix, L_KNOB));
-    bodyM.setColorAt(i, st === 1 ? GREY : st === 3 ? CAUGHT : st === 2 ? GOLD : PASTEL[i % PASTEL.length]);
-    if (sim.map.items.length) knobM.setColorAt(i, STAGE_KNOB[sim.stage[i]]); else knobM.setColorAt(i, KNOB[i % 3]);
+    if (sim.team) {
+      bodyM.setColorAt(i, chaser ? (sim.prep ? CHASER_SLEEP : CHASER) : st === 3 ? GREY : RUNNERS[i % RUNNERS.length]);
+      knobM.setColorAt(i, chaser ? CHASER_KNOB : st === 3 ? GREY : (sim.featured.seen[i] ? ALERT : KNOB[2]));
+    } else {
+      bodyM.setColorAt(i, st === 1 ? GREY : st === 3 ? CAUGHT : st === 2 ? GOLD : PASTEL[i % PASTEL.length]);
+      if (sim.map.items.length) knobM.setColorAt(i, STAGE_KNOB[sim.stage[i]]); else knobM.setColorAt(i, KNOB[i % 3]);
+    }
   }
   for (const m of [bodyM, eyeM, shineM, cheekM, stickM, knobM]) m.instanceMatrix.needsUpdate = true;
   bodyM.instanceColor.needsUpdate = true; knobM.instanceColor.needsUpdate = true;
 }
 
 /* ---- 카메라 (드래그 회전 · 휠/핀치 확대) ---- */
-const target = new THREE.Vector3(0, 0, 0);
-const cam = { theta: 0.12, phi: 0.8, r: 23 };
+const target = new THREE.Vector3(0, 0, 0.8);
+const cam = { theta: 0.12, phi: 0.8, r: 25 };
 const camGoal = { ...cam };
-const PRESETS = { tilt: { theta: 0.12, phi: 0.8, r: 23 }, top: { theta: 0, phi: 0.02, r: 25 }, side: { theta: -0.9, phi: 1.12, r: 25 } };
+const PRESETS = { tilt: { theta: 0.12, phi: 0.8, r: 25 }, top: { theta: 0, phi: 0.02, r: 25 }, side: { theta: -0.9, phi: 1.12, r: 25 } };
 function setPreset(p) { Object.assign(camGoal, PRESETS[p]); camGoal.r *= aspectBoost(); }
 function aspectBoost() { return camera.aspect < 1.3 ? Math.min(1.9, 1.3 / camera.aspect * 1.05) : 1; }
 $("#camTilt").onclick = () => setPreset("tilt");
@@ -937,6 +1161,14 @@ const chReach = new LineChart($("#chReach"), { fmt: fmtPct, yMax: 100 });
 const chExp = new LineChart($("#chExp"), { fmt: fmtPct });
 function drawCharts() {
   const h = sim.history;
+  if (sim.mode === "tag") {
+    $("#scoreLegend").innerHTML = '<span style="--c:var(--s2)">술래 평균 점수</span><span style="--c:var(--s1)">도망자 평균 점수</span>';
+    chScore.set([{ name: "술래", color: "--s2", data: h.map(d => d.cAvg) }, { name: "도망자", color: "--s1", data: h.map(d => d.rAvg) }]);
+    $("#reachLegend").innerHTML = '<span style="--c:var(--s3)">12경기에서 잡힌 도망자 (%)</span>';
+    chReach.set([{ name: "잡힘", color: "--s3", data: h.map(d => d.caught) }]);
+    return;
+  }
+  $("#scoreLegend").innerHTML = '<span style="--c:var(--s2)">최고 점수</span><span style="--c:var(--s1)">평균 점수</span>';
   chScore.set([{ name: "최고", color: "--s2", data: h.map(d => d.max) }, { name: "평균", color: "--s1", data: h.map(d => d.avg) }]);
   const dungeon = sim.map.items.length > 0;
   const ser = dungeon
@@ -964,6 +1196,16 @@ function finishGen(now, delay) {
 }
 function updateStats(st) {
   $("#stGen").textContent = sim.gen;
+  const tag = sim.mode === "tag";
+  $("#kFirst").textContent = tag ? "1등 경기 전원 잡힘" : "처음 도착";
+  $("#kReach").textContent = tag ? "잡힌 비율" : "도착 비율";
+  $("#kMax").textContent = tag ? "평균 잡는 걸음" : "최고 점수";
+  if (tag) {
+    $("#stFirst").textContent = sim.firstReach ? sim.firstReach + "세대" : "–";
+    $("#stReach").textContent = st ? st.caught.toFixed(0) + "%" : "–";
+    $("#stMax").textContent = st && st.catchT ? st.catchT.toFixed(0) : "–";
+    return;
+  }
   $("#stFirst").textContent = sim.firstReach ? sim.firstReach + "세대" : "–";
   if (st) { $("#stReach").textContent = st.reach.toFixed(0) + "%"; $("#stMax").textContent = st.max.toFixed(1); }
   else { $("#stReach").textContent = "–"; $("#stMax").textContent = "–"; }
@@ -972,8 +1214,15 @@ function updateHud() {
   let reached = 0; for (let i = 0; i < sim.n; i++) if (sim.state[i] === 2) reached++;
   $("#hudGen").textContent = sim.gen + "세대";
   $("#hudStep").textContent = sim.t + " / " + sim.L + "걸음";
-  $("#hudReach").innerHTML = `도착 <b>${reached}</b> / ${sim.n}`;
   const hi = $("#hudItems");
+  if (sim.mode === "tag") {
+    let caught = 0; for (let i = 2; i < 6; i++) if (sim.state[i] === 3) caught++;
+    $("#hudReach").innerHTML = `잡힘 <b>${caught}</b> / 4`;
+    hi.hidden = false;
+    hi.innerHTML = sim.prep ? `술래 눈 감는 중 <b>${TAG.PREP - sim.t}</b>` : `술래 2 vs 도망자 4 · 1등끼리 경기`;
+    return;
+  }
+  $("#hudReach").innerHTML = `도착 <b>${reached}</b> / ${sim.n}`;
   if (sim.map.items.length) {
     let key = 0, fuse = 0, caught = 0;
     for (let i = 0; i < sim.n; i++) { if (sim.stage[i] >= 1) key++; if (sim.stage[i] >= 3) fuse++; if (sim.state[i] === 3) caught++; }
@@ -982,7 +1231,9 @@ function updateHud() {
 }
 
 function resetSim() {
-  S = readSettings(); sim = new Sim(S); buildObstacles();
+  S = readSettings(); sim = makeSim(); buildObstacles();
+  document.body.classList.toggle("mode-tag", S.mode === "tag");
+  $("#tagNote").hidden = S.mode !== "tag";
   heading.fill(Math.PI / 2); pathGeo.setDrawRange(0, 0);
   phase = "run"; drawCharts(); updateStats(null); updateHud();
 }
@@ -1018,7 +1269,7 @@ document.querySelectorAll('input[name="speed"]').forEach(el => el.onchange = () 
 document.querySelectorAll('input[name="mut"]').forEach(el => el.onchange = () => { S.mut = sim.mut = +radio("mut"); });
 document.querySelectorAll('input[name="cross"]').forEach(el => el.onchange = () => { S.cross = sim.cross = radio("cross"); });
 $("#penalty").onchange = () => { S.penalty = sim.penalty = $("#penalty").checked; };
-document.querySelectorAll('input[name="pop"], input[name="map"]').forEach(el => el.onchange = () => resetSim());
+document.querySelectorAll('input[name="pop"], input[name="map"], input[name="mode"]').forEach(el => el.onchange = () => resetSim());
 
 async function copyText(text, btn) {
   const label = btn.textContent;
@@ -1028,6 +1279,11 @@ async function copyText(text, btn) {
   setTimeout(() => btn.textContent = label, 1500);
 }
 $("#btnCsv").onclick = e => {
+  if (sim.mode === "tag") {
+    const rows = ["세대,술래 평균 점수,도망자 평균 점수,잡힌 비율(%),평균 잡는 걸음,1등 경기에서 잡힌 수", ...sim.history.map(h => [h.gen, h.cAvg.toFixed(2), h.rAvg.toFixed(2), h.caught.toFixed(1), h.catchT ? h.catchT.toFixed(0) : "", h.featCaught].join(","))];
+    copyText(`# 술래잡기, 돌연변이율 ${S.mut * 100}%, 엘리트 보존 ${S.elite ? "켬" : "끔"}\n` + rows.join("\n"), e.currentTarget);
+    return;
+  }
   const rows = ["세대,평균 점수,최고 점수,도착 비율(%),도착 수,열쇠 비율(%),퓨즈 2개 비율(%)", ...sim.history.map(h => [h.gen, h.avg.toFixed(3), h.max.toFixed(3), h.reach.toFixed(1), h.reached, h.key.toFixed(1), h.fuses.toFixed(1)].join(","))];
   copyText(`# 개체 수 ${S.pop}, 돌연변이율 ${S.mut * 100}%, 장애물 ${MAP_NAMES[S.map]}, 교차 ${S.cross === "half" ? "반씩" : "무작위"}, 벽 감점 ${S.penalty ? "켬" : "끔"}, 엘리트 보존 ${S.elite ? "켬" : "끔"}\n` + rows.join("\n"), e.currentTarget);
 };
