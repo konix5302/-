@@ -38,6 +38,7 @@
 html, body { height: 100%; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
@@ -88,6 +89,32 @@ h2 small { font-family: var(--font-body); font-size: 12.5px; color: var(--muted)
 .seg input:checked + label { background: var(--panel); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
 .seg input:focus-visible + label { outline: 2px solid var(--accent); }
 body.mode-tag .path-only { display: none; }
+body:not(.mode-tag) .tag-only { display: none; }
+.game-banner { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20,30,40,.28); z-index: 3; padding: 16px; }
+.game-card { background: #fff; color: #1f2b33; border-radius: 24px; padding: 22px 28px; text-align: center; box-shadow: 0 18px 50px rgba(20,30,40,.3); max-width: 420px; animation: pop .45s cubic-bezier(.2,1.6,.4,1); }
+.game-card .gt { font-family: var(--font-display); font-size: 46px; line-height: 1.1; color: #e2463a; }
+.game-card .gn { font-family: var(--font-display); font-size: 22px; margin: 6px 0 4px; }
+.game-card .gn b { font-weight: 400; color: #f0703f; font-size: 40px; }
+.game-card p { margin: 4px 0 14px; color: #5a6872; font-size: 14px; }
+.game-card .row { justify-content: center; }
+.game-card .btn { color: #1f2b33; background: #f3f7f8; border-color: #d6e0e4; }
+.game-card .btn.primary { color: #fff; background: #f0703f; }
+.toast { position: absolute; top: 74px; left: 50%; transform: translateX(-50%); background: #1f2b33; color: #fff; font-family: var(--font-display); font-size: 22px; padding: 8px 22px; border-radius: 999px; box-shadow: 0 8px 24px rgba(0,0,0,.25); z-index: 2; pointer-events: none; animation: pop .35s cubic-bezier(.2,1.6,.4,1); white-space: nowrap; }
+.toast b { font-weight: 400; color: #ffd23f; }
+.edit-bar { position: absolute; left: 50%; transform: translateX(-50%); bottom: max(14px, env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;
+  background: rgba(255,255,255,.94); color: #1f2b33; border-radius: 18px; padding: 10px 14px; box-shadow: 0 8px 26px rgba(30,50,60,.2); z-index: 2; max-width: calc(100% - 28px); }
+.edit-bar .eb-t { font-family: var(--font-display); font-size: 17px; }
+.edit-bar .eb-t b { font-weight: 400; color: #f0703f; }
+.edit-bar .btn { color: #1f2b33; background: #f3f7f8; border-color: #d6e0e4; }
+.edit-bar .btn.primary { color: #fff; background: #f0703f; animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.toast { animation-name: toastpop; }
+@keyframes toastpop { from { transform: translateX(-50%) scale(.6); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
+@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(240,112,63,.18); } }
+body.editing .pipeline { display: none; }
+body.editing .stage canvas#three { cursor: crosshair; }
+.record { display: flex; gap: 8px; }
+.record .stat { flex: 1; }
 .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; cursor: pointer; }
 .check input { margin-top: 4px; accent-color: var(--accent); }
 .note { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; }
@@ -132,7 +159,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
   .pipeline span { font-size: 12px; padding: 3px 7px; }
   .pipeline i { display: none; }
 }
-@media (prefers-reduced-motion: reduce) { .pipeline span { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .pipeline span { transition: none; } .game-card, .toast, .edit-bar .btn.primary { animation: none; } }
 </style>
 
 <div class="app">
@@ -148,6 +175,19 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <button type="button" id="camTilt">비스듬히</button>
       <button type="button" id="camTop">위에서</button>
       <button type="button" id="camSide">옆에서</button>
+    </div>
+    <div class="toast" id="toast" hidden></div>
+    <div class="edit-bar" id="editBar" hidden>
+      <span class="eb-t">바닥을 눌러 블록 놓기 · 다시 누르면 빼기 · 블록 <b id="ebCount">0</b>/30</span>
+      <button class="btn primary" type="button" id="ebStart">▶ 게임 시작</button>
+    </div>
+    <div class="game-banner" id="gameBanner" hidden>
+      <div class="game-card" role="dialog" aria-live="assertive">
+        <div class="gt">술래 팀 승리!</div>
+        <div class="gn">도망자들이 <b id="gbGen">0</b>세대 버텼어요</div>
+        <p id="gbMsg"></p>
+        <div class="row"><button class="btn primary" type="button" id="gbRetry">같은 맵으로 다시</button><button class="btn" type="button" id="gbEdit">맵 고치기</button></div>
+      </div>
     </div>
     <div class="hud pipeline" id="pipeline">
       <span data-ph="birth">① 무작위 생성</span><i>→</i>
@@ -190,8 +230,32 @@ details table { font-size: 12.5px; margin-top: 6px; }
           <input type="radio" name="mode" id="moPath" value="path" checked><label for="moPath">길 찾기</label>
           <input type="radio" name="mode" id="moTag" value="tag"><label for="moTag">술래잡기</label>
         </div>
-        <p class="note" id="tagNote" hidden>빨간 술래 2명 vs 도망자 4명. 술래는 처음 90걸음 동안 눈을 감고 기다려요(연한 빨강). 로봇마다 작은 신경망 뇌(가중치 182개)가 있고, 이 가중치가 유전자예요. 뇌는 주변 벽까지 거리 8방향, 자기 속도, 벽에 가려지지 않고 보이는 가장 가까운 상대(안 보이면 마지막으로 본 위치)를 보고 어느 쪽으로 갈지 정해요. 안테나가 빨개지면 상대가 보인다는 뜻이에요. 한 세대에 12경기를 치르고, 술래 팀과 도망자 팀이 따로 진화해요. 화면에 보이는 경기는 지난 세대 1등끼리 붙는 경기예요.</p>
+        <p class="note" id="tagNote" hidden>빨간 술래 2명 vs 도망자 4명. 술래가 더 빨라요. 술래는 처음 90걸음 동안 눈을 감고 기다려요(연한 빨강). 로봇마다 작은 신경망 뇌(가중치 182개)가 있고, 이 가중치가 유전자예요. 뇌는 주변 벽까지 거리 8방향, 자기 속도, 벽에 가려지지 않고 보이는 가장 가까운 상대(안 보이면 마지막으로 본 위치)를 보고 어느 쪽으로 갈지 정해요. 안테나가 빨개지면 상대가 보인다는 뜻이에요. 한 세대에 12경기를 치르고, 술래 팀과 도망자 팀이 따로 진화해요. 화면에 보이는 경기는 지난 세대 1등끼리 붙는 경기예요.</p>
       </div>
+    </section>
+
+    <section class="tag-only">
+      <h2>술래잡기 게임 <small>도망자가 몇 세대 버틸까?</small></h2>
+      <div class="record">
+        <div class="stat"><div class="v" id="gmNow">–</div><div class="k">이번 판 버틴 세대</div></div>
+        <div class="stat"><div class="v" id="gmBest">–</div><div class="k">최고 기록 (이 맵)</div></div>
+        <div class="stat"><div class="v" id="gmBlocks">0/30</div><div class="k">놓은 블록</div></div>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <div class="lab"><span>술래 속도 (도망자보다)</span><span>빠를수록 어려워요</span></div>
+        <div class="seg" role="radiogroup" aria-label="술래 속도">
+          <input type="radio" name="cspeed" id="cs110" value="1.1"><label for="cs110">×1.1</label>
+          <input type="radio" name="cspeed" id="cs120" value="1.2" checked><label for="cs120">×1.2</label>
+          <input type="radio" name="cspeed" id="cs135" value="1.35"><label for="cs135">×1.35</label>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" type="button" id="tgEdit">맵 편집</button>
+        <button class="btn small" type="button" id="tgDefault">기본 맵</button>
+        <button class="btn small" type="button" id="tgRandom">무작위 맵</button>
+        <button class="btn small" type="button" id="tgClear">모두 지우기</button>
+      </div>
+      <p class="note">규칙: 한 세대마다 12경기(도망자 48명)를 치러요. 그중 80% 이상이 잡히면 술래 팀이 이겨서 게임 오버예요. 그 전까지 지난 세대 수가 "버틴 세대"예요. 블록을 잘 놓으면 도망자가 숨을 곳이 생겨 더 오래 버텨요. 진화에는 운이 섞이니 같은 맵도 여러 번 해 보세요.</p>
     </section>
 
     <section id="secCond">
@@ -571,7 +635,7 @@ class Sim {
 const TAG = {
   L: 600, PREP: 90,          // 경기 길이, 술래가 눈 감고 기다리는 걸음 수
   NC: 2, NR: 4, M: 12,       // 한 경기에 술래 2 · 도망자 4, 한 세대에 12경기
-  VC: 0.32, VR: 0.30,        // 최고 속도 (술래가 조금 빠름)
+  VC: 0.36, VR: 0.30,        // 최고 속도 (술래가 더 빠름: 기본 ×1.2)
   TAGD: 0.85,                // 이만큼 가까우면 잡힘
   NI: 16, NH: 10,            // 신경망 입력 16 · 숨은층 10 · 출력 2
 };
@@ -579,15 +643,40 @@ TAG.NW = TAG.NI * TAG.NH + (TAG.NH + 1) * 2;   // 유전자(가중치) 개수
 TAG.PC = TAG.NC * TAG.M; TAG.PR = TAG.NR * TAG.M;
 MAPS.tag = {
   L: TAG.L, tag: true, items: [], monsters: [], targets: [],
-  rects: [   // 숨을 곳
-    { x: -4, z: -4, w: 5, d: 0.6 }, { x: -4, z: 4, w: 5, d: 0.6 },
-    { x: 0, z: 0, w: 0.6, d: 4.4 },
-    { x: 5, z: -4.6, w: 0.6, d: 5 }, { x: 5, z: 4.6, w: 0.6, d: 5 },
-    { x: -9.5, z: 0, w: 1.6, d: 1.6 }, { x: 9, z: -5.5, w: 1.4, d: 1.4 }, { x: 9, z: 5.5, w: 1.4, d: 1.4 },
-  ],
+  rects: [],   // 내가 놓은 블록으로 채워짐
 };
 MAP_NAMES.tag = "술래잡기";
 const SPAWN = [[9.5, -1.6], [9.5, 1.6], [-7, -6], [-7, -2], [-7, 2], [-7, 6]];
+/* ---- 내가 배치하는 블록 (칸 단위) ---- */
+const TAG_BUDGET = 30;
+const tagBlocks = new Set();
+const SPAWN_CELLS = SPAWN.map(([x, z]) => [Math.floor(x + HX), Math.floor(z + HZ)]);
+const DEFAULT_BLOCKS = [
+  [8, 3], [9, 3], [10, 3], [11, 3], [8, 12], [9, 12], [10, 12], [11, 12],
+  [14, 6], [14, 7], [14, 8], [14, 9], [18, 1], [18, 2], [18, 3], [18, 12], [18, 13], [18, 14],
+  [2, 7], [2, 8], [11, 7], [11, 8],
+];
+function tagCellFree(c, r) {
+  return c >= 0 && r >= 0 && c < COLS && r < ROWS && !SPAWN_CELLS.some(([sc, sr]) => Math.abs(sc - c) <= 1 && Math.abs(sr - r) <= 1);
+}
+function applyTagBlocks() {
+  MAPS.tag.rects = [...tagBlocks].map(k => { const [c, r] = k.split(",").map(Number); return { x: cellX(c), z: cellZ(r), w: 1, d: 1, c, r }; });
+}
+function setTagBlocks(list) {
+  tagBlocks.clear();
+  for (const [c, r] of list) if (tagCellFree(c, r) && tagBlocks.size < TAG_BUDGET) tagBlocks.add(c + "," + r);
+  applyTagBlocks();
+}
+function randomTagBlocks() {   // 짧은 벽 여러 개를 무작위로
+  const out = [];
+  for (let w = 0; w < 9; w++) {
+    const horiz = Math.random() < 0.5, len = 2 + ((Math.random() * 3) | 0);
+    const c0 = 3 + ((Math.random() * 16) | 0), r0 = 1 + ((Math.random() * 13) | 0);
+    for (let k = 0; k < len; k++) out.push(horiz ? [c0 + k, r0] : [c0, r0 + k]);
+  }
+  return out;
+}
+setTagBlocks(DEFAULT_BLOCKS);
 
 function slab(x, z, dx, dz, w) {   // 반직선이 상자에 들어가는 지점 (없으면 -1)
   const x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, z0 = w.z - w.d / 2, z1 = w.z + w.d / 2;
@@ -824,6 +913,8 @@ scene.add(box(T, BH, HZ * 2, HX + T / 2, 0, wallMat));
 
 const obstacleGroup = new THREE.Group(); scene.add(obstacleGroup);
 const capMat = new THREE.MeshStandardMaterial({ color: "#ffb38f", roughness: 0.6 });
+const CANDY = [["#ff5d8f", "#ff8fb1"], ["#18c29c", "#5ee0c0"], ["#ffbe0b", "#ffd75e"], ["#8a5cf6", "#b49bff"], ["#2f86ff", "#74b0ff"]]
+  .map(([a, b]) => [new THREE.MeshStandardMaterial({ color: a, roughness: 0.45 }), new THREE.MeshStandardMaterial({ color: b, roughness: 0.4 })]);
 let anim = { items: [], monsters: [], lasers: [] };   // 던전에서 매 프레임 움직이는 것들
 
 function labelSprite(text, color) {
@@ -876,10 +967,18 @@ function buildObstacles() {
   const map = MAPS[mapKey()];
   startPad.visible = goal.visible = !map.tag;
   for (const w of map.rects) {
-    const h = map.tag ? 1.0 : 1.7;   // 술래잡기는 로봇이 잘 보이게 낮은 벽
-    obstacleGroup.add(box(w.w, h, w.d, w.x, w.z, obstacleMat));
+    if (map.tag) {   // 술래잡기: 알록달록 장난감 블록
+      const k = ((w.c * 7 + w.r * 3) % CANDY.length + CANDY.length) % CANDY.length;
+      const b = box(0.96, 0.9, 0.96, w.x, w.z, CANDY[k][0]); obstacleGroup.add(b);
+      const top = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.1, 0.98), CANDY[k][1]);
+      top.position.set(w.x, 0.95, w.z); obstacleGroup.add(top);
+      const stud = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.1, 16), CANDY[k][1]);
+      stud.position.set(w.x, 1.05, w.z); obstacleGroup.add(stud);
+      continue;
+    }
+    obstacleGroup.add(box(w.w, 1.7, w.d, w.x, w.z, obstacleMat));
     const cap = new THREE.Mesh(new THREE.BoxGeometry(w.w + 0.04, 0.08, w.d + 0.04), capMat);
-    cap.position.set(w.x, h + 0.04, w.z); obstacleGroup.add(cap);
+    cap.position.set(w.x, 1.74, w.z); obstacleGroup.add(cap);
   }
   if (!map.grid) return;
   // 벽 칸
@@ -993,8 +1092,8 @@ const GREY = new THREE.Color("#a3aeb5"), GOLD = new THREE.Color("#ffc93c"), CAUG
 const KNOB = [new THREE.Color("#f0703f"), new THREE.Color("#ff5fa2"), new THREE.Color("#2a9df4")];
 // 안테나 구슬 = 지금까지 모은 것 (없음 → 열쇠 노랑 → 퓨즈① 주황 → 퓨즈② 하늘)
 // 술래잡기 팀 색: 술래 빨강(눈 감는 동안 연하게), 도망자 하늘·민트. 안테나가 빨개지면 "상대가 보인다"
-const CHASER = new THREE.Color("#ff6b5e"), CHASER_SLEEP = new THREE.Color("#f2b3ad"), CHASER_KNOB = new THREE.Color("#c4122f");
-const RUNNERS = ["#8ec5ff", "#a8e6cf", "#9fe0f0", "#c7b8ff"].map(c => new THREE.Color(c)), ALERT = new THREE.Color("#ff2d55");
+const CHASER = new THREE.Color("#ff3b30"), CHASER_SLEEP = new THREE.Color("#c98a86"), CHASER_KNOB = new THREE.Color("#8a0015");
+const RUNNERS = ["#3fa9ff", "#22d3a6", "#7c6cff", "#ffb020"].map(c => new THREE.Color(c)), ALERT = new THREE.Color("#ff2d55");
 const STAGE_KNOB = [new THREE.Color("#ffffff"), new THREE.Color("#ffcf3f"), new THREE.Color("#ff8a3d"), new THREE.Color("#3cc8ff")];
 for (let i = 0; i < MAXN; i++) { bodyM.setColorAt(i, PASTEL[i % PASTEL.length]); knobM.setColorAt(i, KNOB[i % 3]); }
 
@@ -1063,9 +1162,11 @@ $("#camTilt").onclick = () => setPreset("tilt");
 $("#camTop").onclick = () => setPreset("top");
 $("#camSide").onclick = () => setPreset("side");
 const ptrs = new Map(); let pinch0 = 0, r0 = 0;
-canvas.addEventListener("pointerdown", e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+const downAt = new Map();
+canvas.addEventListener("pointerdown", e => { canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); downAt.set(e.pointerId, [e.clientX, e.clientY, ptrs.size]);
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); r0 = camGoal.r; } });
 canvas.addEventListener("pointermove", e => {
+  if (typeof hoverCell === "function") hoverCell(e);
   if (!ptrs.has(e.pointerId)) return;
   const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
   if (ptrs.size === 1) {
@@ -1077,7 +1178,12 @@ canvas.addEventListener("pointermove", e => {
   }
 });
 const endPtr = e => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch0 = 0; };
-canvas.addEventListener("pointerup", endPtr); canvas.addEventListener("pointercancel", endPtr);
+canvas.addEventListener("pointerup", e => {
+  const d = downAt.get(e.pointerId); downAt.delete(e.pointerId);
+  if (d && d[2] === 1 && Math.hypot(e.clientX - d[0], e.clientY - d[1]) < 6) clickCell(e);   // 끌지 않고 누르면 = 클릭
+  endPtr(e);
+});
+canvas.addEventListener("pointercancel", e => { downAt.delete(e.pointerId); endPtr(e); });
 canvas.addEventListener("wheel", e => { e.preventDefault(); camGoal.r = Math.min(60, Math.max(8, camGoal.r * (1 + Math.sign(e.deltaY) * 0.08))); }, { passive: false });
 function updateCamera() {
   for (const k of ["theta", "phi", "r"]) cam[k] += (camGoal[k] - cam[k]) * 0.12;
@@ -1182,6 +1288,156 @@ new ResizeObserver(redrawAll).observe($(".panel"));
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redrawAll);
 new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
+/* ================= 술래잡기 게임: 편집 · 효과 · 기록 ================= */
+const game = { state: "off", survived: 0, danger: 0 };
+const GAME_OVER_PCT = 80;   // 한 세대 12경기에서 도망자가 이만큼 이상 잡히면 게임 오버
+const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
+try { const saved = JSON.parse(store.get("tagBlocks") || "null"); if (Array.isArray(saved)) setTagBlocks(saved); } catch {}
+const layoutKey = () => "tagBest:" + $("input[name=cspeed]:checked").value + ":" + [...tagBlocks].sort().join(";");
+function bestRecord() { const v = +store.get(layoutKey()); return Number.isFinite(v) && v > 0 ? v : 0; }
+function saveBlocks() { store.set("tagBlocks", JSON.stringify([...tagBlocks].map(k => k.split(",").map(Number)))); }
+function refreshGameUi() {
+  const tag = S.mode === "tag", editing = tag && game.state === "edit";
+  document.body.classList.toggle("editing", editing);
+  $("#editBar").hidden = !editing;
+  $("#ebCount").textContent = tagBlocks.size;
+  $("#gmBlocks").textContent = tagBlocks.size + "/" + TAG_BUDGET;
+  $("#gmNow").textContent = tag && game.state !== "edit" ? game.survived + "세대" : "–";
+  const b = bestRecord(); $("#gmBest").textContent = b ? b + "세대" : "–";
+  ghost.visible = false;
+  if (tag && game.state === "edit") btnPlay.textContent = "▶ 게임 시작";
+  else setRunning(running);
+}
+let toastTimer = 0;
+function toast(html, ms = 1300) {
+  const t = $("#toast"); t.innerHTML = html; t.hidden = false;
+  t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, ms);
+}
+function enterEdit() {
+  game.state = "edit"; game.survived = 0; $("#gameBanner").hidden = true;
+  S = readSettings(); sim = makeSim(); buildObstacles(); setRunning(false); phase = "run";
+  drawCharts(); updateStats(null); refreshGameUi();
+}
+function startGame() {
+  applyTagBlocks(); saveBlocks();
+  S = readSettings(); sim = makeSim(); buildObstacles();
+  game.state = "play"; game.survived = 0; game.danger = 0; $("#gameBanner").hidden = true; phase = "run";
+  drawCharts(); updateStats(null); setRunning(true); refreshGameUi();
+  toast("술래가 눈을 감았어요. <b>숨어!</b>", 1500);
+}
+function onTagGeneration(st) {
+  if (game.state !== "play") return;
+  game.danger = st.caught;
+  if (st.caught >= GAME_OVER_PCT) {
+    game.state = "over"; setRunning(false);
+    const held = game.survived, prev = bestRecord();
+    if (held > prev) store.set(layoutKey(), String(held));
+    $("#gbGen").textContent = held;
+    $("#gbMsg").textContent = held > prev ? (prev ? `새 기록! 이전 최고는 ${prev}세대였어요.` : "이 맵의 첫 기록이에요.") : `이 맵 최고 기록은 ${prev}세대예요. 블록 배치를 바꿔서 기록을 깨 보세요.`;
+    $("#gameBanner").hidden = false;
+  } else {
+    game.survived = st.gen;
+    if (speed !== "gen") toast(`<b>${st.gen}세대</b> 버팀! 잡힌 비율 ${st.caught.toFixed(0)}%`);
+  }
+  refreshGameUi();
+}
+$("#ebStart").onclick = startGame;
+$("#tgEdit").onclick = () => { if (S.mode === "tag") enterEdit(); };
+$("#gbRetry").onclick = startGame;
+$("#gbEdit").onclick = enterEdit;
+const editBlocks = list => { setTagBlocks(list); saveBlocks(); if (game.state !== "edit") enterEdit(); else { buildObstacles(); refreshGameUi(); } };
+$("#tgDefault").onclick = () => editBlocks(DEFAULT_BLOCKS);
+$("#tgRandom").onclick = () => editBlocks(randomTagBlocks());
+$("#tgClear").onclick = () => editBlocks([]);
+document.querySelectorAll('input[name="cspeed"]').forEach(el => el.onchange = () => { TAG.VC = TAG.VR * +radio("cspeed"); refreshGameUi(); });
+TAG.VC = TAG.VR * +radio("cspeed");
+
+// 바닥 클릭으로 블록 놓기
+const raycaster = new THREE.Raycaster(), ndc = new THREE.Vector2(), floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hitP = new THREE.Vector3();
+const ghost = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.9, 0.98), new THREE.MeshBasicMaterial({ color: "#3fd17a", transparent: true, opacity: 0.45, depthWrite: false }));
+ghost.visible = false; scene.add(ghost);
+function cellAt(e) {
+  const r = canvas.getBoundingClientRect();
+  ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  if (!raycaster.ray.intersectPlane(floorPlane, hitP)) return null;
+  const c = Math.floor(hitP.x + HX), rr = Math.floor(hitP.z + HZ);
+  return c < 0 || rr < 0 || c >= COLS || rr >= ROWS ? null : [c, rr];
+}
+function hoverCell(e) {
+  if (S.mode !== "tag" || game.state !== "edit") { ghost.visible = false; return; }
+  const cell = cellAt(e); if (!cell) { ghost.visible = false; return; }
+  const [c, r] = cell, key = c + "," + r, has = tagBlocks.has(key);
+  const ok = has || (tagCellFree(c, r) && tagBlocks.size < TAG_BUDGET);
+  ghost.material.color.set(has ? "#ff5a5a" : ok ? "#3fd17a" : "#9aa5ab");
+  ghost.position.set(cellX(c), 0.45, cellZ(r)); ghost.visible = true;
+}
+function clickCell(e) {
+  if (S.mode !== "tag") return;
+  if (game.state !== "edit") { if (game.state === "play") toast("게임 중에는 블록을 못 놓아요. <b>맵 편집</b>을 누르세요"); return; }
+  const cell = cellAt(e); if (!cell) return;
+  const [c, r] = cell, key = c + "," + r;
+  if (tagBlocks.has(key)) tagBlocks.delete(key);
+  else if (!tagCellFree(c, r)) { toast("출발 자리 근처라 못 놓아요"); return; }
+  else if (tagBlocks.size >= TAG_BUDGET) { toast(`블록은 최대 <b>${TAG_BUDGET}개</b>예요`); return; }
+  else tagBlocks.add(key);
+  applyTagBlocks(); saveBlocks(); buildObstacles(); refreshGameUi(); hoverCell(e);
+}
+
+// 효과: 발밑 팀 링, "!" 표시, 잡을 때 터지는 별
+function dotSprite(text, bg) {
+  const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d");
+  g.fillStyle = bg; g.beginPath(); g.arc(32, 32, 28, 0, 7); g.fill();
+  g.fillStyle = "#fff"; g.font = 'bold 40px "Jua", sans-serif'; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(text, 32, 35);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true })); s.scale.set(0.5, 0.5, 1); s.renderOrder = 6; return s;
+}
+const fx = new THREE.Group(); scene.add(fx);
+const rings = [], alerts = [];
+for (let i = 0; i < 6; i++) {
+  const ringM = new THREE.Mesh(new THREE.RingGeometry(0.44, 0.7, 32), new THREE.MeshBasicMaterial({ color: i < 2 ? "#ff2020" : "#1f8fff", transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
+  ringM.rotation.x = -Math.PI / 2; fx.add(ringM); rings.push(ringM);
+  const al = dotSprite("!", i < 2 ? "#e2263a" : "#2f9bff"); fx.add(al); alerts.push(al);
+}
+const sparkGeo = new THREE.OctahedronGeometry(0.09), sparks = [];
+const SPARK_COLORS = ["#ffd23f", "#ff5fa2", "#ffffff", "#ff8a3d"].map(c => new THREE.MeshBasicMaterial({ color: c, transparent: true }));
+let caughtLabel = null, caughtLabelT = 0, prevMatch = null; const prevState = new Uint8Array(6);
+function burst(x, z) {
+  for (let k = 0; k < 22; k++) {
+    const m = new THREE.Mesh(sparkGeo, SPARK_COLORS[k % SPARK_COLORS.length]);
+    const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 3;
+    m.position.set(x, 0.6, z); m.userData = { vx: Math.cos(a) * sp, vy: 3 + Math.random() * 3, vz: Math.sin(a) * sp, life: 1 };
+    fx.add(m); sparks.push(m);
+  }
+  if (caughtLabel) fx.remove(caughtLabel);
+  caughtLabel = labelSprite("잡았다!", "#e2263a"); caughtLabel.position.set(x, 1.4, z); caughtLabelT = 1; fx.add(caughtLabel);
+}
+function updateTagFx(dt) {
+  const tag = sim.mode === "tag";
+  fx.visible = tag;
+  if (tag) {
+    if (prevMatch !== sim.featured) { prevMatch = sim.featured; prevState.set(sim.state); }
+    for (let i = 0; i < 6; i++) {
+      const st = sim.state[i];
+      if (st === 3 && prevState[i] !== 3 && game.state === "play") burst(sim.px[i], sim.pz[i]);
+      prevState[i] = st;
+      rings[i].position.set(sim.px[i], 0.03, sim.pz[i]); rings[i].visible = st !== 3;
+      const sleeping = i < 2 && sim.prep;
+      alerts[i].visible = st !== 3 && !sleeping && !!sim.featured.seen[i] && game.state !== "edit";
+      alerts[i].position.set(sim.px[i], 1.35 + (reduceMotion ? 0 : Math.abs(Math.sin(clock.elapsedTime * 8 + i)) * 0.1), sim.pz[i]);
+    }
+  }
+  for (let k = sparks.length - 1; k >= 0; k--) {
+    const m = sparks[k], u = m.userData;
+    u.vy -= 9.8 * dt; m.position.x += u.vx * dt; m.position.y = Math.max(0.05, m.position.y + u.vy * dt); m.position.z += u.vz * dt;
+    m.rotation.x += dt * 8; m.rotation.y += dt * 6; u.life -= dt * 1.1; m.scale.setScalar(Math.max(0.01, u.life * 1.4));
+    if (u.life <= 0) { fx.remove(m); sparks.splice(k, 1); }
+  }
+  if (caughtLabel) { caughtLabelT -= dt * 0.9; caughtLabel.position.y += dt * 0.8; caughtLabel.material.opacity = Math.max(0, caughtLabelT);
+    if (caughtLabelT <= 0) { fx.remove(caughtLabel); caughtLabel = null; } }
+}
+
 /* ================= 진행 루프 ================= */
 let running = true, phase = "run", pauseStart = 0, pauseUntil = 0, expRunning = false;
 let speed = radio("speed");
@@ -1192,6 +1448,7 @@ function finishGen(now, delay) {
   const st = sim.evaluate();
   setPath(sim.tracePath(sim.bestIdx));
   drawCharts(); updateStats(st);
+  if (sim.mode === "tag") onTagGeneration(st);
   phase = "pause"; pauseStart = now; pauseUntil = now + delay;
 }
 function updateStats(st) {
@@ -1219,7 +1476,8 @@ function updateHud() {
     let caught = 0; for (let i = 2; i < 6; i++) if (sim.state[i] === 3) caught++;
     $("#hudReach").innerHTML = `잡힘 <b>${caught}</b> / 4`;
     hi.hidden = false;
-    hi.innerHTML = sim.prep ? `술래 눈 감는 중 <b>${TAG.PREP - sim.t}</b>` : `술래 2 vs 도망자 4 · 1등끼리 경기`;
+    hi.innerHTML = game.state === "edit" ? `맵 편집 중 · 블록 <b>${tagBlocks.size}</b>/${TAG_BUDGET}`
+      : (sim.prep ? `술래 눈 감는 중 <b>${TAG.PREP - sim.t}</b>` : `술래 ×${radio("cspeed")} 빠름`) + ` · 버틴 세대 <b>${game.survived}</b> · 위험 <b>${game.danger.toFixed(0)}%</b>/80%`;
     return;
   }
   $("#hudReach").innerHTML = `도착 <b>${reached}</b> / ${sim.n}`;
@@ -1234,6 +1492,9 @@ function resetSim() {
   S = readSettings(); sim = makeSim(); buildObstacles();
   document.body.classList.toggle("mode-tag", S.mode === "tag");
   $("#tagNote").hidden = S.mode !== "tag";
+  $("#gameBanner").hidden = true;
+  if (S.mode === "tag") { game.state = "edit"; game.survived = 0; running = false; } else game.state = "off";
+  if (typeof refreshGameUi === "function") refreshGameUi();
   heading.fill(Math.PI / 2); pathGeo.setDrawRange(0, 0);
   phase = "run"; drawCharts(); updateStats(null); updateHud();
 }
@@ -1249,22 +1510,27 @@ function frame(now) {
         const k = +speed;
         for (let s = 0; s < k; s++) if (!sim.step()) { finishGen(now, k >= 10 ? 300 : 900); break; }
       }
-    } else if (now >= pauseUntil) { sim.evolve(); phase = "run"; }
+    } else if (now >= pauseUntil && !(sim.mode === "tag" && game.state !== "play")) { sim.evolve(); phase = "run"; }
   }
   if (phase === "pause" && speed !== "gen") {
     const f = (now - pauseStart) / Math.max(1, pauseUntil - pauseStart);
     setPhase(f < 0.25 ? "score" : f < 0.5 ? "select" : f < 0.75 ? "cross" : "mut");
   } else setPhase(sim.gen === 1 && sim.t < 25 ? "birth" : "drive");
   if (!reduceMotion) { star.rotation.y = time * 1.6; star.position.y = 1.4 + Math.sin(time * 2.2) * 0.12; ring.scale.setScalar(1 + Math.sin(time * 3) * 0.05); flag.rotation.y = Math.sin(time * 2.5) * 0.25; }
-  updateRobots(time); updateDungeon(time); updateHud(); updateCamera();
+  const dt = Math.min(0.05, time - (frame.last || time)); frame.last = time;
+  updateRobots(time); updateDungeon(time); updateTagFx(dt); updateHud(); updateCamera();
   renderer.render(scene, camera);
 }
 
 /* ================= 조작 ================= */
 const btnPlay = $("#btnPlay");
 function setRunning(v) { running = v; btnPlay.textContent = v ? "❚❚ 일시정지" : "▶ 계속"; }
-btnPlay.onclick = () => setRunning(!running);
-$("#btnReset").onclick = () => { resetSim(); setRunning(true); };
+btnPlay.onclick = () => {
+  if (S.mode === "tag" && game.state === "edit") return startGame();
+  if (S.mode === "tag" && game.state === "over") return startGame();
+  setRunning(!running);
+};
+$("#btnReset").onclick = () => { resetSim(); if (S.mode !== "tag") setRunning(true); };
 document.querySelectorAll('input[name="speed"]').forEach(el => el.onchange = () => { speed = radio("speed"); });
 document.querySelectorAll('input[name="mut"]').forEach(el => el.onchange = () => { S.mut = sim.mut = +radio("mut"); });
 document.querySelectorAll('input[name="cross"]').forEach(el => el.onchange = () => { S.cross = sim.cross = radio("cross"); });
