@@ -61,6 +61,17 @@ button, input, select { font: inherit; color: inherit; }
 
 .cam { top: max(14px, env(safe-area-inset-top, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); flex-direction: column; left: auto; }
 .cam button { background: rgba(255,255,255,.88); color: #1f2b33; border: 0; border-radius: 10px; padding: 5px 10px; font-family: var(--font-display); font-size: 14px; cursor: pointer; box-shadow: 0 2px 8px rgba(30,50,60,.12); }
+.cam button.full { background: #f0703f; color: #fff; }
+/* 3D 화면만 전체 화면: 오른쪽 패널 대신 화면 안에 작은 조작 막대 */
+.fsbar { position: absolute; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px)); display: none; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end;
+  background: rgba(255,255,255,.92); color: #1f2b33; border-radius: 14px; padding: 6px; box-shadow: 0 6px 20px rgba(30,50,60,.2); z-index: 3; max-width: calc(100% - 28px); }
+#stage:fullscreen .fsbar { display: flex; }
+#stage:-webkit-full-screen .fsbar { display: flex; }
+#stage:fullscreen { width: 100%; height: 100%; }
+#stage:-webkit-full-screen { width: 100%; height: 100%; }
+.fsbar button { border: 0; background: #eef3f5; border-radius: 9px; padding: 6px 10px; font-family: var(--font-display); font-size: 14px; color: #1f2b33; cursor: pointer; }
+.fsbar button.on, #fsPlay { background: #f0703f; color: #fff; }
+.fs-speed { display: flex; gap: 4px; }
 .hud-top { right: 120px; }
 
 .panel { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; min-width: 0;
@@ -176,6 +187,14 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <button type="button" id="camTilt">비스듬히</button>
       <button type="button" id="camTop">위에서</button>
       <button type="button" id="camSide">옆에서</button>
+      <button type="button" id="camFull" class="full" aria-label="3D 화면을 전체 화면으로">전체 화면</button>
+    </div>
+    <div class="fsbar" id="fsBar" aria-label="전체 화면 조작">
+      <button type="button" id="fsPlay">❚❚</button>
+      <span class="fs-speed">
+        <button type="button" data-sp="0.5">0.5×</button><button type="button" data-sp="1">1×</button><button type="button" data-sp="3">3×</button><button type="button" data-sp="10">10×</button><button type="button" data-sp="gen">세대</button>
+      </span>
+      <button type="button" id="fsExit">나가기 (F)</button>
     </div>
     <div class="toast" id="toast" hidden></div>
     <div class="edit-bar" id="editBar" hidden>
@@ -1347,6 +1366,38 @@ function resize() {
   const ratio = aspectBoost() / before; camGoal.r *= ratio; cam.r *= ratio;
 }
 new ResizeObserver(resize).observe(stage);
+/* ---- 전체 화면 (3D 화면만) ---- */
+const isFull = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+async function toggleStageFull() {
+  try {
+    if (isFull()) { await (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+    const req = stage.requestFullscreen || stage.webkitRequestFullscreen;
+    if (!req) throw new Error("unsupported");
+    await req.call(stage);
+  } catch {
+    toast("이 화면에서는 전체 화면을 쓸 수 없어요. 브라우저 전체 화면(F11, 맥은 Ctrl+Cmd+F)을 써 보세요", 3200);
+  }
+}
+function syncFsBar() {
+  if (!isFull()) return;
+  $("#fsPlay").textContent = btnPlay.textContent;
+  document.querySelectorAll("#fsBar [data-sp]").forEach(b => b.classList.toggle("on", b.dataset.sp === String(speed)));
+}
+function onFullChange() { $("#camFull").textContent = isFull() ? "창 모드" : "전체 화면"; resize(); syncFsBar(); }
+document.addEventListener("fullscreenchange", onFullChange);
+document.addEventListener("webkitfullscreenchange", onFullChange);
+$("#camFull").onclick = toggleStageFull;
+$("#fsExit").onclick = toggleStageFull;
+$("#fsPlay").onclick = () => { btnPlay.click(); syncFsBar(); };
+document.querySelectorAll("#fsBar [data-sp]").forEach(b => b.onclick = () => {
+  const id = { "0.5": "sp05", "1": "sp1", "3": "sp3", "10": "sp10", gen: "spg" }[b.dataset.sp];
+  const r = document.getElementById(id); r.checked = true; r.dispatchEvent(new Event("change")); syncFsBar();
+});
+addEventListener("keydown", e => {
+  if (e.code !== "KeyF" || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.target instanceof HTMLInputElement && e.target.type === "text") return;
+  e.preventDefault(); toggleStageFull();
+});
 
 /* ================= 그래프 ================= */
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
@@ -1686,6 +1737,7 @@ function resetSim() {
 const clock = new THREE.Clock();
 function frame(now) {
   requestAnimationFrame(frame);
+  if (isFull() && (frame.n = (frame.n || 0) + 1) % 15 === 0) syncFsBar();
   const time = clock.getElapsedTime();
   if (running && !expRunning) {
     if (phase === "run") {
