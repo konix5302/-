@@ -122,6 +122,9 @@ body.is-touch .keys { display: none; }
 h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(38px, 7vw, 52px); line-height: 1.05; margin: 4px 0 8px; color: #ff4b3e; text-wrap: balance; }
 h2 { font-family: var(--font-display); font-weight: 400; font-size: 28px; margin: 0 0 14px; }
 .lead { margin: 0 0 14px; color: #4a4260; font-size: 15px; line-height: 1.55; }
+.diff { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 0 0 12px; font-family: var(--font-display); font-size: 15px; color: var(--muted); }
+.diff button { border: 2px solid #d9d1ee; background: #fff; color: var(--ink); border-radius: 999px; padding: 5px 14px; font-family: var(--font-display); font-size: 15px; }
+.diff button[aria-pressed="true"] { background: #5a3fd6; border-color: #5a3fd6; color: #fff; }
 .ai-box { background: #f1ecff; border-radius: 16px; padding: 12px 14px; margin: 0 0 14px; }
 .ai-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; font-family: var(--font-display); }
 .ai-head b { font-weight: 400; font-size: 18px; color: #5a3fd6; }
@@ -219,15 +222,22 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
     <div class="card">
       <p class="eyebrow">주제탐구 R&amp;E · 유전 알고리즘 · 1:1 모드</p>
       <h1>꼬마 로봇 배틀</h1>
-      <p class="lead">벽을 타고, 벽을 차고, 콤보를 넣어 이기세요! 상대 AI는 라운드마다 다른 개체가 나와요. 나와 얼마나 잘 싸웠는지로 채점되고, 6라운드마다 다음 세대로 진화해요. 많이 싸울수록 나를 이기는 쪽으로 진화해요.</p>
+      <p class="lead">벽을 타고, 벽을 차고, 콤보를 넣어 이기세요! 상대 AI는 싸움 성향 8가지가 유전자예요. 대결하는 동안 내 습관(가드, 반응 속도, 공격 간격…)을 기록해서 "내 유령"을 만들고, 라운드 사이마다 AI 6개체가 그 유령과 여러 판 연습해서 진화해요. 많이 싸울수록 나를 이기는 쪽으로 진화해요.</p>
+      <div class="diff" role="group" aria-label="난이도">
+        <span>난이도</span>
+        <button type="button" data-diff="easy" aria-pressed="false">쉬움</button>
+        <button type="button" data-diff="normal" aria-pressed="true">보통</button>
+        <button type="button" data-diff="hard" aria-pressed="false">어려움</button>
+      </div>
       <div class="ai-box">
-        <div class="ai-head"><b id="tGen">진화 AI 1세대</b><span id="tIdx">다음 상대: 1번 개체 (6명 중)</span></div>
+        <div class="ai-head"><b id="tGen">진화 AI 1세대</b><span id="tIdx">다음 상대: 대표 개체</span></div>
         <div class="genes" id="tGenes"></div>
         <p class="hist" id="tHist"></p>
+        <p class="hist" id="tGhost"></p>
       </div>
       <div class="row">
         <button class="big" id="btnStart" type="button">▶ 대결 시작</button>
-        <button class="ghost" id="btnTrain" type="button">AI끼리 연습 10세대</button>
+        <button class="ghost" id="btnTrain" type="button">AI 연습 10세대 (내 유령 상대)</button>
       </div>
       <div class="train" id="trainBox" hidden><div class="tbar"><i id="trainBar"></i></div><span id="trainMsg"></span></div>
       <details class="howto" id="howto" open>
@@ -248,7 +258,7 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
       <div class="row small">
         <button class="link" id="btnBack" type="button">← 진화 실험실로</button>
         <button class="link" id="btnSound" type="button">소리: 켜짐</button>
-        <button class="link" id="btnResetAI" type="button">AI 처음부터</button>
+        <button class="link" id="btnResetAI" type="button">AI·유령 처음부터</button>
       </div>
       <p class="hist" id="tRecord"></p>
     </div>
@@ -270,6 +280,7 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
         <div class="ai-head"><b>AI의 진화</b><span id="rGenLabel"></span></div>
         <p class="evo-msg" id="rEvo"></p>
         <div class="genes" id="rGenes"></div>
+        <p class="hist" id="rGhost"></p>
       </div>
       <div class="row"><button class="big" id="btnAgain" type="button">▶ 다시 대결</button><button class="ghost" id="btnToTitle" type="button">타이틀로</button></div>
     </div>
@@ -615,20 +626,28 @@ function stepWorld(W, ip, iq, cb) {
    2. AI: 유전자 8개가 싸움 성향을 정함
    ===================================================================== */
 const GENES = ["공격성", "선호 거리", "공격 빈도", "콤보 집착", "강공격 비율", "가드 반응", "점프·벽타기", "회피 성향"];
-function newBrain() { return { tick: 0, mode: "approach", strafe: rnd() < 0.5 ? 1 : -1, guardHold: 0, reacted: -1, evade: 0, wantJump: 0, jcFor: -1, jc: false, chk: 0, lx: 0, ly: 0, lz: 0 }; }
-function aiThink(me, op, g, b) {
+function newBrain() { return { hes: 0, tick: 0, mode: "approach", strafe: rnd() < 0.5 ? 1 : -1, guardHold: 0, reacted: -1, evade: 0, wantJump: 0, jcFor: -1, jc: false, chk: 0, lx: 0, ly: 0, lz: 0 }; }
+// 난이도: 유전자(싸움 성향)는 그대로, 실력(반응 속도·공격 빈도·가드·실수)만 조절
+const DIFFS = {
+  easy:   { label: "쉬움",   react: 16, act: 0.45, guard: 0.45, combo: 0.5,  hes: 0.012 },
+  normal: { label: "보통",   react: 9,  act: 0.7,  guard: 0.7,  combo: 0.75, hes: 0.005 },
+  hard:   { label: "어려움", react: 2,  act: 1,    guard: 1,    combo: 1,    hes: 0 },
+};
+function aiThink(me, op, g, b, D = DIFFS.hard) {
   const inp = blankInput();
   if (me.state === "ko" || op.state === "ko") return inp;
+  if (b.hes > 0) { b.hes--; return inp; }                          // 사람처럼 가끔 멈칫
+  if (D.hes && me.state === "idle" && rnd() < D.hes) b.hes = 8 + ((rnd() * 16) | 0);
   const dx = op.x - me.x, dz = op.z - me.z, d = Math.hypot(dx, dz) || 1;
   const fx = dx / d, fz = dz / d, rx = -fz, rz = fx, dy = op.y - me.y;
-  // 1) 상대 공격 읽기: 공격 시작 2프레임 뒤에야 알아챔 (사람처럼 반응 시간이 있음)
-  if (op.state === "attack" && op.attackId !== b.reacted && op.mt >= 2 && op.mt < op.move.startup) {
+  // 1) 상대 공격 읽기: 공격이 시작되고 반응 시간(난이도 + 가드 반응 유전자)이 지나야 알아챔
+  if (op.state === "attack" && op.attackId !== b.reacted && op.mt >= D.react + Math.round(6 * (1 - g[5])) && op.mt < op.move.startup + op.move.active) {
     b.reacted = op.attackId;
     const threat = d < op.move.reach + 1.2 + (op.move.lunge || 0) * 0.18 && Math.abs(dy) < 1.6;
     if (threat && (me.state === "idle" || me.state === "guard")) {
       const r = rnd();
-      if (r < g[5] * 0.7 && me.onGround && !op.move.guardBreak) b.guardHold = op.move.startup + op.move.active + 6 - op.mt;
-      else if (r < g[5] * 0.7 + g[7] * 0.5) b.evade = 1;
+      if (r < g[5] * 0.7 * D.guard && me.onGround && !op.move.guardBreak) b.guardHold = Math.max(4, op.move.startup + op.move.active + 6 - op.mt);
+      else if (r < (g[5] * 0.7 + g[7] * 0.5) * D.guard) b.evade = 1;
     }
   }
   if (b.guardHold > 0) { b.guardHold--; inp.guard = true; return inp; }
@@ -662,7 +681,7 @@ function aiThink(me, op, g, b) {
   const inRange = d < 1.55 && Math.abs(dy) < 1.2;
   if (me.state === "attack") {
     const m = me.move;
-    if (me.mt > 2 && (m.next || m.heavyNext) && rnd() < (me.hitThis ? g[3] * 0.4 : g[3] * 0.03)) {
+    if (me.mt > 2 && (m.next || m.heavyNext) && rnd() < (me.hitThis ? g[3] * 0.4 : g[3] * 0.03) * D.combo) {
       if (m.heavyNext && (rnd() < g[4] * 0.5 || !m.next)) inp.heavy = true; else inp.light = true;
     }
     if (m.launch && me.hitThis) {   // 어퍼컷이 맞으면 따라 뛸지 한 번 정함
@@ -671,11 +690,11 @@ function aiThink(me, op, g, b) {
     }
   } else if (me.state === "idle" || me.state === "cling" || me.state === "wallrun") {
     if (!me.onGround) {
-      if (d < 1.8 && Math.abs(dy) < 1.3 && rnd() < 0.18 + g[2] * 0.25) { if (dy < -0.6 && rnd() < 0.3 + g[4] * 0.5) inp.heavy = true; else inp.light = true; }
+      if (d < 1.8 && Math.abs(dy) < 1.3 && rnd() < (0.18 + g[2] * 0.25) * D.act) { if (dy < -0.6 && rnd() < 0.3 + g[4] * 0.5) inp.heavy = true; else inp.light = true; }
     } else if (inRange) {
       const punish = op.state === "attack" && op.mt >= op.move.startup + op.move.active;
       if (op.state === "hitstun" && op.guardBroken) inp.heavy = true;
-      else if (rnd() < (punish ? 0.35 : 0.03) + g[2] * 0.2) {
+      else if (rnd() < ((punish ? 0.35 : 0.03) + g[2] * 0.2) * D.act) {
         if (me.sp >= 100 && rnd() < 0.6) inp.special = true;
         else if (op.state === "guard" && rnd() < 0.3 + g[4] * 0.5) inp.heavy = true;
         else if (rnd() < g[4] * 0.45) inp.heavy = true; else inp.light = true;
@@ -686,52 +705,116 @@ function aiThink(me, op, g, b) {
 }
 
 /* =====================================================================
-   3. 진화: 6개체 → 라운드마다 하나씩 나와서 채점 → 6라운드마다 다음 세대
+   3. 진화: 내 습관을 따라 하는 "유령"과 연습하며 진화
+      - 같은 유전자라도 한 판 점수는 운에 따라 크게 흔들림 → 여러 판 평균으로 채점
+      - 라운드가 끝날 때마다: 실제로 나와 싸운 결과(2판 몫) + 유령과 연습한 결과로 진화
    ===================================================================== */
-const POP = 6;
+const POP = 6, GHOST_FIGHTS = 6, GENS_PER_ROUND = 2;
 const randGenome = () => GENES.map(() => +(0.15 + rnd() * 0.7).toFixed(3));
-const freshEvo = () => ({ gen: 1, idx: 0, pop: Array.from({ length: POP }, randGenome), fit: Array(POP).fill(null), hist: [], champ: null });
+const freshEvo = () => ({ v: 2, gen: 1, pop: Array.from({ length: POP }, randGenome), sum: Array(POP).fill(0), n: Array(POP).fill(0), win: Array(POP).fill(0), hist: [], champ: null });
 let evo = (() => {
-  try { const e = JSON.parse(store.get("robotBattleEvo") || "null"); if (e && Array.isArray(e.pop) && e.pop.length === POP && e.pop.every(g => g.length === GENES.length)) return e; } catch {}
+  try {
+    const e = JSON.parse(store.get("robotBattleEvo") || "null");
+    const okPop = e && Array.isArray(e.pop) && e.pop.length === POP && e.pop.every(g => Array.isArray(g) && g.length === GENES.length);
+    if (okPop && e.v === 2 && Array.isArray(e.sum) && Array.isArray(e.n) && Array.isArray(e.win)) return e;
+    if (okPop) { const f = freshEvo(); f.gen = e.gen || 1; f.pop = e.pop; f.champ = e.champ || null; return f; }   // 예전 형식은 유전자만 옮김
+  } catch {}
   return freshEvo();
 })();
 const saveEvo = () => store.set("robotBattleEvo", JSON.stringify(evo));
+const meanFit = i => (evo.n[i] ? evo.sum[i] / evo.n[i] : -1e9);
+const winRate = i => (evo.n[i] ? evo.win[i] / evo.n[i] : 0);
+function champIdx() { let b = 0; for (let i = 1; i < POP; i++) if (meanFit(i) > meanFit(b)) b = i; return b; }
+function addSample(i, fit, won, w = 1) { evo.sum[i] += fit * w; evo.n[i] += w; evo.win[i] += won ? w : 0; }
 function evolveAI() {
-  const order = evo.pop.map((g, i) => i).sort((a, b) => evo.fit[b] - evo.fit[a]);
-  const best = evo.fit[order[0]], avg = evo.fit.reduce((s, v) => s + v, 0) / POP;
-  evo.hist.push({ gen: evo.gen, best: +best.toFixed(1), avg: +avg.toFixed(1) }); if (evo.hist.length > 60) evo.hist.shift();
-  evo.champ = evo.pop[order[0]].slice();
-  const next = [evo.pop[order[0]].slice(), evo.pop[order[1]].slice()];   // 엘리트 2개체는 그대로
-  const tour = () => { const a = (rnd() * POP) | 0, b = (rnd() * POP) | 0; return evo.fit[a] >= evo.fit[b] ? a : b; };
-  while (next.length < POP) {
+  const order = [...Array(POP).keys()].sort((a, b) => meanFit(b) - meanFit(a));
+  const scored = order.filter(i => evo.n[i] > 0), best = order[0];
+  const avg = scored.reduce((s, i) => s + meanFit(i), 0) / Math.max(1, scored.length);
+  evo.hist.push({ gen: evo.gen, best: +meanFit(best).toFixed(1), avg: +avg.toFixed(1), win: Math.round(winRate(best) * 100) });
+  if (evo.hist.length > 80) evo.hist.shift();
+  evo.champ = evo.pop[best].slice();
+  // 엘리트 2개체는 점수 기록을 들고 다음 세대로 (오래 살아남을수록 점수가 정확해짐). 내 실력이 변하니 옛 기록은 60%만 남김
+  const keep = order.slice(0, 2);
+  const pop = keep.map(i => evo.pop[i].slice()), sum = keep.map(i => evo.sum[i] * 0.6), n = keep.map(i => evo.n[i] * 0.6), win = keep.map(i => evo.win[i] * 0.6);
+  const tour = () => { const a = (rnd() * POP) | 0, b = (rnd() * POP) | 0; return meanFit(a) >= meanFit(b) ? a : b; };
+  while (pop.length < POP) {
     const pa = evo.pop[tour()], pb = evo.pop[tour()];
-    next.push(pa.map((v, k) => { let x = rnd() < 0.5 ? v : pb[k]; if (rnd() < 0.3) x += gaussR() * 0.12; return +clamp(x, 0, 1).toFixed(3); }));
+    pop.push(pa.map((v, k) => { let x = rnd() < 0.5 ? v : pb[k]; if (rnd() < 0.35) x += gaussR() * 0.15; return +clamp(x, 0, 1).toFixed(3); }));
+    sum.push(0); n.push(0); win.push(0);
   }
-  evo.pop = next; evo.fit = Array(POP).fill(null); evo.idx = 0; evo.gen++;
-}
-function evoReport(fit) {   // 방금 싸운 개체의 점수를 적고, 6개체가 다 싸웠으면 진화
-  evo.fit[evo.idx] = fit; evo.idx++;
-  let evolved = false;
-  if (evo.idx >= POP) { evolveAI(); evolved = true; }
-  saveEvo(); return evolved;
+  Object.assign(evo, { pop, sum, n, win }); evo.gen++;
 }
 const aiFitness = (ai, opp, aiWon) => ai.dealt - 0.8 * ai.taken + (aiWon ? 25 : 0) + ai.maxCombo * 1.5;
-const BASE = GENES.map(() => 0.5);
 const NOCB = { swing() {}, jump() {}, walljump() {}, wallrun() {}, dash() {}, land() {}, hit() {}, guard() {}, guardBreak() {}, bounce() {}, wallbounce() {}, slamLand() {}, special() {}, ko() {} };
-function simulateRound(gA, gB) {   // 그림 없이 AI 대 AI 한 라운드 (최대 60초)
-  const W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }, bA = newBrain(), bB = newBrain();
-  let fr = 0;
-  for (; fr < 3600; fr++) {
+
+/* ---- 내 습관 기록 → 유령: 대결 중 내 입력을 보고 조금씩 갱신 (이 브라우저에 저장) ---- */
+const PM_DEFAULT = { guard: 0.45, react: 20, gap: 11, heavy: 0.15, jump: 0.006, dash: 0.003, juggle: 0.3, spec: 0.03, seen: 0 };
+let PM = (() => {
+  try { const m = JSON.parse(store.get("robotBattlePM") || "null"); if (m && typeof m.guard === "number") return { ...PM_DEFAULT, ...m }; } catch {}
+  return { ...PM_DEFAULT };
+})();
+const savePM = () => store.set("robotBattlePM", JSON.stringify(PM));
+const pmUp = (k, v, a) => { PM[k] += (v - PM[k]) * a; };
+function newObserver() { return { atkId: -1, atkStart: 0, inRange: false, guarded: false, lastAtk: 0, upId: -1, upAt: 0, upJump: false }; }
+function observe(o, P, A, inp, fr) {
+  const d = Math.hypot(A.x - P.x, A.z - P.z);
+  // AI 공격을 막았나, 얼마나 빨리 가드를 눌렀나
+  if (A.state === "attack" && A.attackId !== o.atkId) {
+    if (o.atkId >= 0 && o.inRange) { pmUp("guard", o.guarded ? 1 : 0, 0.06); PM.seen++; }
+    o.atkId = A.attackId; o.atkStart = fr; o.inRange = d < 2.6; o.guarded = false;
+  }
+  if (A.state === "attack" && o.inRange && !o.guarded && inp.guard) { o.guarded = true; pmUp("react", clamp(fr - o.atkStart, 3, 40), 0.08); }
+  // 가까이서 얼마나 자주 때리나, 강공격을 얼마나 쓰나
+  if ((inp.light || inp.heavy) && d < 2.2) {
+    if (o.lastAtk && fr - o.lastAtk < 60) pmUp("gap", clamp(fr - o.lastAtk, 4, 40), 0.05);
+    o.lastAtk = fr; pmUp("heavy", inp.heavy ? 1 : 0, 0.04);
+  }
+  pmUp("jump", inp.jump ? 1 : 0, 0.0015); pmUp("dash", inp.dash ? 1 : 0, 0.0015);
+  // 어퍼컷을 맞힌 뒤 따라 뛰어 공중 콤보를 하나
+  if (P.state === "attack" && P.moveName === "upper" && P.hitThis && o.upId !== P.attackId) { o.upId = P.attackId; o.upAt = fr; o.upJump = false; }
+  if (o.upAt && inp.jump) o.upJump = true;
+  if (o.upAt && fr - o.upAt >= 20) { pmUp("juggle", o.upJump ? 1 : 0, 0.15); o.upAt = 0; }
+  if (P.sp >= 100 && d < 2.5) pmUp("spec", inp.special ? 1 : 0, 0.02);
+}
+function newGhost() { return { t: 0, seenId: -1, reactAt: 0, willGuard: false, nextPress: 0, guardUntil: 0 }; }
+function ghostThink(me, op, st, M) {   // 유령: 기록된 습관대로 움직이는 나
+  const inp = blankInput(); st.t++;
+  if (me.state === "ko" || op.state === "ko") return inp;
+  const dx = op.x - me.x, dz = op.z - me.z, d = Math.hypot(dx, dz) || 1, fx = dx / d, fz = dz / d, dy = op.y - me.y;
+  if (op.state === "attack" && op.attackId !== st.seenId) { st.seenId = op.attackId; st.reactAt = st.t + Math.max(3, Math.round(M.react + (rnd() - 0.5) * 8)); st.willGuard = rnd() < M.guard; }
+  if (op.state === "attack" && st.willGuard && st.t >= st.reactAt && d < 2.6) st.guardUntil = st.t + 14;
+  if (st.t < st.guardUntil && me.onGround) { inp.guard = true; return inp; }
+  if (d > 1.35) { inp.mx = fx; inp.mz = fz; if (dy > 1.2 && me.onGround && rnd() < 0.05) inp.jump = true; }
+  else if (st.t >= st.nextPress) {
+    st.nextPress = st.t + Math.max(4, Math.round(M.gap + (rnd() - 0.5) * 6));
+    if (me.state === "attack" && me.moveName === "upper" && me.hitThis && rnd() < M.juggle) inp.jump = true;
+    else if (rnd() < M.heavy) inp.heavy = true; else inp.light = true;
+  }
+  if (rnd() < M.jump) inp.jump = true;
+  if (rnd() < M.dash) { inp.dash = true; if (d < 2) { inp.mx = -fz; inp.mz = fx; } }
+  if (me.sp >= 100 && d < 2.5 && rnd() < M.spec) inp.special = true;
+  return inp;
+}
+function ghostFight(g, D, M) {
+  const W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }, gs = newGhost(), ab = newBrain();
+  for (let fr = 0; fr < 3600; fr++) {
     if (W.freeze > 0) { W.freeze--; continue; }
-    stepWorld(W, aiThink(W.f[0], W.f[1], gA, bA), aiThink(W.f[1], W.f[0], gB, bB), NOCB);
+    stepWorld(W, ghostThink(W.f[0], W.f[1], gs, M), aiThink(W.f[1], W.f[0], g, ab, D), NOCB);
     if (W.f[0].state === "ko" || W.f[1].state === "ko") break;
   }
-  return { A: W.f[0], B: W.f[1] };
+  const H = W.f[0], A = W.f[1];
+  return { H, A, aiWon: A.hp > H.hp + 0.01 };
 }
-function sparFitness(g) {   // 연습 상대(지난 세대 1등)와 2라운드
-  const partner = evo.champ || BASE; let tot = 0;
-  for (let k = 0; k < 2; k++) { const { A, B } = simulateRound(partner, g); tot += aiFitness(B, A, B.hp > A.hp); }
-  return tot / 2;
+function* ghostTrainer(gens, D, M) {   // 한 판씩 끊어서 계산 → 화면이 멈추지 않음
+  for (let k = 0; k < gens; k++) {
+    for (let i = 0; i < POP; i++) for (let j = 0; j < GHOST_FIGHTS; j++) {
+      const r = ghostFight(evo.pop[i], D, M);
+      addSample(i, aiFitness(r.A, r.H, r.aiWon), r.aiWon);
+      yield { evolved: false };
+    }
+    evolveAI(); saveEvo();
+    yield { evolved: true, gen: k + 1 };
+  }
 }
 
 /* =====================================================================
@@ -1135,8 +1218,11 @@ function playerInput() {
    7. 경기 흐름: 타이틀(AI끼리 데모) → 라운드 소개 → 대결 → K.O. → 결과
    ===================================================================== */
 const G = { phase: "title", paused: false, round: 1, wins: [0, 0], timeF: 0, time: 60, acc: 0, alpha: 1, slow: 0, shake: 0,
-  introT: 0, koT: 0, roundWinner: -1, match: null, ghostT: [0, 0], demoT: 0, demoKo: 0 };
-let W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }, aiGenome = evo.pop[evo.idx].slice(), aiBrain = newBrain(), demo = null, F = [];
+  introT: 0, koT: 0, roundWinner: -1, match: null, ghostT: [0, 0], demoT: 0, demoKo: 0, trainer: null };
+let aiIdx = champIdx(), aiGenome = evo.pop[aiIdx].slice(), aiBrain = newBrain(), demo = null, F = [], obs = newObserver();
+let W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 };
+let diffKey = store.get("rbDiff"); if (!DIFFS[diffKey]) diffKey = "normal";
+const diff = () => DIFFS[diffKey];
 const TIPS = [
   "벽 쪽으로 계속 달리면 <b>벽 타기</b>!", "벽에 붙은 채 <b>Space</b> = 벽차기, 벽 쪽으로 누르고 <b>Space</b> = 한 번 더 오르기", "<b>J J J</b> 어퍼컷 맞히고 바로 <b>Space</b> → 공중 콤보",
   "상대가 가드하면 <b>K</b>로 가드 브레이크", "벽 쪽으로 날려 보내면 <b>벽 꽝!</b> 추가타 기회", "<b>Shift</b> 대시는 잠깐 무적",
@@ -1144,28 +1230,31 @@ const TIPS = [
 function setPhase(p) { G.phase = p; document.body.dataset.phase = p; }
 function startDemo() {
   W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 };
-  demo = { g: [evo.champ || randGenome(), evo.pop[evo.idx]], b: [newBrain(), newBrain()] };
+  demo = { g: [evo.champ || randGenome(), evo.pop[champIdx()]], b: [newBrain(), newBrain()] };
   G.demoT = 0; G.demoKo = 0; G.slow = 0;
 }
 function showTitle() {
   setPhase("title"); G.paused = false;
+  $("#btnStart").disabled = $("#btnTrain").disabled = !!G.trainer;
   $("#title").hidden = false; $("#result").hidden = true; $("#pauseMenu").hidden = true;
   hideBanner(); $("#combo0").hidden = $("#combo1").hidden = true;
   renderTitleInfo(); startDemo();
 }
+const lastWin = () => (evo.hist.length ? evo.hist[evo.hist.length - 1].win : null);
 function startMatch() {
+  if (G.trainer) return;   // 연습이 끝나야 시작
   ensureAudio();
-  G.match = { rounds: [], maxCombo: 0, dealt: 0, taken: 0, parkour: 0, evolved: false, genBefore: evo.gen, genome: null };
+  G.match = { rounds: [], maxCombo: 0, dealt: 0, taken: 0, parkour: 0, genBefore: evo.gen, winBefore: lastWin(), genome: null };
   G.wins = [0, 0]; G.round = 1; $("#title").hidden = true; $("#result").hidden = true;
   newRound(true);
 }
 function newRound(first) {
   const sp = first ? [0, 0] : [W.f[0].sp, W.f[1].sp];   // 필살 게이지는 다음 라운드로 이어짐
   W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }; W.f[0].sp = sp[0]; W.f[1].sp = sp[1];
-  aiGenome = evo.pop[evo.idx].slice(); aiBrain = newBrain();
+  aiIdx = champIdx(); aiGenome = evo.pop[aiIdx].slice(); aiBrain = newBrain(); obs = newObserver();   // 지금까지 가장 강한 대표 개체가 나옴
   if (!G.match.genome) G.match.genome = aiGenome.slice();
   setPhase("intro"); G.introT = 0; G.timeF = 0; G.time = 60; G.koT = 0; G.slow = 0; lagHp[0] = lagHp[1] = 100;
-  $("#p2name").textContent = `진화 AI ${evo.gen}세대 ${evo.idx + 1}번`;
+  $("#p2name").textContent = `진화 AI ${evo.gen}세대 · ${diff().label}`;
   $("#roundLabel").textContent = `ROUND ${G.round}`;
   updatePips();
   showBanner(`ROUND ${G.round}`);
@@ -1174,24 +1263,65 @@ function newRound(first) {
 }
 function endRound(reason) {
   setPhase("ko"); G.koT = 0;
-  const [P, A] = W.f;
+  const [P, A] = W.f, m = G.match;
   let w = -1;
   if (reason === "ko") w = P.hp > 0 && A.hp <= 0 ? 0 : A.hp > 0 && P.hp <= 0 ? 1 : -1;
   else w = P.hp > A.hp + 0.01 ? 0 : A.hp > P.hp + 0.01 ? 1 : -1;
   G.roundWinner = w;
   if (reason === "time") showBanner("TIME!");
   else if (w === -1) showBanner("DOUBLE K.O.!");
-}
-function finishRound() {
-  const [P, A] = W.f, w = G.roundWinner, m = G.match;
   if (w >= 0) G.wins[w]++;
   const fit = aiFitness(A, P, w === 1);
-  m.rounds.push({ w, fit, gen: evo.gen, idx: evo.idx + 1 });
+  addSample(aiIdx, fit, w === 1, 2);   // 실제로 나와 싸운 결과는 2판 몫으로 채점
+  savePM(); saveEvo();
+  m.rounds.push({ w, fit, gen: evo.gen });
   m.maxCombo = Math.max(m.maxCombo, P.maxCombo); m.dealt += P.dealt; m.taken += P.taken; m.parkour += P.parkour;
-  if (evoReport(fit)) m.evolved = true;
   updatePips();
-  if (G.wins[0] >= 2 || G.wins[1] >= 2 || G.round >= 5) endMatch();
+  G.matchOver = G.wins[0] >= 2 || G.wins[1] >= 2 || G.round >= 5;
+  startTraining(GENS_PER_ROUND, G.matchOver ? "result" : "between");   // K.O. 연출이 나오는 동안 바로 내 유령과 연습 시작
+}
+function finishRound() {   // K.O. 연출이 끝난 뒤
+  if (G.matchOver) endMatch();
+  else if (G.trainer) { setPhase("between"); hideBanner(); const tip = $("#tipline"); tip.innerHTML = "AI가 <b>내 유령</b>과 연습 중… (방금 내 습관을 따라 하는 가상의 나)"; tip.hidden = false; }
   else { G.round++; newRound(false); }
+}
+function startTraining(gens, kind) {
+  G.trainer = { it: ghostTrainer(gens, diff(), { ...PM }), kind, gens, done: 0, total: gens * (POP * GHOST_FIGHTS + 1), evolved: 0 };
+}
+function pumpTrainer() {   // 한 프레임에 8ms씩만 계산
+  const T = G.trainer; if (!T) return;
+  const t0 = performance.now();
+  while (performance.now() - t0 < 8) {
+    const r = T.it.next();
+    if (r.done) { G.trainer = null; trainingDone(T); return; }
+    T.done++; if (r.value.evolved) T.evolved++;
+  }
+  const pct = Math.round(T.done / T.total * 100);
+  if (T.kind === "between") $("#tipline").innerHTML = `AI가 <b>내 유령</b>과 연습 중… ${T.evolved}/${T.gens}세대 진화 (${pct}%)`;
+  else if (T.kind === "title") { $("#trainBar").style.width = pct + "%"; $("#trainMsg").textContent = `AI가 내 유령과 연습 중… ${evo.gen}세대 (${pct}%)`; renderTitleInfo(); }
+}
+function trainingDone(T) {
+  $("#btnAgain").disabled = $("#btnStart").disabled = $("#btnTrain").disabled = false;
+  if (G.phase === "title") renderTitleInfo();
+  if (T.kind === "between" && G.phase === "between") { G.round++; newRound(false); }
+  else if (T.kind === "result" && G.phase === "result") renderResultEvo();
+  else if (T.kind === "title") {
+    $("#trainBar").style.width = "100%";
+    $("#trainMsg").textContent = `연습 끝! 이제 AI ${evo.gen}세대예요. 유령 상대 승률 ${lastWin() ?? "–"}%.`;
+    $("#btnTrain").disabled = $("#btnStart").disabled = false;
+    renderTitleInfo(); startDemo();
+  }
+}
+const ghostSummary = () => `내 유령(습관): 가드 ${Math.round(PM.guard * 100)}% · 반응 ${(PM.react / 60).toFixed(2)}초 · 공격 간격 ${(PM.gap / 60).toFixed(2)}초 · 강공격 ${Math.round(PM.heavy * 100)}% · 공중 콤보 ${Math.round(PM.juggle * 100)}%${PM.seen < 5 ? " (아직 기본값, 싸울수록 내 습관을 닮아 가요)" : ""}`;
+function renderResultEvo() {
+  const m = G.match, w0 = m.winBefore, w1 = lastWin();
+  $("#btnAgain").disabled = !!G.trainer;
+  $("#rGenLabel").textContent = `지금 ${evo.gen}세대 · ${diff().label}`;
+  $("#rEvo").textContent = G.trainer
+    ? "AI가 방금 경기에서 본 내 습관(유령)과 연습 중이에요…"
+    : `이번 경기 동안 AI가 ${m.genBefore}세대 → ${evo.gen}세대로 진화했어요. 라운드 사이마다 내 습관을 따라 하는 유령과 연습했고, 유령 상대 승률은 ${w0 == null ? "–" : w0 + "%"} → ${w1 == null ? "–" : w1 + "%"}예요. 아래는 다음 상대(대표 개체)의 유전자예요(이번 경기 첫 상대와 비교).`;
+  renderGenes($("#rGenes"), evo.pop[champIdx()], m.genome);
+  $("#rGhost").textContent = ghostSummary();
 }
 function endMatch() {
   setPhase("result"); hideBanner();
@@ -1204,17 +1334,12 @@ function endMatch() {
   $("#rScore").textContent = `${G.wins[0]} : ${G.wins[1]}`;
   $("#rStats").innerHTML = [["최대 콤보", m.maxCombo + "HIT"], ["준 피해", Math.round(m.dealt)], ["벽 기술", m.parkour + "번"]]
     .map(([k, v]) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
-  const left = POP - evo.idx;
-  $("#rGenLabel").textContent = `지금 ${evo.gen}세대`;
-  $("#rEvo").textContent = m.evolved
-    ? `AI가 ${evo.gen}세대로 진화했어요! 나와 싸워서 점수가 높았던 개체 2개는 그대로 남고, 나머지는 잘 싸운 개체끼리 유전자를 섞고 조금 바꿔서 새로 태어났어요. 아래는 다음 상대의 유전자예요(지난 경기 첫 상대와 비교).`
-    : `이번 경기에서 ${m.rounds.length}개체와 싸웠어요. ${left}라운드 더 싸우면 6개체가 모두 채점되어 다음 세대로 진화해요. 아래는 다음 상대의 유전자예요.`;
-  renderGenes($("#rGenes"), evo.pop[evo.idx], m.genome);
+  renderResultEvo();
   $("#result").hidden = false;
   $("#combo0").hidden = $("#combo1").hidden = true;
 }
 function setPause(v) {
-  if (v && !["intro", "fight", "ko"].includes(G.phase)) return;
+  if (v && !["intro", "fight", "ko", "between"].includes(G.phase)) return;
   G.paused = v; $("#pauseMenu").hidden = !v; keys.clear(); edges.clear();
 }
 function updatePips() {
@@ -1229,27 +1354,21 @@ function renderGenes(el, g, compare) {
 }
 function renderTitleInfo() {
   $("#tGen").textContent = `진화 AI ${evo.gen}세대`;
-  $("#tIdx").textContent = `다음 상대: ${evo.idx + 1}번 개체 (${POP}개체 중)`;
-  renderGenes($("#tGenes"), evo.pop[evo.idx]);
+  $("#tIdx").textContent = `다음 상대: 대표 개체 · 난이도 ${diff().label}`;
+  renderGenes($("#tGenes"), evo.pop[champIdx()]);
   $("#tHist").textContent = evo.hist.length
-    ? "세대별 최고 점수: " + evo.hist.slice(-6).map(h => `${h.gen}세대 ${h.best}`).join(" → ")
-    : "아직 진화 기록이 없어요. 6라운드를 싸우면 첫 진화가 일어나요.";
+    ? "세대별 유령 상대 승률: " + evo.hist.slice(-6).map(h => `${h.gen}세대 ${h.win}%`).join(" → ")
+    : "아직 진화 기록이 없어요. 한 라운드만 싸워도 AI가 내 유령과 연습해서 진화해요.";
+  $("#tGhost").textContent = ghostSummary();
+  document.querySelectorAll("[data-diff]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.diff === diffKey)));
   let rec; try { rec = JSON.parse(store.get("robotBattleRecord") || "null"); } catch {}
   $("#tRecord").textContent = rec ? `내 전적: ${rec.w}승 ${rec.l}패${rec.d ? ` ${rec.d}무` : ""}` : "";
   $("#btnSound").textContent = `소리: ${soundOn ? "켜짐" : "꺼짐"}`;
 }
-async function trainAI(gens) {
-  const bt = $("#btnTrain"), bs = $("#btnStart"); bt.disabled = bs.disabled = true; $("#trainBox").hidden = false;
-  const target = evo.gen + gens, total = (POP - evo.idx) + (gens - 1) * POP; let done = 0;
-  while (evo.gen < target) {
-    evoReport(sparFitness(evo.pop[evo.idx])); done++;
-    $("#trainBar").style.width = Math.min(100, (done / total) * 100) + "%";
-    $("#trainMsg").textContent = `AI끼리 연습 중… ${evo.gen}세대 (${done}/${total}판)`;
-    renderTitleInfo();
-    await new Promise(r => setTimeout(r, 0));
-  }
-  $("#trainMsg").textContent = `연습 끝! 이제 AI ${evo.gen}세대예요. 연습 상대는 매 세대 1등 개체예요.`;
-  bt.disabled = bs.disabled = false; renderTitleInfo(); startDemo();
+function trainAI(gens) {
+  if (G.trainer) return;
+  $("#btnTrain").disabled = $("#btnStart").disabled = true; $("#trainBox").hidden = false; $("#trainBar").style.width = "0%";
+  startTraining(gens, "title");
 }
 
 $("#btnStart").onclick = startMatch;
@@ -1262,10 +1381,12 @@ $("#btnQuit").onclick = () => { setPause(false); showTitle(); };
 $("#btnSound").onclick = () => { soundOn = !soundOn; store.set("rbSound", soundOn ? "on" : "off"); if (soundOn) ensureAudio(); renderTitleInfo(); };
 $("#btnBack").onclick = () => { if (history.length > 1) history.back(); else location.href = location.protocol === "file:" ? "evolving-robots.html" : "./"; };
 let resetArm = 0;
+document.querySelectorAll("[data-diff]").forEach(b => b.onclick = () => { diffKey = b.dataset.diff; store.set("rbDiff", diffKey); renderTitleInfo(); });
 $("#btnResetAI").onclick = e => {
-  if (Date.now() - resetArm < 3000) { evo = freshEvo(); saveEvo(); renderTitleInfo(); startDemo(); e.currentTarget.textContent = "AI를 처음부터 다시 시작했어요"; resetArm = 0; return; }
+  if (G.trainer) return;
+  if (Date.now() - resetArm < 3000) { evo = freshEvo(); saveEvo(); PM = { ...PM_DEFAULT }; savePM(); renderTitleInfo(); startDemo(); e.currentTarget.textContent = "AI와 내 유령을 처음부터 다시 시작했어요"; resetArm = 0; return; }
   resetArm = Date.now(); e.currentTarget.textContent = "정말요? 3초 안에 한 번 더 누르세요";
-  setTimeout(() => { $("#btnResetAI").textContent = "AI 처음부터"; }, 3000);
+  setTimeout(() => { $("#btnResetAI").textContent = "AI·유령 처음부터"; }, 3000);
 };
 
 function simFrame() {
@@ -1279,8 +1400,8 @@ function simFrame() {
   }
   if (W.freeze > 0) { W.freeze--; return; }
   let ip = BLANK, iq = BLANK;
-  if (G.phase === "fight") { ip = playerInput(); iq = aiThink(W.f[1], W.f[0], aiGenome, aiBrain); }
-  else if (G.phase === "title") { ip = aiThink(W.f[0], W.f[1], demo.g[0], demo.b[0]); iq = aiThink(W.f[1], W.f[0], demo.g[1], demo.b[1]); }
+  if (G.phase === "fight") { ip = playerInput(); observe(obs, W.f[0], W.f[1], ip, G.timeF); iq = aiThink(W.f[1], W.f[0], aiGenome, aiBrain, diff()); }
+  else if (G.phase === "title") { ip = aiThink(W.f[0], W.f[1], demo.g[0], demo.b[0], DIFFS.normal); iq = aiThink(W.f[1], W.f[0], demo.g[1], demo.b[1], DIFFS.normal); }
   else edges.clear();
   stepWorld(W, ip, iq, CB);
   if (G.phase === "fight") {
@@ -1440,6 +1561,7 @@ function loop(now) {
     if (comboTimer[s] > 0 && (comboTimer[s] -= dt) <= 0) $("#combo" + s).hidden = true;
   }
   balloons.forEach(b => { b.position.y = b.userData.y0 + Math.sin(time * 0.8 + b.userData.ph) * 0.6; });
+  pumpTrainer();
   updateFx(dt); updateCamera(dt, time);
   if (G.phase !== "title") updateHud();
   renderer.render(scene, camera);
@@ -1449,7 +1571,7 @@ function loop(now) {
    9. 시작
    ===================================================================== */
 F = [makeFighterMesh(0), makeFighterMesh(1)];
-if (/[?&]debug\b/.test(location.search)) window.__rb = { G, get W() { return W; }, get evo() { return evo; }, endRound };
+if (/[?&]debug\b/.test(location.search)) window.__rb = { G, get W() { return W; }, get evo() { return evo; }, get PM() { return PM; }, endRound };
 const fontReady = document.fonts && document.fonts.load ? Promise.race([document.fonts.load(`40px "Jua"`), new Promise(r => setTimeout(r, 1500))]) : Promise.resolve();
 fontReady.catch(() => {}).then(() => { buildWorld(); });
 showTitle();
