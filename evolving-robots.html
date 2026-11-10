@@ -178,7 +178,11 @@ details table { font-size: 12.5px; margin-top: 6px; }
     </div>
     <div class="toast" id="toast" hidden></div>
     <div class="edit-bar" id="editBar" hidden>
-      <span class="eb-t">바닥을 눌러 블록 놓기 · 다시 누르면 빼기 · 블록 <b id="ebCount">0</b>/30</span>
+      <span class="eb-t">누를 때마다 한 층씩 · 최대 3층 · 블록 <b id="ebCount">0</b>/40</span>
+      <div class="seg" role="radiogroup" aria-label="편집 도구" style="min-width:150px">
+        <input type="radio" name="tool" id="toolAdd" value="add" checked><label for="toolAdd">쌓기</label>
+        <input type="radio" name="tool" id="toolRemove" value="remove"><label for="toolRemove">빼기</label>
+      </div>
       <button class="btn primary" type="button" id="ebStart">▶ 게임 시작</button>
     </div>
     <div class="game-banner" id="gameBanner" hidden>
@@ -230,7 +234,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
           <input type="radio" name="mode" id="moPath" value="path" checked><label for="moPath">길 찾기</label>
           <input type="radio" name="mode" id="moTag" value="tag"><label for="moTag">술래잡기</label>
         </div>
-        <p class="note" id="tagNote" hidden>빨간 술래 2명 vs 도망자 4명. 술래가 더 빨라요. 술래는 처음 90걸음 동안 눈을 감고 기다려요(연한 빨강). 로봇마다 작은 신경망 뇌(가중치 182개)가 있고, 이 가중치가 유전자예요. 뇌는 주변 벽까지 거리 8방향, 자기 속도, 벽에 가려지지 않고 보이는 가장 가까운 상대(안 보이면 마지막으로 본 위치)를 보고 어느 쪽으로 갈지 정해요. 안테나가 빨개지면 상대가 보인다는 뜻이에요. 한 세대에 12경기를 치르고, 술래 팀과 도망자 팀이 따로 진화해요. 화면에 보이는 경기는 지난 세대 1등끼리 붙는 경기예요.</p>
+        <p class="note" id="tagNote" hidden>빨간 술래 2명 vs 도망자 4명. 술래가 더 빨라요. 모두 점프할 수 있어서 블록 위로 뛰어오르고 떨어지며 3D로 쫓고 도망쳐요. 한 번에 한 층만 뛰어오를 수 있으니, 높은 탑에 오르려면 계단이 필요해요. 술래는 처음 90걸음 동안 눈을 감고 기다려요(연한 빨강). 로봇마다 작은 신경망 뇌(가중치 233개)가 있고, 이 가중치가 유전자예요. 뇌는 주변 벽까지 거리 8방향, 자기 속도와 높이, 앞에 있는 블록 높이, 블록에 가려지지 않고 보이는 가장 가까운 상대(안 보이면 마지막으로 본 위치)를 보고 어느 쪽으로 갈지 정해요. 안테나가 빨개지면 상대가 보인다는 뜻이에요. 한 세대에 12경기를 치르고, 술래 팀과 도망자 팀이 따로 진화해요. 화면에 보이는 경기는 지난 세대 1등끼리 붙는 경기예요.</p>
       </div>
     </section>
 
@@ -239,7 +243,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <div class="record">
         <div class="stat"><div class="v" id="gmNow">–</div><div class="k">이번 판 버틴 세대</div></div>
         <div class="stat"><div class="v" id="gmBest">–</div><div class="k">최고 기록 (이 맵)</div></div>
-        <div class="stat"><div class="v" id="gmBlocks">0/30</div><div class="k">놓은 블록</div></div>
+        <div class="stat"><div class="v" id="gmBlocks">0/40</div><div class="k">놓은 블록</div></div>
       </div>
       <div class="field" style="margin-top:12px">
         <div class="lab"><span>술래 속도 (도망자보다)</span><span>빠를수록 어려워요</span></div>
@@ -390,7 +394,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <div class="formula">아이템 하나 모을 때마다 25점<br>+ 다음 목표까지 "길 따라 거리"가 가까울수록 최대 25점 (살아 있는 동안 가장 멀리 간 순간 기준)<br>+ 마지막 아이템을 빨리 주울수록 최대 10점<br>도착: 100 + 50 × (1 − 걸린 걸음 ÷ 900)<br>몬스터에게 잡히면 × 0.5</div>
       <p>미로에서는 직선거리로 채점하면 로봇들이 벽 바로 뒤에서 멈춰 버려요(국소 최적). 그래서 던전은 길 찾기(BFS)로 미리 잰 "벽을 돌아가는 거리"로 채점해요. 채점 기준을 잘 정하는 것이 공학 설계의 핵심이라는 걸 보여 주는 부분이에요.</p>
       <p style="margin-bottom:4px">술래잡기 (공진화)</p>
-      <p>술래와 도망자는 정해진 길이 없고, 상대를 보고 반응해야 해요. 그래서 로봇마다 작은 신경망 뇌를 주고, 뇌의 가중치 182개를 유전자로 삼아 진화시켜요. 술래 팀은 "빨리 많이 잡기", 도망자 팀은 "오래 살아남기"로 따로 채점하고 따로 진화해요. 한쪽이 잘하면 다른 쪽의 점수가 떨어지니, 잡힌 비율 그래프가 오르락내리락하는 "군비 경쟁"이 생겨요. 자연에서 치타와 가젤이 함께 빨라지는 것과 같은 원리예요(공진화).</p>
+      <p>술래와 도망자는 정해진 길이 없고, 상대를 보고 반응해야 해요. 그래서 로봇마다 작은 신경망 뇌를 주고, 뇌의 가중치 233개를 유전자로 삼아 진화시켜요. 뇌는 "앞뒤·좌우로 얼마나 갈지"와 "점프할지"를 정해요. 점프를 언제 쓸지도 스스로 배워요. 술래 팀은 "빨리 많이 잡기", 도망자 팀은 "오래 살아남기"로 따로 채점하고 따로 진화해요. 한쪽이 잘하면 다른 쪽의 점수가 떨어지니, 잡힌 비율 그래프가 오르락내리락하는 "군비 경쟁"이 생겨요. 자연에서 치타와 가젤이 함께 빨라지는 것과 같은 원리예요(공진화).</p>
       <p>던전 로봇의 유전자는 "15걸음마다 어느 방향으로 갈지" 적힌 60칸짜리 방향 목록이에요. 900걸음마다 힘을 하나씩 적으면 앞쪽 하나만 바뀌어도 뒤 경로가 통째로 틀어져서, 긴 미로에서는 거의 배우지 못했어요. 유전자를 단순하게 만들면 진화가 훨씬 빨라져요. 이것도 좋은 탐구 포인트예요.</p>
       <p>다른 맵 로봇의 유전자는 200칸짜리 "힘 목록"이에요. 매 걸음 힘 → 속도 변화 → 위치 변화 순서로 움직여요 (통합과학 힘과 운동을 단순화).</p>
     </details>
@@ -631,54 +635,80 @@ class Sim {
   }
 }
 
-/* ================= 술래잡기: 신경망 뇌 + 두 팀 함께 진화(공진화) ================= */
+/* ================= 술래잡기: 신경망 뇌 + 두 팀 함께 진화(공진화) · 3D 점프 ================= */
 const TAG = {
   L: 600, PREP: 90,          // 경기 길이, 술래가 눈 감고 기다리는 걸음 수
   NC: 2, NR: 4, M: 12,       // 한 경기에 술래 2 · 도망자 4, 한 세대에 12경기
   VC: 0.36, VR: 0.30,        // 최고 속도 (술래가 더 빠름: 기본 ×1.2)
-  TAGD: 0.85,                // 이만큼 가까우면 잡힘
-  NI: 16, NH: 10,            // 신경망 입력 16 · 숨은층 10 · 출력 2
+  TAGD: 0.85,                // 이만큼 가까우면(높이 차이 포함) 잡힘
+  LV: 0.9,                   // 블록 한 층 높이
+  JUMP: 0.16, G: 0.012,      // 점프 속도, 중력 → 최고 약 1.07 높이 (한 층만 뛰어오를 수 있음)
+  STEP: 0.3,                 // 이 정도 턱은 그냥 걸어 올라감
+  NI: 20, NH: 10, NO: 3,     // 신경망 입력 20 · 숨은층 10 · 출력 3(앞뒤, 좌우, 점프)
 };
-TAG.NW = TAG.NI * TAG.NH + (TAG.NH + 1) * 2;   // 유전자(가중치) 개수
+TAG.NW = TAG.NI * TAG.NH + (TAG.NH + 1) * TAG.NO;   // 유전자(가중치) 개수
 TAG.PC = TAG.NC * TAG.M; TAG.PR = TAG.NR * TAG.M;
 MAPS.tag = {
   L: TAG.L, tag: true, items: [], monsters: [], targets: [],
-  rects: [],   // 내가 놓은 블록으로 채워짐
+  rects: [],   // 내가 쌓은 블록 기둥으로 채워짐 (top = 높이)
 };
 MAP_NAMES.tag = "술래잡기";
 const SPAWN = [[9.5, -1.6], [9.5, 1.6], [-7, -6], [-7, -2], [-7, 2], [-7, 6]];
-/* ---- 내가 배치하는 블록 (칸 단위) ---- */
-const TAG_BUDGET = 30;
-const tagBlocks = new Set();
+/* ---- 내가 쌓는 블록 (칸마다 1~3층) ---- */
+const TAG_BUDGET = 40, TAG_MAXH = 3;
+const tagBlocks = new Map();   // "c,r" → 층수
+const tagCubeCount = () => { let s = 0; for (const h of tagBlocks.values()) s += h; return s; };
 const SPAWN_CELLS = SPAWN.map(([x, z]) => [Math.floor(x + HX), Math.floor(z + HZ)]);
-const DEFAULT_BLOCKS = [
-  [8, 3], [9, 3], [10, 3], [11, 3], [8, 12], [9, 12], [10, 12], [11, 12],
-  [14, 6], [14, 7], [14, 8], [14, 9], [18, 1], [18, 2], [18, 3], [18, 12], [18, 13], [18, 14],
-  [2, 7], [2, 8], [11, 7], [11, 8],
+const DEFAULT_BLOCKS = [   // [칸, 줄, 층] : 계단 → 탑, 낮은 벽, 다리
+  [10, 6, 1], [11, 6, 2], [12, 6, 3], [12, 7, 3], [12, 8, 2], [12, 9, 1],
+  [6, 3, 1], [7, 3, 1], [8, 3, 1], [6, 12, 1], [7, 12, 1], [8, 12, 1],
+  [16, 2, 1], [16, 3, 2], [17, 3, 2], [16, 12, 2], [16, 13, 1], [17, 12, 2],
+  [2, 7, 1], [2, 8, 1],
 ];
 function tagCellFree(c, r) {
   return c >= 0 && r >= 0 && c < COLS && r < ROWS && !SPAWN_CELLS.some(([sc, sr]) => Math.abs(sc - c) <= 1 && Math.abs(sr - r) <= 1);
 }
+const colGrid = new Float32Array(COLS * ROWS);   // 칸마다 기둥 꼭대기 높이 (빠른 조회용)
 function applyTagBlocks() {
-  MAPS.tag.rects = [...tagBlocks].map(k => { const [c, r] = k.split(",").map(Number); return { x: cellX(c), z: cellZ(r), w: 1, d: 1, c, r }; });
+  colGrid.fill(0);
+  MAPS.tag.rects = [...tagBlocks].map(([k, h]) => {
+    const [c, r] = k.split(",").map(Number); colGrid[r * COLS + c] = h * TAG.LV;
+    return { x: cellX(c), z: cellZ(r), w: 1, d: 1, c, r, h, top: h * TAG.LV };
+  });
 }
 function setTagBlocks(list) {
   tagBlocks.clear();
-  for (const [c, r] of list) if (tagCellFree(c, r) && tagBlocks.size < TAG_BUDGET) tagBlocks.add(c + "," + r);
+  for (const [c, r, h0] of list) {
+    const h = Math.min(TAG_MAXH, Math.max(1, h0 || 1));
+    if (!tagCellFree(c, r) || tagBlocks.has(c + "," + r) || tagCubeCount() + h > TAG_BUDGET) continue;
+    tagBlocks.set(c + "," + r, h);
+  }
   applyTagBlocks();
 }
-function randomTagBlocks() {   // 짧은 벽 여러 개를 무작위로
+function randomTagBlocks() {   // 무작위 계단과 벽
   const out = [];
-  for (let w = 0; w < 9; w++) {
-    const horiz = Math.random() < 0.5, len = 2 + ((Math.random() * 3) | 0);
-    const c0 = 3 + ((Math.random() * 16) | 0), r0 = 1 + ((Math.random() * 13) | 0);
-    for (let k = 0; k < len; k++) out.push(horiz ? [c0 + k, r0] : [c0, r0 + k]);
+  for (let w = 0; w < 7; w++) {
+    const horiz = Math.random() < 0.5, len = 2 + ((Math.random() * 3) | 0), stairs = Math.random() < 0.5;
+    const c0 = 3 + ((Math.random() * 15) | 0), r0 = 1 + ((Math.random() * 12) | 0);
+    for (let k = 0; k < len; k++) out.push(horiz ? [c0 + k, r0, stairs ? Math.min(3, k + 1) : 1] : [c0, r0 + k, stairs ? Math.min(3, k + 1) : 1]);
   }
   return out;
 }
 setTagBlocks(DEFAULT_BLOCKS);
 
-function slab(x, z, dx, dz, w) {   // 반직선이 상자에 들어가는 지점 (없으면 -1)
+function topAt(x, z) {   // 이 지점 바로 아래 기둥 높이
+  const c = Math.floor(x + HX), r = Math.floor(z + HZ);
+  return c < 0 || r < 0 || c >= COLS || r >= ROWS ? 0 : colGrid[r * COLS + c];
+}
+function footTop(x, z) {   // 로봇 발바닥(작은 사각형)이 걸친 칸 중 가장 높은 곳
+  const q = R * 0.7;
+  return Math.max(topAt(x - q, z - q), topAt(x + q, z - q), topAt(x - q, z + q), topAt(x + q, z + q));
+}
+function blocked3(x, z, y) {   // 경기장 밖이거나 발 높이보다 너무 높은 블록에 부딪힘
+  if (x < -HX + R || x > HX - R || z < -HZ + R || z > HZ - R) return true;
+  return footTop(x, z) > y + TAG.STEP;
+}
+function slab(x, z, dx, dz, w) {   // 반직선이 상자(평면)에 들어가는 지점 (없으면 -1)
   const x0 = w.x - w.w / 2, x1 = w.x + w.w / 2, z0 = w.z - w.d / 2, z1 = w.z + w.d / 2;
   let tmin = -Infinity, tmax = Infinity;
   if (Math.abs(dx) < 1e-9) { if (x < x0 || x > x1) return -1; }
@@ -688,15 +718,26 @@ function slab(x, z, dx, dz, w) {   // 반직선이 상자에 들어가는 지점
   if (tmax < Math.max(tmin, 0)) return -1;
   return Math.max(tmin, 0);
 }
-function rayDist(rects, x, z, dx, dz, maxD) {
+function slab3(x, y, z, dx, dy, dz, w) {   // 3D 선분이 기둥(바닥~top)을 지나는지
+  let tmin = 0, tmax = 1;
+  const ax = [[x, dx, w.x - w.w / 2, w.x + w.w / 2], [y, dy, 0, w.top], [z, dz, w.z - w.d / 2, w.z + w.d / 2]];
+  for (const [p, d, lo, hi] of ax) {
+    if (Math.abs(d) < 1e-9) { if (p < lo || p > hi) return false; continue; }
+    let a = (lo - p) / d, b = (hi - p) / d; if (a > b) { const q = a; a = b; b = q; }
+    tmin = Math.max(tmin, a); tmax = Math.min(tmax, b); if (tmax < tmin) return false;
+  }
+  return true;
+}
+function rayDist(rects, x, z, y, dx, dz, maxD) {   // 내 발 높이에서 막는 기둥까지 거리
   let best = maxD;
   if (dx > 0) best = Math.min(best, (HX - x) / dx); else if (dx < 0) best = Math.min(best, (-HX - x) / dx);
   if (dz > 0) best = Math.min(best, (HZ - z) / dz); else if (dz < 0) best = Math.min(best, (-HZ - z) / dz);
-  for (const w of rects) { const t = slab(x, z, dx, dz, w); if (t >= 0 && t < best) best = t; }
+  for (const w of rects) { if (w.top <= y + TAG.STEP) continue; const t = slab(x, z, dx, dz, w); if (t >= 0 && t < best) best = t; }
   return best;
 }
-function canSee(rects, ax, az, bx, bz) {
-  for (const w of rects) { const t = slab(ax, az, bx - ax, bz - az, w); if (t >= 0 && t <= 1) return false; }
+function canSee(rects, ax, ay, az, bx, by, bz) {   // 눈높이끼리 이은 선이 블록에 가려지는지 (3D)
+  ay += 0.55; by += 0.55;
+  for (const w of rects) if (slab3(ax, ay, az, bx - ax, by - ay, bz - az, w)) return false;
   return true;
 }
 function gauss() { return Math.sqrt(-2 * Math.log(1 - Math.random())) * Math.cos(2 * Math.PI * Math.random()); }
@@ -706,10 +747,12 @@ class Match {
   constructor(ts, ci, ri) {
     this.ts = ts; this.ci = ci; this.ri = ri; const n = 6;
     this.px = new Float32Array(n); this.pz = new Float32Array(n); this.vx = new Float32Array(n); this.vz = new Float32Array(n);
+    this.py = new Float32Array(n); this.vy = new Float32Array(n); this.ground = new Uint8Array(n).fill(1);
     this.state = new Uint8Array(n); this.caughtAt = new Uint16Array(n);
     this.tagScore = new Float32Array(n); this.minD = new Float32Array(n).fill(99);
     this.sumD = new Float32Array(n); this.seen = new Uint8Array(n);
-    this.lastX = new Float32Array(n); this.lastZ = new Float32Array(n); this.memo = new Float32Array(n);   // 마지막으로 본 상대 위치 기억
+    this.lastX = new Float32Array(n); this.lastZ = new Float32Array(n); this.lastY = new Float32Array(n); this.memo = new Float32Array(n);
+    this.jumps = new Uint16Array(n);
     SPAWN.forEach((p, a) => { this.px[a] = p[0]; this.pz[a] = p[1]; });
     this.t = 0; this.done = false;
   }
@@ -717,52 +760,61 @@ class Match {
   step() {
     if (this.done) return;
     const t = this.t, rects = MAPS.tag.rects, inp = this.ts.inp, hid = this.ts.hid, { NI, NH, NC } = TAG;
-    const px = this.px, pz = this.pz;
+    const px = this.px, pz = this.pz, py = this.py;
     for (let a = 0; a < 6; a++) {
       if (this.state[a]) continue;
       const chaser = a < NC, maxV = chaser ? TAG.VC : TAG.VR;
       if (chaser && t < TAG.PREP) continue;           // 술래는 눈 감고 기다리는 중
-      const x = px[a], z = pz[a];
+      const x = px[a], z = pz[a], y = py[a];
       let best = -1, bd = 1e9;
       for (let b = 0; b < 6; b++) {
         if ((b < NC) === chaser || this.state[b]) continue;
-        const d = Math.hypot(px[b] - x, pz[b] - z);
-        if (d < bd && canSee(rects, x, z, px[b], pz[b])) { bd = d; best = b; }
+        const d = Math.hypot(px[b] - x, pz[b] - z, py[b] - y);
+        if (d < bd && canSee(rects, x, y, z, px[b], py[b], pz[b])) { bd = d; best = b; }
       }
       this.seen[a] = best >= 0 ? 1 : 0;
-      for (let k = 0; k < 8; k++) inp[k] = 1 - rayDist(rects, x, z, RAYS[k][0], RAYS[k][1], 8) / 8;
+      for (let k = 0; k < 8; k++) inp[k] = 1 - rayDist(rects, x, z, y, RAYS[k][0], RAYS[k][1], 8) / 8;
       inp[8] = this.vx[a] / maxV; inp[9] = this.vz[a] / maxV;
-      if (best >= 0) { this.lastX[a] = px[best]; this.lastZ[a] = pz[best]; this.memo[a] = 1; }
+      if (best >= 0) { this.lastX[a] = px[best]; this.lastZ[a] = pz[best]; this.lastY[a] = py[best]; this.memo[a] = 1; }
       else this.memo[a] *= 0.99;   // 안 보이면 기억이 조금씩 흐려짐
       if (this.memo[a] > 0.05) {   // 상대(또는 기억 속 위치) 쪽 방향 (길이 1)
         const ddx = this.lastX[a] - x, ddz = this.lastZ[a] - z, dl = Math.hypot(ddx, ddz) || 1;
-        inp[10] = ddx / dl; inp[11] = ddz / dl;
-      }
-      else { inp[10] = inp[11] = 0; }
+        inp[10] = ddx / dl; inp[11] = ddz / dl; inp[16] = (this.lastY[a] - y) / 2.7;
+      } else { inp[10] = inp[11] = inp[16] = 0; }
       inp[12] = best >= 0 ? 1 : 0; inp[13] = best >= 0 ? 1 - Math.min(bd, 16) / 16 : this.memo[a] * 0.3;
       inp[14] = t < TAG.PREP ? 1 : 0; inp[15] = 1;
+      inp[17] = y / 2.7; inp[18] = this.ground[a];
+      // 바로 앞(가는 방향) 블록이 내 발보다 얼마나 높은지: 점프할지 판단용
+      const sp0 = Math.hypot(this.vx[a], this.vz[a]) || 1;
+      inp[19] = (footTop(x + this.vx[a] / sp0 * 0.8, z + this.vz[a] / sp0 * 0.8) - y) / TAG.LV;
       const w = this.weights(a);
       for (let h = 0; h < NH; h++) { let s = 0; for (let i = 0; i < NI; i++) s += inp[i] * w[h * NI + i]; hid[h] = Math.tanh(s); }
-      const o = NI * NH; let o0 = w[o + NH], o1 = w[o + 2 * NH + 1];
-      for (let h = 0; h < NH; h++) { o0 += hid[h] * w[o + h]; o1 += hid[h] * w[o + NH + 1 + h]; }
-      let dvx = Math.tanh(o0) * maxV, dvz = Math.tanh(o1) * maxV;
+      const o = NI * NH, out = [0, 0, 0];
+      for (let q = 0; q < 3; q++) { let s = w[o + q * (NH + 1) + NH]; for (let h = 0; h < NH; h++) s += hid[h] * w[o + q * (NH + 1) + h]; out[q] = Math.tanh(s); }
+      let dvx = out[0] * maxV, dvz = out[1] * maxV;
       const dm = Math.hypot(dvx, dvz); if (dm > maxV) { dvx *= maxV / dm; dvz *= maxV / dm; }
+      const air = this.ground[a] ? 1 : 0.5;   // 공중에서는 방향을 덜 바꿈
       let fx = dvx - this.vx[a], fz = dvz - this.vz[a];
-      const fm = Math.hypot(fx, fz), lim = MAXF * 1.5; if (fm > lim) { fx *= lim / fm; fz *= lim / fm; }
+      const fm = Math.hypot(fx, fz), lim = MAXF * 1.5 * air; if (fm > lim) { fx *= lim / fm; fz *= lim / fm; }
       let vx = this.vx[a] + fx, vz = this.vz[a] + fz;
+      // 점프 + 중력
+      if (out[2] > 0.3 && this.ground[a]) { this.vy[a] = TAG.JUMP; this.ground[a] = 0; this.jumps[a]++; }
+      let vy = this.vy[a] - TAG.G, ny = y + vy;
       let nx = x + vx, nz = z + vz;
-      if (hits(MAPS.tag, nx, nz, 0)) {
-        if (!hits(MAPS.tag, nx, z, 0)) { nz = z; vz = 0; }
-        else if (!hits(MAPS.tag, x, nz, 0)) { nx = x; vx = 0; }
+      if (blocked3(nx, nz, ny)) {   // 벽처럼 높은 블록이면 미끄러지기
+        if (!blocked3(nx, z, ny)) { nz = z; vz = 0; }
+        else if (!blocked3(x, nz, ny)) { nx = x; vx = 0; }
         else { nx = x; nz = z; vx = vz = 0; }
       }
-      this.vx[a] = vx; this.vz[a] = vz; px[a] = nx; pz[a] = nz;
+      const floor = footTop(nx, nz);
+      if (ny <= floor) { ny = floor; vy = 0; this.ground[a] = 1; } else this.ground[a] = 0;
+      this.vx[a] = vx; this.vz[a] = vz; this.vy[a] = vy; px[a] = nx; pz[a] = nz; py[a] = ny;
     }
     let alive = 0;
     for (let r = NC; r < 6; r++) {
       if (this.state[r]) continue;
       let nd = 1e9, nc = -1;
-      for (let c = 0; c < NC; c++) { const d = Math.hypot(px[c] - px[r], pz[c] - pz[r]); if (d < nd) { nd = d; nc = c; } if (d < this.minD[c]) this.minD[c] = d; }
+      for (let c = 0; c < NC; c++) { const d = Math.hypot(px[c] - px[r], pz[c] - pz[r], py[c] - py[r]); if (d < nd) { nd = d; nc = c; } if (d < this.minD[c]) this.minD[c] = d; }
       if (t >= TAG.PREP && nd < TAG.TAGD) {
         this.state[r] = 3; this.caughtAt[r] = t + 1; this.tagScore[nc] += 1 + (1 - t / TAG.L);
         continue;
@@ -794,7 +846,7 @@ class TagSim {
     for (let m = 0; m < M; m++) this.matches.push(new Match(this, this.permC.slice(m * NC, m * NC + NC), this.permR.slice(m * NR, m * NR + NR)));
     this.featured = this.matches[0];   // 화면에 보여 주는 경기 = 지난 세대 1등끼리
   }
-  get px() { return this.featured.px; } get pz() { return this.featured.pz; }
+  get px() { return this.featured.px; } get pz() { return this.featured.pz; } get py() { return this.featured.py; } get vy() { return this.featured.vy; }
   get vx() { return this.featured.vx; } get vz() { return this.featured.vz; }
   get state() { return this.featured.state; } get t() { return this.featured.t; }
   get prep() { return this.featured.t < TAG.PREP; }
@@ -968,12 +1020,17 @@ function buildObstacles() {
   startPad.visible = goal.visible = !map.tag;
   for (const w of map.rects) {
     if (map.tag) {   // 술래잡기: 알록달록 장난감 블록
-      const k = ((w.c * 7 + w.r * 3) % CANDY.length + CANDY.length) % CANDY.length;
-      const b = box(0.96, 0.9, 0.96, w.x, w.z, CANDY[k][0]); obstacleGroup.add(b);
-      const top = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.1, 0.98), CANDY[k][1]);
-      top.position.set(w.x, 0.95, w.z); obstacleGroup.add(top);
-      const stud = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.1, 16), CANDY[k][1]);
-      stud.position.set(w.x, 1.05, w.z); obstacleGroup.add(stud);
+      for (let lv = 0; lv < w.h; lv++) {   // 층마다 색이 다른 장난감 블록을 쌓음
+        const k = ((w.c * 7 + w.r * 3 + lv * 2) % CANDY.length + CANDY.length) % CANDY.length;
+        const b = new THREE.Mesh(new THREE.BoxGeometry(0.96, TAG.LV - 0.04, 0.96), CANDY[k][0]);
+        b.position.set(w.x, lv * TAG.LV + TAG.LV / 2, w.z); b.castShadow = b.receiveShadow = true; obstacleGroup.add(b);
+        if (lv === w.h - 1) {
+          const top = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.06, 0.98), CANDY[k][1]);
+          top.position.set(w.x, w.top - 0.01, w.z); top.receiveShadow = true; obstacleGroup.add(top);
+          const stud = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.07, 16), CANDY[k][1]);
+          stud.position.set(w.x, w.top + 0.035, w.z); obstacleGroup.add(stud);
+        }
+      }
       continue;
     }
     obstacleGroup.add(box(w.w, 1.7, w.d, w.x, w.z, obstacleMat));
@@ -1123,11 +1180,13 @@ function updateRobots(time) {
     const chaser = sim.team && sim.team[i];
     if (chaser) { sx = sz = 1.2; sy = 1.13; }
     const ph = time * 11 + i * 1.7;
+    const baseY = sim.py ? sim.py[i] : 0, airborne = sim.py && sim.featured.ground[i] === 0;
     if (chaser && sim.prep) { /* 술래는 눈 감고 기다리는 중: 가만히 */ }
+    else if (airborne && st === 0) { const v = sim.vy[i] / TAG.JUMP; sy *= 1 + v * 0.25; sx *= 1 - v * 0.12; sz *= 1 - v * 0.12; }   // 점프: 위로 늘어남
     else if (st === 0) { if (!reduceMotion) { y += Math.abs(Math.sin(ph)) * 0.12; sy = 0.94 + Math.sin(ph * 2) * 0.03; } }
     else if (st === 1 || st === 3) { y = R * 0.55; sx = sz = 1.18; sy = 0.55; }
     else { if (!reduceMotion) { y += Math.abs(Math.sin(time * 6 + i)) * 0.45; spin = time * 3; } }
-    dummy.position.set(sim.px[i], y, sim.pz[i]);
+    dummy.position.set(sim.px[i], y + baseY, sim.pz[i]);
     dummy.rotation.set(0, heading[i] + spin, 0);
     dummy.scale.set(sx * 1.15, sy * 1.15, sz * 1.15);
     dummy.updateMatrix();
@@ -1292,16 +1351,16 @@ new MutationObserver(redrawAll).observe(document.documentElement, { attributes: 
 const game = { state: "off", survived: 0, danger: 0 };
 const GAME_OVER_PCT = 80;   // 한 세대 12경기에서 도망자가 이만큼 이상 잡히면 게임 오버
 const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
-try { const saved = JSON.parse(store.get("tagBlocks") || "null"); if (Array.isArray(saved)) setTagBlocks(saved); } catch {}
-const layoutKey = () => "tagBest:" + $("input[name=cspeed]:checked").value + ":" + [...tagBlocks].sort().join(";");
+try { const saved = JSON.parse(store.get("tagBlocks3d") || "null"); if (Array.isArray(saved)) setTagBlocks(saved); } catch {}
+const layoutKey = () => "tagBest3d:" + $("input[name=cspeed]:checked").value + ":" + [...tagBlocks].map(([k, h]) => k + "x" + h).sort().join(";");
 function bestRecord() { const v = +store.get(layoutKey()); return Number.isFinite(v) && v > 0 ? v : 0; }
-function saveBlocks() { store.set("tagBlocks", JSON.stringify([...tagBlocks].map(k => k.split(",").map(Number)))); }
+function saveBlocks() { store.set("tagBlocks3d", JSON.stringify([...tagBlocks].map(([k, h]) => [...k.split(",").map(Number), h]))); }
 function refreshGameUi() {
   const tag = S.mode === "tag", editing = tag && game.state === "edit";
   document.body.classList.toggle("editing", editing);
   $("#editBar").hidden = !editing;
-  $("#ebCount").textContent = tagBlocks.size;
-  $("#gmBlocks").textContent = tagBlocks.size + "/" + TAG_BUDGET;
+  $("#ebCount").textContent = tagCubeCount();
+  $("#gmBlocks").textContent = tagCubeCount() + "/" + TAG_BUDGET;
   $("#gmNow").textContent = tag && game.state !== "edit" ? game.survived + "세대" : "–";
   const b = bestRecord(); $("#gmBest").textContent = b ? b + "세대" : "–";
   ghost.visible = false;
@@ -1355,7 +1414,7 @@ TAG.VC = TAG.VR * +radio("cspeed");
 
 // 바닥 클릭으로 블록 놓기
 const raycaster = new THREE.Raycaster(), ndc = new THREE.Vector2(), floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hitP = new THREE.Vector3();
-const ghost = new THREE.Mesh(new THREE.BoxGeometry(0.98, 0.9, 0.98), new THREE.MeshBasicMaterial({ color: "#3fd17a", transparent: true, opacity: 0.45, depthWrite: false }));
+const ghost = new THREE.Mesh(new THREE.BoxGeometry(1.0, TAG.LV, 1.0), new THREE.MeshBasicMaterial({ color: "#3fd17a", transparent: true, opacity: 0.45, depthWrite: false }));
 ghost.visible = false; scene.add(ghost);
 function cellAt(e) {
   const r = canvas.getBoundingClientRect();
@@ -1368,20 +1427,28 @@ function cellAt(e) {
 function hoverCell(e) {
   if (S.mode !== "tag" || game.state !== "edit") { ghost.visible = false; return; }
   const cell = cellAt(e); if (!cell) { ghost.visible = false; return; }
-  const [c, r] = cell, key = c + "," + r, has = tagBlocks.has(key);
-  const ok = has || (tagCellFree(c, r) && tagBlocks.size < TAG_BUDGET);
-  ghost.material.color.set(has ? "#ff5a5a" : ok ? "#3fd17a" : "#9aa5ab");
-  ghost.position.set(cellX(c), 0.45, cellZ(r)); ghost.visible = true;
+  const [c, r] = cell, h = tagBlocks.get(c + "," + r) || 0, remove = editTool() === "remove";
+  if (remove) {
+    if (!h) { ghost.visible = false; return; }
+    ghost.material.color.set("#ff5a5a"); ghost.position.set(cellX(c), (h - 0.5) * TAG.LV, cellZ(r));
+  } else {
+    const ok = tagCellFree(c, r) && h < TAG_MAXH && tagCubeCount() < TAG_BUDGET;
+    ghost.material.color.set(ok ? "#3fd17a" : "#9aa5ab"); ghost.position.set(cellX(c), (Math.min(h, TAG_MAXH - 1) + 0.5) * TAG.LV, cellZ(r));
+  }
+  ghost.visible = true;
 }
+function editTool(e) { return (e && (e.button === 2 || e.shiftKey)) ? "remove" : radio("tool"); }
+canvas.addEventListener("contextmenu", e => { if (S.mode === "tag" && game.state === "edit") e.preventDefault(); });
 function clickCell(e) {
   if (S.mode !== "tag") return;
   if (game.state !== "edit") { if (game.state === "play") toast("게임 중에는 블록을 못 놓아요. <b>맵 편집</b>을 누르세요"); return; }
   const cell = cellAt(e); if (!cell) return;
-  const [c, r] = cell, key = c + "," + r;
-  if (tagBlocks.has(key)) tagBlocks.delete(key);
+  const [c, r] = cell, key = c + "," + r, h = tagBlocks.get(key) || 0;
+  if (editTool(e) === "remove") { if (!h) return; if (h > 1) tagBlocks.set(key, h - 1); else tagBlocks.delete(key); }
   else if (!tagCellFree(c, r)) { toast("출발 자리 근처라 못 놓아요"); return; }
-  else if (tagBlocks.size >= TAG_BUDGET) { toast(`블록은 최대 <b>${TAG_BUDGET}개</b>예요`); return; }
-  else tagBlocks.add(key);
+  else if (h >= TAG_MAXH) { toast(`한 칸에 최대 <b>${TAG_MAXH}층</b>까지 쌓을 수 있어요`); return; }
+  else if (tagCubeCount() >= TAG_BUDGET) { toast(`블록은 최대 <b>${TAG_BUDGET}개</b>예요`); return; }
+  else tagBlocks.set(key, h + 1);
   applyTagBlocks(); saveBlocks(); buildObstacles(); refreshGameUi(); hoverCell(e);
 }
 
@@ -1403,15 +1470,15 @@ for (let i = 0; i < 6; i++) {
 const sparkGeo = new THREE.OctahedronGeometry(0.09), sparks = [];
 const SPARK_COLORS = ["#ffd23f", "#ff5fa2", "#ffffff", "#ff8a3d"].map(c => new THREE.MeshBasicMaterial({ color: c, transparent: true }));
 let caughtLabel = null, caughtLabelT = 0, prevMatch = null; const prevState = new Uint8Array(6);
-function burst(x, z) {
+function burst(x, z, y0 = 0) {
   for (let k = 0; k < 22; k++) {
     const m = new THREE.Mesh(sparkGeo, SPARK_COLORS[k % SPARK_COLORS.length]);
     const a = Math.random() * Math.PI * 2, sp = 2 + Math.random() * 3;
-    m.position.set(x, 0.6, z); m.userData = { vx: Math.cos(a) * sp, vy: 3 + Math.random() * 3, vz: Math.sin(a) * sp, life: 1 };
+    m.position.set(x, y0 + 0.6, z); m.userData = { vx: Math.cos(a) * sp, vy: 3 + Math.random() * 3, vz: Math.sin(a) * sp, life: 1 };
     fx.add(m); sparks.push(m);
   }
   if (caughtLabel) fx.remove(caughtLabel);
-  caughtLabel = labelSprite("잡았다!", "#e2263a"); caughtLabel.position.set(x, 1.4, z); caughtLabelT = 1; fx.add(caughtLabel);
+  caughtLabel = labelSprite("잡았다!", "#e2263a"); caughtLabel.position.set(x, y0 + 1.4, z); caughtLabelT = 1; fx.add(caughtLabel);
 }
 function updateTagFx(dt) {
   const tag = sim.mode === "tag";
@@ -1420,17 +1487,18 @@ function updateTagFx(dt) {
     if (prevMatch !== sim.featured) { prevMatch = sim.featured; prevState.set(sim.state); }
     for (let i = 0; i < 6; i++) {
       const st = sim.state[i];
-      if (st === 3 && prevState[i] !== 3 && game.state === "play") burst(sim.px[i], sim.pz[i]);
+      if (st === 3 && prevState[i] !== 3 && game.state === "play") burst(sim.px[i], sim.pz[i], sim.py[i]);
       prevState[i] = st;
-      rings[i].position.set(sim.px[i], 0.03, sim.pz[i]); rings[i].visible = st !== 3;
+      rings[i].position.set(sim.px[i], footTop(sim.px[i], sim.pz[i]) + 0.03, sim.pz[i]); rings[i].visible = st !== 3;
+      rings[i].scale.setScalar(1 + Math.min(1.5, (sim.py[i] - footTop(sim.px[i], sim.pz[i])) * 0.6));   // 높이 뛸수록 그림자 링이 커짐
       const sleeping = i < 2 && sim.prep;
       alerts[i].visible = st !== 3 && !sleeping && !!sim.featured.seen[i] && game.state !== "edit";
-      alerts[i].position.set(sim.px[i], 1.35 + (reduceMotion ? 0 : Math.abs(Math.sin(clock.elapsedTime * 8 + i)) * 0.1), sim.pz[i]);
+      alerts[i].position.set(sim.px[i], sim.py[i] + 1.35 + (reduceMotion ? 0 : Math.abs(Math.sin(clock.elapsedTime * 8 + i)) * 0.1), sim.pz[i]);
     }
   }
   for (let k = sparks.length - 1; k >= 0; k--) {
     const m = sparks[k], u = m.userData;
-    u.vy -= 9.8 * dt; m.position.x += u.vx * dt; m.position.y = Math.max(0.05, m.position.y + u.vy * dt); m.position.z += u.vz * dt;
+    u.vy -= 9.8 * dt; m.position.x += u.vx * dt; m.position.y = Math.max(0.05 + footTop(m.position.x, m.position.z), m.position.y + u.vy * dt); m.position.z += u.vz * dt;
     m.rotation.x += dt * 8; m.rotation.y += dt * 6; u.life -= dt * 1.1; m.scale.setScalar(Math.max(0.01, u.life * 1.4));
     if (u.life <= 0) { fx.remove(m); sparks.splice(k, 1); }
   }
@@ -1476,7 +1544,7 @@ function updateHud() {
     let caught = 0; for (let i = 2; i < 6; i++) if (sim.state[i] === 3) caught++;
     $("#hudReach").innerHTML = `잡힘 <b>${caught}</b> / 4`;
     hi.hidden = false;
-    hi.innerHTML = game.state === "edit" ? `맵 편집 중 · 블록 <b>${tagBlocks.size}</b>/${TAG_BUDGET}`
+    hi.innerHTML = game.state === "edit" ? `맵 편집 중 · 블록 <b>${tagCubeCount()}</b>/${TAG_BUDGET}`
       : (sim.prep ? `술래 눈 감는 중 <b>${TAG.PREP - sim.t}</b>` : `술래 ×${radio("cspeed")} 빠름`) + ` · 버틴 세대 <b>${game.survived}</b> · 위험 <b>${game.danger.toFixed(0)}%</b>/80%`;
     return;
   }
