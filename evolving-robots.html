@@ -219,6 +219,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
       <div class="field" style="margin-top:12px">
         <div class="lab"><span>재생 속도</span><span>세대 단위 = 결과만 빠르게</span></div>
         <div class="seg" role="radiogroup" aria-label="재생 속도">
+          <input type="radio" name="speed" id="sp05" value="0.5"><label for="sp05">0.5×</label>
           <input type="radio" name="speed" id="sp1" value="1"><label for="sp1">1×</label>
           <input type="radio" name="speed" id="sp3" value="3"><label for="sp3">3×</label>
           <input type="radio" name="speed" id="sp10" value="10" checked><label for="sp10">10×</label>
@@ -234,7 +235,7 @@ details table { font-size: 12.5px; margin-top: 6px; }
           <input type="radio" name="mode" id="moPath" value="path" checked><label for="moPath">길 찾기</label>
           <input type="radio" name="mode" id="moTag" value="tag"><label for="moTag">술래잡기</label>
         </div>
-        <p class="note" id="tagNote" hidden>빨간 술래 2명 vs 도망자 4명. 술래가 더 빨라요. 모두 점프할 수 있어서 블록 위로 뛰어오르고 떨어지며 3D로 쫓고 도망쳐요. 한 번에 한 층만 뛰어오를 수 있으니, 높은 탑에 오르려면 계단이 필요해요. 술래는 처음 90걸음 동안 눈을 감고 기다려요(연한 빨강). 로봇마다 작은 신경망 뇌(가중치 233개)가 있고, 이 가중치가 유전자예요. 뇌는 주변 벽까지 거리 8방향, 자기 속도와 높이, 앞에 있는 블록 높이, 블록에 가려지지 않고 보이는 가장 가까운 상대(안 보이면 마지막으로 본 위치)를 보고 어느 쪽으로 갈지 정해요. 안테나가 빨개지면 상대가 보인다는 뜻이에요. 한 세대에 12경기를 치르고, 술래 팀과 도망자 팀이 따로 진화해요. 화면에 보이는 경기는 지난 세대 1등끼리 붙는 경기예요.</p>
+        <p class="note" id="tagNote" hidden>빨간 술래 2명 vs 도망자 4명. 술래가 더 빨라요. 모두 점프할 수 있어서 블록 위로 뛰어오르고 떨어지며 3D로 쫓고 도망쳐요. 한 번에 한 층만 뛰어오를 수 있으니, 높은 탑에 오르려면 계단이 필요해요. 술래는 처음 90걸음 동안 눈을 감고 기다려요(연한 빨강). 로봇마다 작은 신경망 뇌(가중치 233개)가 있고, 이 가중치가 유전자예요. 뇌는 주변 벽까지 거리 8방향, 자기 속도와 높이, 앞에 있는 블록 높이, 블록에 가려지지 않고 보이는 가장 가까운 상대(안 보이면 마지막으로 본 위치)를 보고 어느 쪽으로 갈지 정해요. 머리 위 "!"는 상대가 보인다는 뜻이고, 술래 머리 위 "?"는 기억이나 발소리로 찾아가는 중이라는 뜻이에요. 안 보여도 40걸음마다 가장 가까운 상대의 발소리(대략적인 위치)가 들려요. 그래서 한 명을 잡은 뒤에도 다음 도망자를 찾아 나서요. 한 세대에 12경기를 치르고, 술래 팀과 도망자 팀이 따로 진화해요. 화면에 보이는 경기는 지난 세대 1등끼리 붙는 경기예요.</p>
       </div>
     </section>
 
@@ -752,7 +753,7 @@ class Match {
     this.tagScore = new Float32Array(n); this.minD = new Float32Array(n).fill(99);
     this.sumD = new Float32Array(n); this.seen = new Uint8Array(n);
     this.lastX = new Float32Array(n); this.lastZ = new Float32Array(n); this.lastY = new Float32Array(n); this.memo = new Float32Array(n);
-    this.jumps = new Uint16Array(n);
+    this.jumps = new Uint16Array(n); this.heard = new Uint8Array(n);
     SPAWN.forEach((p, a) => { this.px[a] = p[0]; this.pz[a] = p[1]; });
     this.t = 0; this.done = false;
   }
@@ -773,6 +774,11 @@ class Match {
         if (d < bd && canSee(rects, x, y, z, px[b], py[b], pz[b])) { bd = d; best = b; }
       }
       this.seen[a] = best >= 0 ? 1 : 0;
+      if (best < 0 && this.memo[a] < 0.3 && (t + a * 7) % 40 === 0) {   // 발소리: 안 보여도 40걸음마다 가장 가까운 상대의 대략적인 위치를 들음
+        let hb = -1, hd = 1e9;
+        for (let b = 0; b < 6; b++) { if ((b < NC) === chaser || this.state[b]) continue; const d = Math.hypot(px[b] - x, pz[b] - z); if (d < hd) { hd = d; hb = b; } }
+        if (hb >= 0) { this.lastX[a] = px[hb] + gauss() * 1.2; this.lastZ[a] = pz[hb] + gauss() * 1.2; this.lastY[a] = py[hb]; this.memo[a] = 0.6; this.heard[a] = 1; }
+      } else if (best >= 0) this.heard[a] = 0;
       for (let k = 0; k < 8; k++) inp[k] = 1 - rayDist(rects, x, z, y, RAYS[k][0], RAYS[k][1], 8) / 8;
       inp[8] = this.vx[a] / maxV; inp[9] = this.vz[a] / maxV;
       if (best >= 0) { this.lastX[a] = px[best]; this.lastZ[a] = pz[best]; this.lastY[a] = py[best]; this.memo[a] = 1; }
@@ -817,6 +823,7 @@ class Match {
       for (let c = 0; c < NC; c++) { const d = Math.hypot(px[c] - px[r], pz[c] - pz[r], py[c] - py[r]); if (d < nd) { nd = d; nc = c; } if (d < this.minD[c]) this.minD[c] = d; }
       if (t >= TAG.PREP && nd < TAG.TAGD) {
         this.state[r] = 3; this.caughtAt[r] = t + 1; this.tagScore[nc] += 1 + (1 - t / TAG.L);
+        for (let c = 0; c < NC; c++) if (Math.hypot(this.lastX[c] - px[r], this.lastZ[c] - pz[r]) < 2.5) this.memo[c] = 0;   // 잡은 상대는 잊고 다음 목표 찾기
         continue;
       }
       this.sumD[r] += Math.min(nd, 12); alive++;
@@ -1180,13 +1187,13 @@ function updateRobots(time) {
     const chaser = sim.team && sim.team[i];
     if (chaser) { sx = sz = 1.2; sy = 1.13; }
     const ph = time * 11 + i * 1.7;
-    const baseY = sim.py ? sim.py[i] : 0, airborne = sim.py && sim.featured.ground[i] === 0;
+    const P = ipos(i), baseY = P[1], airborne = sim.py && sim.featured.ground[i] === 0;
     if (chaser && sim.prep) { /* 술래는 눈 감고 기다리는 중: 가만히 */ }
     else if (airborne && st === 0) { const v = sim.vy[i] / TAG.JUMP; sy *= 1 + v * 0.25; sx *= 1 - v * 0.12; sz *= 1 - v * 0.12; }   // 점프: 위로 늘어남
     else if (st === 0) { if (!reduceMotion) { y += Math.abs(Math.sin(ph)) * 0.12; sy = 0.94 + Math.sin(ph * 2) * 0.03; } }
     else if (st === 1 || st === 3) { y = R * 0.55; sx = sz = 1.18; sy = 0.55; }
     else { if (!reduceMotion) { y += Math.abs(Math.sin(time * 6 + i)) * 0.45; spin = time * 3; } }
-    dummy.position.set(sim.px[i], y + baseY, sim.pz[i]);
+    dummy.position.set(P[0], y + baseY, P[2]);
     dummy.rotation.set(0, heading[i] + spin, 0);
     dummy.scale.set(sx * 1.15, sy * 1.15, sz * 1.15);
     dummy.updateMatrix();
@@ -1467,6 +1474,7 @@ for (let i = 0; i < 6; i++) {
   ringM.rotation.x = -Math.PI / 2; fx.add(ringM); rings.push(ringM);
   const al = dotSprite("!", i < 2 ? "#e2263a" : "#2f9bff"); fx.add(al); alerts.push(al);
 }
+const alertMats = alerts.map(a => a.material), huntMat = dotSprite("?", "#ff9f1a").material;
 const sparkGeo = new THREE.OctahedronGeometry(0.09), sparks = [];
 const SPARK_COLORS = ["#ffd23f", "#ff5fa2", "#ffffff", "#ff8a3d"].map(c => new THREE.MeshBasicMaterial({ color: c, transparent: true }));
 let caughtLabel = null, caughtLabelT = 0, prevMatch = null; const prevState = new Uint8Array(6);
@@ -1489,11 +1497,14 @@ function updateTagFx(dt) {
       const st = sim.state[i];
       if (st === 3 && prevState[i] !== 3 && game.state === "play") burst(sim.px[i], sim.pz[i], sim.py[i]);
       prevState[i] = st;
-      rings[i].position.set(sim.px[i], footTop(sim.px[i], sim.pz[i]) + 0.03, sim.pz[i]); rings[i].visible = st !== 3;
-      rings[i].scale.setScalar(1 + Math.min(1.5, (sim.py[i] - footTop(sim.px[i], sim.pz[i])) * 0.6));   // 높이 뛸수록 그림자 링이 커짐
+      const P = ipos(i), ft = footTop(P[0], P[2]);
+      rings[i].position.set(P[0], ft + 0.03, P[2]); rings[i].visible = st !== 3;
+      rings[i].scale.setScalar(1 + Math.min(1.5, (P[1] - ft) * 0.6));   // 높이 뛸수록 그림자 링이 커짐
       const sleeping = i < 2 && sim.prep;
-      alerts[i].visible = st !== 3 && !sleeping && !!sim.featured.seen[i] && game.state !== "edit";
-      alerts[i].position.set(sim.px[i], sim.py[i] + 1.35 + (reduceMotion ? 0 : Math.abs(Math.sin(clock.elapsedTime * 8 + i)) * 0.1), sim.pz[i]);
+      const seeing = !!sim.featured.seen[i], hunting = !seeing && i < 2 && sim.featured.memo[i] > 0.05;
+      alerts[i].visible = st !== 3 && !sleeping && (seeing || hunting) && game.state !== "edit";
+      alerts[i].material = seeing ? alertMats[i] : huntMat;   // ! = 보인다, ? = 기억·발소리로 찾는 중
+      alerts[i].position.set(P[0], P[1] + 1.35 + (reduceMotion ? 0 : Math.abs(Math.sin(clock.elapsedTime * 8 + i)) * 0.1), sim.pz[i]);
     }
   }
   for (let k = sparks.length - 1; k >= 0; k--) {
@@ -1508,7 +1519,15 @@ function updateTagFx(dt) {
 
 /* ================= 진행 루프 ================= */
 let running = true, phase = "run", pauseStart = 0, pauseUntil = 0, expRunning = false;
-let speed = radio("speed");
+let speed = radio("speed"), stepAcc = 0;
+const prevP = { x: new Float32Array(300), y: new Float32Array(300), z: new Float32Array(300), valid: false };
+function snapPrev() { for (let i = 0; i < sim.n; i++) { prevP.x[i] = sim.px[i]; prevP.z[i] = sim.pz[i]; prevP.y[i] = sim.py ? sim.py[i] : 0; } prevP.valid = true; }
+const IP = [0, 0, 0];
+function ipos(i) {   // 느린 재생에서 걸음 사이를 부드럽게 이어 그림
+  const y = sim.py ? sim.py[i] : 0;
+  if (!(+speed < 1) || !prevP.valid || phase !== "run") { IP[0] = sim.px[i]; IP[1] = y; IP[2] = sim.pz[i]; return IP; }
+  const a = stepAcc; IP[0] = prevP.x[i] + (sim.px[i] - prevP.x[i]) * a; IP[1] = prevP.y[i] + (y - prevP.y[i]) * a; IP[2] = prevP.z[i] + (sim.pz[i] - prevP.z[i]) * a; return IP;
+}
 const phEls = [...document.querySelectorAll("#pipeline span")];
 function setPhase(name) { for (const el of phEls) el.classList.toggle("on", el.dataset.ph === name); }
 
@@ -1561,7 +1580,7 @@ function resetSim() {
   document.body.classList.toggle("mode-tag", S.mode === "tag");
   $("#tagNote").hidden = S.mode !== "tag";
   $("#gameBanner").hidden = true;
-  if (S.mode === "tag") { game.state = "edit"; game.survived = 0; running = false; } else game.state = "off";
+  if (S.mode === "tag") { game.state = "edit"; game.survived = 0; running = false; $("#sp05").checked = true; speed = "0.5"; } else game.state = "off";
   if (typeof refreshGameUi === "function") refreshGameUi();
   heading.fill(Math.PI / 2); pathGeo.setDrawRange(0, 0);
   phase = "run"; drawCharts(); updateStats(null); updateHud();
@@ -1575,10 +1594,10 @@ function frame(now) {
     if (phase === "run") {
       if (speed === "gen") { sim.runToEnd(); finishGen(now, 0); }
       else {
-        const k = +speed;
-        for (let s = 0; s < k; s++) if (!sim.step()) { finishGen(now, k >= 10 ? 300 : 900); break; }
+        const k = +speed; stepAcc += k; const n = Math.floor(stepAcc); stepAcc -= n;
+        for (let s = 0; s < n; s++) { snapPrev(); if (!sim.step()) { prevP.valid = false; stepAcc = 0; finishGen(now, k >= 10 ? 300 : 900); break; } }
       }
-    } else if (now >= pauseUntil && !(sim.mode === "tag" && game.state !== "play")) { sim.evolve(); phase = "run"; }
+    } else if (now >= pauseUntil && !(sim.mode === "tag" && game.state !== "play")) { sim.evolve(); phase = "run"; prevP.valid = false; }
   }
   if (phase === "pause" && speed !== "gen") {
     const f = (now - pauseStart) / Math.max(1, pauseUntil - pauseStart);
@@ -1603,7 +1622,11 @@ document.querySelectorAll('input[name="speed"]').forEach(el => el.onchange = () 
 document.querySelectorAll('input[name="mut"]').forEach(el => el.onchange = () => { S.mut = sim.mut = +radio("mut"); });
 document.querySelectorAll('input[name="cross"]').forEach(el => el.onchange = () => { S.cross = sim.cross = radio("cross"); });
 $("#penalty").onchange = () => { S.penalty = sim.penalty = $("#penalty").checked; };
-document.querySelectorAll('input[name="pop"], input[name="map"], input[name="mode"]').forEach(el => el.onchange = () => resetSim());
+document.querySelectorAll('input[name="pop"], input[name="map"]').forEach(el => el.onchange = () => resetSim());
+document.querySelectorAll('input[name="mode"]').forEach(el => el.onchange = () => {
+  if (radio("mode") === "path") { $("#sp10").checked = true; speed = "10"; }   // 길 찾기는 다시 빠르게
+  resetSim(); if (radio("mode") === "path") setRunning(true);
+});
 
 async function copyText(text, btn) {
   const label = btn.textContent;
