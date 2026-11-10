@@ -1,0 +1,1460 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>꼬마 로봇 배틀</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* 한 화면 게임: 3D 경기장이 화면 전체, 위에 체력바 HUD, 메뉴는 가운데 카드. 밤하늘색 단일 테마. */
+:root {
+  color-scheme: dark;
+  --night: #120d2b;
+  --panel: rgba(20, 14, 46, .76);
+  --paper: #fff8ec;
+  --ink: #1d1636;
+  --muted: #6a6280;
+  --p1: #2f8bff;
+  --p2: #ff4b3e;
+  --gold: #ffd23f;
+  --mint: #2fd1a0;
+  --font-display: "Jua", "Gowun Dodum", system-ui, sans-serif;
+  --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--night); color: #fff; font-family: var(--font-body); overflow: hidden; touch-action: none;
+  -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+#game { position: fixed; inset: 0; }
+#c { display: block; width: 100%; height: 100%; }
+
+/* ---- HUD ---- */
+.hud { position: absolute; top: 0; left: 0; right: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: start;
+  padding: max(10px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px)); pointer-events: none; }
+body[data-phase="title"] .hud, body[data-phase="title"] .keys, body[data-phase="title"] .touch,
+body[data-phase="result"] .touch, body[data-phase="result"] .keys { display: none; }
+.fp { background: var(--panel); border-radius: 16px; padding: 8px 12px 9px; min-width: 0; width: 100%; max-width: 430px; border: 2px solid rgba(255, 255, 255, .14); }
+.fp.p2 { justify-self: end; }
+.nm { font-family: var(--font-display); font-size: 17px; display: flex; gap: 8px; align-items: center; white-space: nowrap; min-width: 0; }
+.nm span:not(.tag) { overflow: hidden; text-overflow: ellipsis; }
+.fp.p2 .nm { justify-content: flex-end; }
+.tag { border-radius: 8px; padding: 0 8px; font-size: 14px; flex: none; background: var(--p1); }
+.fp.p2 .tag { background: var(--p2); }
+.bar { position: relative; height: 18px; border-radius: 10px; overflow: hidden; margin-top: 6px; background: rgba(255, 255, 255, .14); border: 2px solid rgba(255, 255, 255, .92); }
+.bar i { position: absolute; top: 0; bottom: 0; left: 0; width: 100%; }
+.fp.p2 .bar i { left: auto; right: 0; }
+.bar .lag { background: #ff7070; }
+.bar .fill { background: linear-gradient(#8dffb5, #1fc565); }
+.bar .fill.mid { background: linear-gradient(#ffe58a, #f2ad00); }
+.bar .fill.low { background: linear-gradient(#ff9a8a, #e5352a); }
+.spb { position: relative; height: 9px; border-radius: 5px; overflow: hidden; margin-top: 5px; background: rgba(255, 255, 255, .12); }
+.spb i { position: absolute; top: 0; bottom: 0; left: 0; width: 0; background: linear-gradient(90deg, #ff9d1a, #ffe066); }
+.fp.p2 .spb i { left: auto; right: 0; }
+.spb.ready i { animation: glow .45s ease-in-out infinite alternate; }
+@keyframes glow { to { filter: brightness(1.45); } }
+.meta { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; gap: 6px; font-family: var(--font-display); font-size: 13px; min-height: 16px; }
+.fp.p2 .meta { flex-direction: row-reverse; }
+.pips { display: flex; gap: 5px; }
+.pips i { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; display: block; }
+.pips i.on { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 8px var(--gold); }
+.ready { color: #ffe066; visibility: hidden; }
+.ready.on { visibility: visible; }
+.clock { text-align: center; font-family: var(--font-display); pointer-events: auto; }
+#timer { font-size: 38px; line-height: 1; width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto;
+  background: var(--panel); border: 3px solid #fff; font-variant-numeric: tabular-nums; }
+#timer.low { color: #ff7b7b; border-color: #ff7b7b; }
+#roundLabel { font-size: 14px; margin-top: 4px; text-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
+.pause-btn { margin-top: 6px; background: var(--panel); border: 2px solid rgba(255, 255, 255, .45); border-radius: 10px; padding: 2px 12px; font-family: var(--font-display); font-size: 14px; }
+
+.combo { position: absolute; top: 30%; font-family: var(--font-display); line-height: .95; pointer-events: none; text-shadow: 0 4px 0 rgba(0, 0, 0, .3), 0 0 22px rgba(255, 200, 60, .55); }
+.combo b { font-weight: 400; font-size: 64px; color: #ffe066; }
+.combo span { font-size: 30px; color: #fff; }
+.combo small { display: block; font-size: 17px; color: #fff; margin-top: 6px; }
+.combo.left { left: max(24px, env(safe-area-inset-left, 0px)); }
+.combo.right { right: max(24px, env(safe-area-inset-right, 0px)); text-align: right; }
+.combo.right b { color: #ff9a8a; }
+.pop { animation: pop .28s cubic-bezier(.2, 1.8, .4, 1); }
+@keyframes pop { from { transform: scale(.55); opacity: .2; } to { transform: scale(1); opacity: 1; } }
+.banner { position: absolute; left: 0; right: 0; top: 38%; text-align: center; font-family: var(--font-display); font-size: clamp(54px, 12vw, 128px); line-height: 1;
+  color: #fff; text-shadow: 0 6px 0 #ff4b3e, 0 14px 34px rgba(0, 0, 0, .45); pointer-events: none; }
+.tipline { position: absolute; left: 50%; top: calc(38% + clamp(70px, 14vw, 140px)); transform: translateX(-50%); max-width: calc(100% - 32px); text-align: center;
+  background: var(--panel); border-radius: 999px; padding: 8px 18px; font-family: var(--font-display); font-size: 17px; pointer-events: none; }
+.tipline b { font-weight: 400; color: var(--gold); }
+#floats { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.float { position: absolute; font-family: var(--font-display); font-size: 26px; color: #fff; white-space: nowrap; transform: translate(-50%, -50%);
+  text-shadow: 0 2px 0 #000, 0 0 8px rgba(0, 0, 0, .6); animation: rise .95s ease-out forwards; }
+.float.heavy { font-size: 38px; color: #ffd23f; }
+.float.big { font-size: 34px; color: #ff6b6b; }
+.float.guard { font-size: 22px; color: #8eeaff; }
+.float.tip { font-size: 20px; color: #bfe9ff; }
+@keyframes rise { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1.35); } 20% { transform: translate(-50%, -62%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -170%) scale(.9); } }
+.flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity .3s; }
+.keys { position: absolute; left: max(14px, env(safe-area-inset-left, 0px)); right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  width: fit-content; max-width: calc(100% - 28px); background: var(--panel); border-radius: 12px; padding: 6px 12px; font-size: 13px; pointer-events: none; }
+.keys b { font-weight: 400; color: var(--gold); font-family: var(--font-display); }
+
+/* ---- 터치 조작 ---- */
+.touch { display: none; }
+body.is-touch .touch { display: block; }
+body.is-touch .keys { display: none; }
+.joy { position: absolute; left: max(22px, env(safe-area-inset-left, 0px)); bottom: max(22px, env(safe-area-inset-bottom, 0px)); width: 132px; height: 132px; border-radius: 50%;
+  background: rgba(20, 14, 46, .38); border: 3px solid rgba(255, 255, 255, .8); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); touch-action: none; }
+.knob { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .3); }
+.tbtns { position: absolute; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(14px, env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: repeat(3, 60px); gap: 10px; }
+.tb { width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .7); background: rgba(30, 20, 60, .62); font-family: var(--font-display); font-size: 17px; touch-action: none; box-shadow: 0 3px 10px rgba(0, 0, 0, .25); }
+.tb.main { background: rgba(47, 139, 255, .75); }
+.tb.sp { background: rgba(255, 157, 26, .5); }
+.tb.on { background: rgba(255, 255, 255, .45); }
+
+/* ---- 메뉴 카드 ---- */
+.overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(12, 8, 30, .5);
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+#title { background: linear-gradient(90deg, rgba(12, 8, 30, .62), rgba(12, 8, 30, .15)); justify-content: flex-start; }
+.card { background: var(--paper); color: var(--ink); border-radius: 26px; padding: 22px 24px; width: min(560px, 100%); max-height: 100%; overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .4); -webkit-user-select: text; user-select: text; touch-action: pan-y; }
+.card.mini { width: min(380px, 100%); text-align: center; }
+.eyebrow { margin: 0; font-family: var(--font-display); font-size: 13px; letter-spacing: .05em; color: #ff6b4a; }
+h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(38px, 7vw, 52px); line-height: 1.05; margin: 4px 0 8px; color: #ff4b3e; text-wrap: balance; }
+h2 { font-family: var(--font-display); font-weight: 400; font-size: 28px; margin: 0 0 14px; }
+.lead { margin: 0 0 14px; color: #4a4260; font-size: 15px; line-height: 1.55; }
+.ai-box { background: #f1ecff; border-radius: 16px; padding: 12px 14px; margin: 0 0 14px; }
+.ai-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; font-family: var(--font-display); }
+.ai-head b { font-weight: 400; font-size: 18px; color: #5a3fd6; }
+.ai-head span { font-size: 14px; color: var(--muted); }
+.genes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin-top: 8px; }
+.gene { display: grid; grid-template-columns: 74px 1fr 26px; gap: 6px; align-items: center; font-size: 12.5px; }
+.gene .gb { height: 8px; border-radius: 4px; background: #ddd5f7; overflow: hidden; }
+.gene .gb i { display: block; height: 100%; background: linear-gradient(90deg, #8a6cff, #ff6b9a); }
+.gene b { font-weight: 400; font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); }
+.gene .up { color: #e0442c; } .gene .down { color: #2f6fd6; }
+.hist { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.row.center { justify-content: center; }
+.big { background: #ff4b3e; color: #fff; border: 0; border-radius: 14px; padding: 12px 22px; font-family: var(--font-display); font-size: 22px; box-shadow: 0 5px 0 #c4271d; }
+.big:active { transform: translateY(3px); box-shadow: 0 2px 0 #c4271d; }
+.big:disabled, .ghost:disabled { opacity: .5; cursor: not-allowed; }
+.ghost { background: #fff; border: 2px solid #d9d1ee; border-radius: 14px; padding: 10px 16px; font-family: var(--font-display); font-size: 16px; color: var(--ink); }
+.link { background: none; border: 0; padding: 4px 2px; color: var(--muted); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+.small { margin-top: 12px; justify-content: space-between; }
+.train { margin-top: 10px; display: grid; gap: 6px; font-size: 13.5px; color: var(--muted); }
+.tbar { height: 8px; border-radius: 4px; background: #e6e0f7; overflow: hidden; }
+.tbar i { display: block; height: 100%; width: 0; background: var(--mint); transition: width .15s; }
+details.howto { margin-top: 14px; border-top: 1px dashed #d9d1ee; padding-top: 10px; }
+details.howto summary { cursor: pointer; font-family: var(--font-display); font-size: 17px; }
+.howto table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin-top: 6px; }
+.howto th { text-align: left; font-weight: 400; color: #ff6b4a; font-family: var(--font-display); white-space: nowrap; padding: 4px 10px 4px 0; vertical-align: top; }
+.howto td { padding: 4px 0; color: #3c3552; }
+.score { font-family: var(--font-display); font-size: 40px; margin: 0 0 10px; color: var(--ink); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.stat { background: #fff; border: 2px solid #eee6d6; border-radius: 14px; padding: 8px 6px; text-align: center; }
+.stat .v { font-family: var(--font-display); font-size: 24px; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 12px; color: var(--muted); }
+.evo-msg { margin: 6px 0 0; font-size: 14px; line-height: 1.5; color: #3c3552; }
+
+@media (max-width: 640px) {
+  .nm { font-size: 14px; }
+  .fp { padding: 6px 9px 7px; border-radius: 12px; }
+  .bar { height: 14px; }
+  #timer { width: 52px; height: 52px; font-size: 28px; }
+  .combo b { font-size: 46px; } .combo span { font-size: 22px; } .combo small { font-size: 14px; }
+  .genes { grid-template-columns: 1fr; }
+  #title { justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop, .float, .spb.ready i { animation: none; }
+  .flash { transition: none; }
+}
+</style>
+</head>
+<body data-phase="title">
+<div id="game">
+  <canvas id="c" aria-label="3D 격투 경기장"></canvas>
+
+  <div class="hud">
+    <div class="fp p1">
+      <div class="nm"><span class="tag">나</span><span>파랑 로봇</span></div>
+      <div class="bar"><i class="lag" id="lag0"></i><i class="fill" id="hp0"></i></div>
+      <div class="spb" id="spw0"><i id="sp0"></i></div>
+      <div class="meta"><span class="pips" id="pips0"><i></i><i></i></span><span class="ready" id="rdy0">필살 OK! U</span></div>
+    </div>
+    <div class="clock">
+      <div id="timer">60</div>
+      <div id="roundLabel">ROUND 1</div>
+      <button class="pause-btn" id="btnPause" type="button" aria-label="일시정지">II</button>
+    </div>
+    <div class="fp p2">
+      <div class="nm"><span id="p2name">진화 AI</span><span class="tag">AI</span></div>
+      <div class="bar"><i class="lag" id="lag1"></i><i class="fill" id="hp1"></i></div>
+      <div class="spb" id="spw1"><i id="sp1"></i></div>
+      <div class="meta"><span class="pips" id="pips1"><i></i><i></i></span><span class="ready" id="rdy1">필살 OK!</span></div>
+    </div>
+  </div>
+
+  <div class="combo left" id="combo0" hidden></div>
+  <div class="combo right" id="combo1" hidden></div>
+  <div class="banner" id="banner" hidden></div>
+  <div class="tipline" id="tipline" hidden></div>
+  <div id="floats"></div>
+  <div class="flash" id="flash"></div>
+  <div class="keys" id="keys">이동 <b>WASD</b> · 점프 <b>Space</b>(2단·벽차기) · 약 <b>J</b> · 강 <b>K</b> · 가드 <b>L</b> · 대시 <b>Shift</b> · 필살 <b>U</b> · 벽 쪽으로 달리면 <b>벽 타기</b></div>
+
+  <div class="touch" id="touch">
+    <div class="joy" id="joy"><div class="knob" id="knob"></div></div>
+    <div class="tbtns">
+      <button class="tb sp" data-act="special" type="button">필살</button>
+      <button class="tb" data-act="dash" type="button">대시</button>
+      <button class="tb" data-act="guard" type="button">가드</button>
+      <button class="tb" data-act="heavy" type="button">강</button>
+      <button class="tb main" data-act="light" type="button">약</button>
+      <button class="tb" data-act="jump" type="button">점프</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="title">
+    <div class="card">
+      <p class="eyebrow">주제탐구 R&amp;E · 유전 알고리즘 · 1:1 모드</p>
+      <h1>꼬마 로봇 배틀</h1>
+      <p class="lead">벽을 타고, 벽을 차고, 콤보를 넣어 이기세요! 상대 AI는 라운드마다 다른 개체가 나와요. 나와 얼마나 잘 싸웠는지로 채점되고, 6라운드마다 다음 세대로 진화해요. 많이 싸울수록 나를 이기는 쪽으로 진화해요.</p>
+      <div class="ai-box">
+        <div class="ai-head"><b id="tGen">진화 AI 1세대</b><span id="tIdx">다음 상대: 1번 개체 (6명 중)</span></div>
+        <div class="genes" id="tGenes"></div>
+        <p class="hist" id="tHist"></p>
+      </div>
+      <div class="row">
+        <button class="big" id="btnStart" type="button">▶ 대결 시작</button>
+        <button class="ghost" id="btnTrain" type="button">AI끼리 연습 10세대</button>
+      </div>
+      <div class="train" id="trainBox" hidden><div class="tbar"><i id="trainBar"></i></div><span id="trainMsg"></span></div>
+      <details class="howto" id="howto" open>
+        <summary>조작법</summary>
+        <table>
+          <tr><th>이동</th><td>WASD 또는 방향키(휴대폰은 왼쪽 아래 원). 몸은 항상 상대를 바라봐요.</td></tr>
+          <tr><th>점프</th><td>Space. 공중에서 한 번 더 누르면 2단 점프.</td></tr>
+          <tr><th>벽 타기</th><td>벽 쪽으로 계속 달리면 벽을 타고 올라가요. 꼭대기에 닿으면 위로 올라서요.</td></tr>
+          <tr><th>벽 붙기 · 벽차기</th><td>공중에서 벽 쪽으로 밀면 붙어서 천천히 미끄러져요. 붙은 채 Space를 누르면 반대쪽으로 벽차기, 벽 쪽으로 누른 채 Space면 위로 한 번 더 오르기.</td></tr>
+          <tr><th>약공격</th><td>J를 연타하면 잽 → 훅 → 어퍼컷.</td></tr>
+          <tr><th>강공격</th><td>K. 가드를 깨는 강펀치.</td></tr>
+          <tr><th>콤보</th><td>J K = 강펀치, J J K = 회전 킥. 어퍼컷을 맞히고 바로 Space → 공중에서 J J K(내려찍기).</td></tr>
+          <tr><th>가드 · 대시</th><td>L을 누르고 있으면 가드. Shift는 잠깐 무적인 대시(공중에서도 한 번).</td></tr>
+          <tr><th>필살기</th><td>게이지가 가득 차면 U로 로켓 펀치 러시.</td></tr>
+          <tr><th>팁</th><td>날려 보낸 상대가 벽에 세게 부딪히면 튕겨 나와요(벽 꽝). 그때 한 번 더 때릴 수 있어요.</td></tr>
+        </table>
+      </details>
+      <div class="row small">
+        <button class="link" id="btnBack" type="button">← 진화 실험실로</button>
+        <button class="link" id="btnSound" type="button">소리: 켜짐</button>
+        <button class="link" id="btnResetAI" type="button">AI 처음부터</button>
+      </div>
+      <p class="hist" id="tRecord"></p>
+    </div>
+  </div>
+
+  <div class="overlay" id="pauseMenu" hidden>
+    <div class="card mini">
+      <h2>일시정지</h2>
+      <div class="row center"><button class="big" id="btnResume" type="button">계속하기</button><button class="ghost" id="btnQuit" type="button">타이틀로</button></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="result" hidden>
+    <div class="card">
+      <h1 id="rTitle">승리!</h1>
+      <p class="score" id="rScore">2 : 1</p>
+      <div class="stats" id="rStats"></div>
+      <div class="ai-box">
+        <div class="ai-head"><b>AI의 진화</b><span id="rGenLabel"></span></div>
+        <p class="evo-msg" id="rEvo"></p>
+        <div class="genes" id="rGenes"></div>
+      </div>
+      <div class="row"><button class="big" id="btnAgain" type="button">▶ 다시 대결</button><button class="ghost" id="btnToTitle" type="button">타이틀로</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const rnd = Math.random;
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const lerp = (a, b, t) => a + (b - a) * t;
+const gaussR = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+
+/* =====================================================================
+   1. 전투 규칙 (화면과 분리: AI끼리 연습할 때는 그림 없이 이것만 돌림)
+   ===================================================================== */
+const DT = 1 / 60;                                       // 1초에 60번 계산
+const R = 0.45, STEP = 0.35;                             // 몸 반지름, 그냥 걸어 오르는 턱 높이
+const GRAV = 26, JUMPV = 9.5, JUMP2 = 8.6;               // 중력, 점프, 2단 점프
+const RUN = 6.5, AIRRUN = 5.4, DASHV = 15, DASH_T = 11;  // 달리기, 공중 이동, 대시
+const WR_V = 7.2, WR_MAX = 24;                           // 벽 타기: 초속 7.2로 최대 24프레임
+const CLING_SLIDE = 1.3, CLING_MAX = 80;                 // 벽 붙기: 천천히 미끄러짐, 최대 80프레임
+const WJ_UP = 9.6, WJ_OUT = 7.5;                         // 벽차기: 위로 9.6, 벽 반대쪽으로 7.5
+const HALF = 13;                                         // 경기장 반 크기 (26 × 26)
+const BOXES = [
+  // 바깥 벽 (높이 7, 벽 타기·벽차기에 씀)
+  { x: 0, z: -HALF - 0.5, w: HALF * 2 + 2, d: 1, h: 7, kind: "outer", face: "n" },
+  { x: 0, z: HALF + 0.5, w: HALF * 2 + 2, d: 1, h: 7, kind: "outer", face: "s" },
+  { x: -HALF - 0.5, z: 0, w: 1, d: HALF * 2, h: 7, kind: "outer", face: "w" },
+  { x: HALF + 0.5, z: 0, w: 1, d: HALF * 2, h: 7, kind: "outer", face: "e" },
+  // 안쪽 구조물 (가운데를 중심으로 뒤집어도 같은 모양: 어느 쪽에서 시작해도 공평)
+  { x: -7, z: -2, w: 4, d: 3, h: 1.4, kind: "plat" }, { x: 7, z: 2, w: 4, d: 3, h: 1.4, kind: "plat" },
+  { x: -8.5, z: 7.5, w: 3, d: 3, h: 3.0, kind: "tower" }, { x: 8.5, z: -7.5, w: 3, d: 3, h: 3.0, kind: "tower" },
+  { x: -5, z: 3.6, w: 5, d: 0.8, h: 3.2, kind: "wall" }, { x: 5, z: -3.6, w: 5, d: 0.8, h: 3.2, kind: "wall" },
+  { x: 3.5, z: 8.5, w: 1.3, d: 1.3, h: 4.6, kind: "pillar" }, { x: -3.5, z: -8.5, w: 1.3, d: 1.3, h: 4.6, kind: "pillar" },
+];
+const SPAWN = [[0, -6.5], [0, 6.5]];
+// 기술표: startup(준비) → active(맞는 순간) → recover(빈틈), 단위는 프레임(1/60초)
+const MOVES = {
+  jab1:  { name: "잽", startup: 5, active: 4, recover: 11, dmg: 4, reach: 1.25, kb: 1.6, up: 0, stun: 20, lunge: 2.4, next: "jab2", heavyNext: "smash", anim: "R" },
+  jab2:  { name: "훅", startup: 5, active: 4, recover: 12, dmg: 5, reach: 1.25, kb: 1.8, up: 0, stun: 22, lunge: 2.4, next: "upper", heavyNext: "spin", anim: "L" },
+  upper: { name: "어퍼컷", startup: 7, active: 5, recover: 18, dmg: 7, reach: 1.3, kb: 1.0, up: 10.5, stun: 44, lunge: 1.8, launch: true, anim: "U" },
+  spin:  { name: "회전 킥", startup: 9, active: 9, recover: 20, dmg: 11, reach: 1.55, kb: 8.5, up: 4, stun: 34, lunge: 2.5, around: true, anim: "S" },
+  smash: { name: "강펀치", startup: 15, active: 5, recover: 22, dmg: 13, reach: 1.5, kb: 10, up: 3.5, stun: 32, lunge: 4.5, guardBreak: true, anim: "H" },
+  air1:  { name: "공중 펀치", startup: 4, active: 5, recover: 10, dmg: 5, reach: 1.3, kb: 1.4, up: 4.8, stun: 26, air: true, next: "air2", heavyNext: "slam", anim: "R" },
+  air2:  { name: "공중 킥", startup: 5, active: 6, recover: 12, dmg: 6, reach: 1.4, kb: 2.2, up: 5.2, stun: 28, air: true, heavyNext: "slam", anim: "K" },
+  slam:  { name: "내려찍기", startup: 8, active: 9, recover: 14, dmg: 10, reach: 1.45, kb: 3, up: -15, stun: 36, air: true, spike: true, anim: "D" },
+  rush:  { name: "로켓 펀치 러시", startup: 12, active: 36, recover: 22, dmg: 3.5, reach: 1.7, kb: 1.5, up: 1.2, stun: 22, lunge: 7.5, multi: 6, hits: 6, finalKb: 13, finalUp: 6.5, special: true, anim: "X" },
+};
+const ACTIONS = ["jump", "light", "heavy", "dash", "special"];
+const BLANK = Object.freeze({ mx: 0, mz: 0, guard: false, jump: false, light: false, heavy: false, dash: false, special: false });
+const blankInput = () => ({ mx: 0, mz: 0, guard: false, jump: false, light: false, heavy: false, dash: false, special: false });
+
+function makeFighter(side) {
+  const [x, z] = SPAWN[side];
+  return {
+    side, x, y: 0, z, x0: x, y0: 0, z0: z, vx: 0, vy: 0, vz: 0, yaw: side ? Math.PI : 0,
+    onGround: true, jumps: 2, airAtk: 0, airDash: true, wrT: 0, clingT: 0, wjCd: 0, wjN: 0, wall: null, impact: 0, climbJ: false,
+    hp: 100, sp: 0, state: "idle", move: null, moveName: "", mt: 0, hitThis: 0, queued: null, rushHits: 0, attackId: 0,
+    stun: 0, invuln: 0, dashT: 0, dashCd: 0, combo: 0, maxCombo: 0, flash: 0, land: 0, spiked: false, guardBroken: false,
+    buf: { jump: 0, light: 0, heavy: 0, dash: 0, special: 0 }, dealt: 0, taken: 0, parkour: 0,
+  };
+}
+function turnTo(a, b, k) { const d = Math.atan2(Math.sin(b - a), Math.cos(b - a)); return a + d * k; }
+
+// 발밑에서 설 수 있는 가장 높은 곳 (턱 높이 STEP까지는 그냥 올라섬)
+function groundAt(x, z, y) {
+  let g = 0;
+  for (const b of BOXES) {
+    if (b.h > y + STEP || b.h <= g) continue;
+    if (Math.abs(x - b.x) <= b.w / 2 + R * 0.5 && Math.abs(z - b.z) <= b.d / 2 + R * 0.5) g = b.h;
+  }
+  return g;
+}
+// 몸(원)과 상자 충돌: 겹치면 바깥으로 밀어내고 벽 방향(법선)을 기억. 모서리는 둥글게 미끄러짐 → 끼지 않음
+function collide(f) {
+  f.wall = null;
+  for (let iter = 0; iter < 2; iter++) {
+    for (const b of BOXES) {
+      if (b.h <= f.y + STEP) continue;   // 낮은 상자는 올라설 수 있으니 벽이 아님
+      const x0 = b.x - b.w / 2, x1 = b.x + b.w / 2, z0 = b.z - b.d / 2, z1 = b.z + b.d / 2;
+      const cx = clamp(f.x, x0, x1), cz = clamp(f.z, z0, z1);
+      let dx = f.x - cx, dz = f.z - cz, d = Math.hypot(dx, dz), nx, nz;
+      if (d < 1e-6) {   // 중심이 상자 안으로 들어갔으면 가장 얕은 쪽으로 빼냄
+        const pl = f.x - x0, pr = x1 - f.x, pb = f.z - z0, pf = z1 - f.z, m = Math.min(pl, pr, pb, pf);
+        if (m === pl) { nx = -1; nz = 0; d = -pl; } else if (m === pr) { nx = 1; nz = 0; d = -pr; }
+        else if (m === pb) { nx = 0; nz = -1; d = -pb; } else { nx = 0; nz = 1; d = -pf; }
+      } else { nx = dx / d; nz = dz / d; }
+      if (d < R + 0.06) {
+        if (d < R) {
+          const push = R - d; f.x += nx * push; f.z += nz * push;
+          const vn = f.vx * nx + f.vz * nz;
+          if (vn < 0) { f.vx -= nx * vn; f.vz -= nz * vn; f.impact = Math.max(f.impact, -vn); }
+        }
+        if (!f.wall || d < f.wall.d) f.wall = { nx, nz, top: b.h, d };
+      }
+    }
+  }
+  f.x = clamp(f.x, -HALF + R, HALF - R); f.z = clamp(f.z, -HALF + R, HALF - R);
+}
+function separate(p, q) {   // 두 로봇이 겹치지 않게
+  const dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz), min = R * 1.9;
+  if (d < min && Math.abs(q.y - p.y) < 1.1) {
+    const nx = d > 1e-4 ? dx / d : 1, nz = d > 1e-4 ? dz / d : 0, push = (min - d) / 2;
+    p.x -= nx * push; p.z -= nz * push; q.x += nx * push; q.z += nz * push;
+  }
+}
+function doJump(f, v, cb) {
+  const dbl = !f.onGround;
+  f.vy = v; f.onGround = false; f.jumps = dbl ? 0 : 1; f.buf.jump = 0; f.state = "idle"; f.move = null;
+  cb.jump(f, dbl);
+}
+function wallJump(f, inp, cb) {
+  const w = f.wall; if (!w || f.wjCd > 0 || f.wjN >= 2) return;   // 한 번 뜰 때 벽차기 2번까지 (무한히 벽을 오르지 못하게)
+  const tx = -w.nz, tz = w.nx, along = inp.mx * tx + inp.mz * tz;   // 벽을 따라가는 방향 입력은 조금 살림
+  f.vx = w.nx * WJ_OUT + tx * along * 3; f.vz = w.nz * WJ_OUT + tz * along * 3; f.vy = WJ_UP;
+  f.state = "idle"; f.onGround = false; f.jumps = 1; f.airDash = true; f.wjCd = 10; f.buf.jump = 0; f.clingT = 0;
+  f.parkour++; f.wjN++;
+  cb.walljump(f, w);
+}
+function climbJump(f, cb) {   // 벽 쪽으로 누른 채 점프: 벽을 따라 위로 한 번 더 (한 번 뜰 때 1번)
+  f.vy = WJ_UP * 0.88; f.state = "idle"; f.climbJ = true; f.buf.jump = 0; f.wjCd = 8; f.parkour++;
+  cb.walljump(f, f.wall, true);
+}
+function startDash(f, inp, tx, tz, cb) {
+  let dx = inp.mx, dz = inp.mz; const l = Math.hypot(dx, dz);
+  if (l < 0.25) { dx = -tx; dz = -tz; } else { dx /= l; dz /= l; }   // 방향 입력이 없으면 뒤로 빠짐
+  f.state = "dash"; f.dashT = DASH_T; f.dashCd = 24; f.invuln = 8; f.move = null;
+  f.vx = dx * DASHV; f.vz = dz * DASHV;
+  if (!f.onGround) { f.airDash = false; f.vy = Math.max(f.vy, 0.5); }
+  f.buf.dash = 0; cb.dash(f);
+}
+function startMove(f, name, cb) {
+  const m = MOVES[name];
+  f.state = "attack"; f.move = m; f.moveName = name; f.mt = 0; f.hitThis = 0; f.queued = null; f.attackId++;
+  if (m.special) f.rushHits = 0;
+  if (m.air) { f.airAtk++; f.vy = Math.max(f.vy, name === "slam" ? 3 : 2.2); }
+  if (m.lunge) { f.vx += Math.sin(f.yaw) * m.lunge; f.vz += Math.cos(f.yaw) * m.lunge; }
+  cb.swing(f, m);
+}
+
+function stepFighter(W, f, inp, o, cb) {
+  if (f.invuln > 0) f.invuln--;
+  if (f.dashCd > 0) f.dashCd--;
+  if (f.flash > 0) f.flash--;
+  if (f.land > 0) f.land--;
+  if (f.wjCd > 0) f.wjCd--;
+  for (const k of ACTIONS) { if (f.buf[k] > 0) f.buf[k]--; if (inp[k]) f.buf[k] = 9; }   // 입력을 9프레임 동안 기억 (콤보가 편해짐)
+  const tdx = o.x - f.x, tdz = o.z - f.z, dist = Math.hypot(tdx, tdz) || 1, tx = tdx / dist, tz = tdz / dist;
+  const targetYaw = Math.atan2(tdx, tdz);
+  const inMag = Math.min(1, Math.hypot(inp.mx, inp.mz));
+  const wall = f.wall;   // 지난 프레임 충돌에서 찾은 벽
+  const into = wall && inMag > 0.1 ? -(inp.mx * wall.nx + inp.mz * wall.nz) / inMag : 0;   // 1 = 벽을 정면으로 미는 중
+
+  const s0 = f.state;
+  if (s0 === "idle" || s0 === "guard" || s0 === "blockstun" || s0 === "dash" || s0 === "wallrun" || s0 === "cling") f.yaw = turnTo(f.yaw, targetYaw, 0.3);
+  else if (s0 === "attack" && f.mt < f.move.startup) f.yaw = turnTo(f.yaw, targetYaw, 0.25);
+
+  switch (s0) {
+    case "ko":
+      if (f.onGround) { f.vx *= 0.85; f.vz *= 0.85; }
+      break;
+    case "hitstun":
+      if (f.onGround) { f.vx *= 0.88; f.vz *= 0.88; }
+      if (--f.stun <= 0 && !f.spiked) { f.state = "idle"; f.guardBroken = false; }
+      break;
+    case "blockstun":
+      f.vx *= 0.85; f.vz *= 0.85;
+      if (--f.stun <= 0) f.state = inp.guard ? "guard" : "idle";
+      break;
+    case "dash":
+      if (--f.dashT <= 0) { f.state = "idle"; f.vx *= 0.35; f.vz *= 0.35; }
+      break;
+    case "guard":
+      f.vx *= 0.7; f.vz *= 0.7;
+      if (!inp.guard || !f.onGround || f.buf.jump) f.state = "idle";
+      else if (f.buf.dash && f.dashCd === 0) startDash(f, inp, tx, tz, cb);
+      break;
+    case "wallrun":   // 벽 타기: 벽 쪽으로 미는 동안 위로 달림
+      if (f.buf.jump && wall) { if (into > 0.6 && !f.climbJ) climbJump(f, cb); else wallJump(f, inp, cb); }
+      else if (f.buf.light || f.buf.heavy) { f.state = "idle"; f.vx = tx * 6; f.vz = tz * 6; f.vy = Math.max(f.vy, 3); }   // 벽에서 뛰어들며 공격
+      else if (!wall || into < 0.3 || f.wrT >= WR_MAX) { f.state = wall && !f.onGround && into > 0.1 ? "cling" : "idle"; f.clingT = 0; }
+      else {
+        f.wrT++; f.vy = WR_V;
+        f.vx = -wall.nx * 2.2 + (inp.mx + wall.nx * into * inMag) * 2;
+        f.vz = -wall.nz * 2.2 + (inp.mz + wall.nz * into * inMag) * 2;
+      }
+      break;
+    case "cling":     // 벽 붙기: 천천히 미끄러짐
+      if (f.buf.jump && wall) { if (into > 0.6 && !f.climbJ) climbJump(f, cb); else wallJump(f, inp, cb); }
+      else if (f.buf.light || f.buf.heavy) { f.state = "idle"; f.vx = tx * 6; f.vz = tz * 6; f.vy = Math.max(f.vy, 3); }
+      else if (!wall || f.onGround || into < 0.05 || ++f.clingT > CLING_MAX) f.state = "idle";
+      else { if (f.vy < -CLING_SLIDE) f.vy = -CLING_SLIDE; f.vx = -wall.nx * 1.2; f.vz = -wall.nz * 1.2; }
+      break;
+    case "attack": {
+      const m = f.move; f.mt++;
+      const a0 = m.startup, a1 = a0 + m.active;
+      if (f.onGround) { f.vx *= 0.84; f.vz *= 0.84; } else { f.vx *= 0.97; f.vz *= 0.97; }
+      if (f.moveName === "slam" && f.mt === a0) f.vy = -17;
+      if (m.special && f.mt >= a0 && f.mt < a1) { f.vx = Math.sin(f.yaw) * 2.8; f.vz = Math.cos(f.yaw) * 2.8; }
+      if (f.mt > 2) {   // 다음 기술 예약 (콤보)
+        if (f.buf.light && m.next) { f.queued = m.next; f.buf.light = 0; }
+        else if (f.buf.heavy && m.heavyNext) { f.queued = m.heavyNext; f.buf.heavy = 0; }
+      }
+      if (m.multi && f.mt >= a0 && f.mt < a1 && (f.mt - a0) % m.multi === 0) f.hitThis = 0;   // 러시: 6프레임마다 다시 때릴 수 있음
+      if (f.hitThis && f.mt >= a1 - 1 && f.buf.jump && (m.launch || !f.onGround) && (f.onGround || f.jumps > 0)) {
+        doJump(f, f.onGround ? JUMPV : JUMP2, cb);              // 띄우고 점프 캔슬 → 공중 콤보
+      } else if (f.hitThis && f.mt >= a1 && f.buf.dash && f.dashCd === 0 && (f.onGround || f.airDash)) {
+        startDash(f, inp, tx, tz, cb);                          // 맞혔으면 대시로 빈틈 지우기
+      } else if (m.air && f.onGround && f.mt > 2) {
+        f.state = "idle"; f.move = null; f.land = 8;            // 공중기는 땅에 닿으면 끝
+        if (f.moveName === "slam") cb.slamLand(f);
+      } else if (f.queued && f.mt >= a1 + (f.hitThis ? 0 : 3)) {
+        const qn = f.queued; f.queued = null;
+        if (!!MOVES[qn].air === !f.onGround) startMove(f, qn, cb); else { f.state = "idle"; f.move = null; }
+      } else if (f.mt >= a1 + m.recover) { f.state = "idle"; f.move = null; }
+      break;
+    }
+  }
+
+  if (f.state === "idle") {
+    if (inp.guard && f.onGround) f.state = "guard";
+    else if (f.buf.special && f.sp >= 100) { f.sp = 0; f.buf.special = 0; f.invuln = 16; f.yaw = targetYaw; startMove(f, "rush", cb); cb.special(f); }
+    else if (f.buf.dash && f.dashCd === 0 && (f.onGround || f.airDash)) startDash(f, inp, tx, tz, cb);
+    else if (f.buf.light && (f.onGround || f.airAtk < 3)) { f.buf.light = 0; startMove(f, f.onGround ? "jab1" : "air1", cb); }
+    else if (f.buf.heavy && (f.onGround || f.airAtk < 3)) { f.buf.heavy = 0; startMove(f, f.onGround ? "smash" : "slam", cb); }
+    else if (f.buf.jump) {
+      if (f.onGround) doJump(f, JUMPV, cb);
+      else if (wall && f.wjCd === 0 && f.wjN < 2) wallJump(f, inp, cb);   // 공중에서 벽에 닿아 있으면 벽차기
+      else if (f.jumps > 0) doJump(f, JUMP2, cb);              // 아니면 2단 점프
+    }
+    if (f.state === "idle") {
+      if (wall && into > 0.55 && inMag > 0.5 && f.wrT < WR_MAX && wall.top > f.y + 0.8 && f.vy > -5) {
+        f.state = "wallrun"; f.wrT++; f.vy = WR_V; f.onGround = false; f.parkour++; cb.wallrun(f);
+      } else if (wall && !f.onGround && into > 0.35 && f.vy < 0 && wall.top > f.y + 0.6) {
+        f.state = "cling"; f.clingT = 0;
+      } else {
+        const sp = f.onGround ? RUN : AIRRUN, k = f.onGround ? 0.25 : 0.08;
+        f.vx += (inp.mx * sp - f.vx) * k; f.vz += (inp.mz * sp - f.vz) * k;
+      }
+    }
+  }
+
+  // ---- 물리: 중력 → 이동 → 벽 충돌 → 바닥 ----
+  let g = GRAV;
+  if (f.state === "hitstun" && !f.onGround && !f.spiked) g *= 0.72;   // 띄운 상대는 천천히 떨어짐 (공중 콤보용)
+  else if (f.state === "dash" && !f.onGround) g = 0;
+  else if (f.state === "wallrun") g = 0;
+  else if (f.state === "cling" && f.vy <= 0) g *= 0.25;   // 붙어서 내려올 때만 천천히 (올라가는 중엔 보통 중력)
+  else if (f.state === "attack" && f.move.air && f.mt < f.move.startup + f.move.active && f.moveName !== "slam") g *= 0.5;
+  f.vy -= g * DT; if (f.vy < -22) f.vy = -22;
+  f.x += f.vx * DT; f.z += f.vz * DT; f.y += f.vy * DT;
+  f.impact = 0; collide(f);
+  if (f.state === "hitstun" && f.impact > 7 && f.wall) {   // 세게 날아가 벽에 부딪히면 튕겨 나옴 (벽 꽝)
+    const w = f.wall;
+    f.vx = w.nx * f.impact * 0.45; f.vz = w.nz * f.impact * 0.45; f.vy = Math.max(f.vy, 4.5); f.stun = Math.max(f.stun, 30); f.onGround = false;
+    W.freeze = Math.max(W.freeze, 6); cb.wallbounce(f);
+  }
+  const gr = groundAt(f.x, f.z, f.y);
+  if (f.y <= gr) {
+    if (!f.onGround) {
+      if (f.spiked) { f.spiked = false; f.y = gr; f.vy = 6.5; f.stun = Math.max(f.stun, 26); cb.bounce(f); return; }   // 내려찍기 바운드
+      f.land = 6; cb.land(f, -f.vy);
+    }
+    f.y = gr; f.vy = 0; f.onGround = true; f.jumps = 2; f.airAtk = 0; f.airDash = true; f.wrT = 0; f.climbJ = false; f.wjN = 0;
+    if (f.state === "cling" || (f.state === "wallrun" && f.vy <= 0)) f.state = "idle";
+  } else if (f.y > gr + 0.05) {
+    if (f.onGround && f.jumps === 2) f.jumps = 1;   // 걸어서 떨어지면 공중 점프 1번만
+    f.onGround = false;
+  }
+}
+
+function inReach(a, b, m) {
+  const dy = (b.y + 0.62) - (a.y + 0.62 - (m.spike ? 0.45 : 0) + (m.launch ? 0.2 : 0));
+  if (Math.abs(dy) > 1.05) return false;
+  if (m.around) return Math.hypot(b.x - a.x, b.z - a.z) < m.reach + R * 0.6;
+  const c = m.reach * 0.72, fx = Math.sin(a.yaw), fz = Math.cos(a.yaw);
+  const dx = b.x - (a.x + fx * c), dz = b.z - (a.z + fz * c), r = 0.62 + (m.reach - 1.2) * 0.6 + R * 0.55;
+  return dx * dx + dz * dz < r * r;
+}
+function checkHit(W, a, b, cb) {
+  if (a.state !== "attack" || a.hitThis) return;
+  const m = a.move, a0 = m.startup, a1 = a0 + m.active;
+  if (a.mt < a0 || a.mt >= a1 || b.state === "ko" || b.invuln > 0) return;
+  if (!inReach(a, b, m)) return;
+  a.hitThis = 1;
+  applyHit(W, a, b, m, cb);
+}
+function applyHit(W, a, b, m, cb) {
+  const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz) || 1, nx = dx / d, nz = dz / d;
+  const facing = -(Math.sin(b.yaw) * nx + Math.cos(b.yaw) * nz) > 0.1;   // 맞는 쪽이 때리는 쪽을 보고 있나
+  const px = (a.x + b.x) / 2, py = Math.max(a.y, b.y) + 0.75, pz = (a.z + b.z) / 2;
+  if ((b.state === "guard" || b.state === "blockstun") && facing) {
+    if (m.guardBreak) {
+      b.state = "hitstun"; b.stun = 52; b.vx = nx * 3; b.vz = nz * 3; b.guardBroken = true; b.move = null;
+      a.sp = Math.min(100, a.sp + 8); W.freeze = 9; cb.guardBreak(a, b, px, py, pz); return;
+    }
+    const chip = m.dmg * 0.12; b.hp = Math.max(1, b.hp - chip); b.taken += chip; a.dealt += chip;
+    b.state = "blockstun"; b.stun = 10 + Math.round(m.dmg * 0.8);
+    b.vx = nx * (m.kb * 0.5 + 1.5); b.vz = nz * (m.kb * 0.5 + 1.5); a.vx -= nx * 1.2; a.vz -= nz * 1.2;
+    b.sp = Math.min(100, b.sp + 3); a.sp = Math.min(100, a.sp + 2);
+    W.freeze = 4; cb.guard(a, b, px, py, pz); return;
+  }
+  const counter = b.state === "attack" && b.mt < b.move.startup;   // 상대가 공격을 준비하는 중에 맞히면 카운터
+  a.combo = b.state === "hitstun" ? a.combo + 1 : 1; a.maxCombo = Math.max(a.maxCombo, a.combo);
+  const scale = Math.max(0.35, 1 - 0.09 * (a.combo - 1));         // 콤보가 길어질수록 피해 조금씩 감소
+  let dmg = m.dmg * scale * (counter ? 1.25 : 1), kb = m.kb, up = m.up, fin = false;
+  if (m.multi) { a.rushHits++; if (a.rushHits >= m.hits) { kb = m.finalKb; up = m.finalUp; dmg += 6; fin = true; } }
+  b.hp -= dmg; a.dealt += dmg; b.taken += dmg;
+  b.state = "hitstun"; b.stun = m.stun + (counter ? 10 : 0); b.move = null; b.queued = null; b.guardBroken = false;
+  b.vx = nx * kb; b.vz = nz * kb;
+  if (up > 0) { b.vy = up; b.onGround = false; }
+  else if (up < 0) { b.vy = up; b.spiked = true; b.onGround = false; }
+  else if (!b.onGround) b.vy = Math.max(b.vy, 3.5);
+  b.flash = 6;
+  a.sp = Math.min(100, a.sp + dmg * 1.6); b.sp = Math.min(100, b.sp + dmg * 0.8);
+  const heavy = dmg >= 9.5 || kb >= 8 || fin;
+  const info = { dmg, counter, combo: a.combo, heavy, px, py, pz, name: m.name };
+  if (b.hp <= 0) {
+    b.hp = 0; b.state = "ko"; b.vx = nx * 10; b.vz = nz * 10; b.vy = 8; b.onGround = false; b.spiked = false;
+    W.freeze = 22; info.heavy = true; cb.hit(a, b, info); cb.ko(a, b); return;
+  }
+  W.freeze = m.special && !fin ? 3 : heavy ? 9 : 5;   // 히트스톱: 맞는 순간 잠깐 멈춤
+  cb.hit(a, b, info);
+}
+function stepWorld(W, ip, iq, cb) {
+  const [p, q] = W.f;
+  stepFighter(W, p, ip, q, cb); stepFighter(W, q, iq, p, cb);
+  separate(p, q);
+  checkHit(W, p, q, cb); checkHit(W, q, p, cb);
+  if (p.combo && q.state !== "hitstun") p.combo = 0;
+  if (q.combo && p.state !== "hitstun") q.combo = 0;
+}
+
+/* =====================================================================
+   2. AI: 유전자 8개가 싸움 성향을 정함
+   ===================================================================== */
+const GENES = ["공격성", "선호 거리", "공격 빈도", "콤보 집착", "강공격 비율", "가드 반응", "점프·벽타기", "회피 성향"];
+function newBrain() { return { tick: 0, mode: "approach", strafe: rnd() < 0.5 ? 1 : -1, guardHold: 0, reacted: -1, evade: 0, wantJump: 0, jcFor: -1, jc: false, chk: 0, lx: 0, ly: 0, lz: 0 }; }
+function aiThink(me, op, g, b) {
+  const inp = blankInput();
+  if (me.state === "ko" || op.state === "ko") return inp;
+  const dx = op.x - me.x, dz = op.z - me.z, d = Math.hypot(dx, dz) || 1;
+  const fx = dx / d, fz = dz / d, rx = -fz, rz = fx, dy = op.y - me.y;
+  // 1) 상대 공격 읽기: 공격 시작 2프레임 뒤에야 알아챔 (사람처럼 반응 시간이 있음)
+  if (op.state === "attack" && op.attackId !== b.reacted && op.mt >= 2 && op.mt < op.move.startup) {
+    b.reacted = op.attackId;
+    const threat = d < op.move.reach + 1.2 + (op.move.lunge || 0) * 0.18 && Math.abs(dy) < 1.6;
+    if (threat && (me.state === "idle" || me.state === "guard")) {
+      const r = rnd();
+      if (r < g[5] * 0.7 && me.onGround && !op.move.guardBreak) b.guardHold = op.move.startup + op.move.active + 6 - op.mt;
+      else if (r < g[5] * 0.7 + g[7] * 0.5) b.evade = 1;
+    }
+  }
+  if (b.guardHold > 0) { b.guardHold--; inp.guard = true; return inp; }
+  if (b.evade) { b.evade = 0; inp.dash = true; const s = rnd() < 0.5 ? 1 : -1; inp.mx = rx * s - fx * 0.6; inp.mz = rz * s - fz * 0.6; return inp; }
+  // 2) 막힘 감지: 0.75초 동안 거의 못 움직였으면 방향을 바꾸고 점프 → 벽에 끼지 않음
+  if (++b.chk >= 45) {
+    const moved = Math.hypot(me.x - b.lx, me.z - b.lz) + Math.abs(me.y - b.ly);
+    if (moved < 0.7 && d > 2.2 && me.state !== "attack") { b.mode = "strafe"; b.strafe *= -1; b.tick = 35; b.wantJump = 1; }
+    b.lx = me.x; b.ly = me.y; b.lz = me.z; b.chk = 0;
+  }
+  // 3) 이동 계획 (8~17프레임마다 새로 정함)
+  const pref = 1.15 + 3.2 * g[1];
+  if (--b.tick <= 0) {
+    b.tick = 8 + ((rnd() * 10) | 0);
+    if (rnd() < 0.3) b.strafe = -b.strafe;
+    if (d > pref + 0.5) b.mode = rnd() < 0.3 + 0.7 * g[0] ? "approach" : "strafe";
+    else if (d < pref - 0.5) b.mode = rnd() < 0.6 - 0.4 * g[0] ? "back" : "strafe";
+    else b.mode = rnd() < 0.2 + 0.6 * g[0] ? "approach" : "strafe";
+    if (rnd() < g[6] * 0.25) b.wantJump = 1;
+  }
+  if ((op.state === "hitstun" || op.state === "blockstun") && d > 1.3) b.mode = "approach";   // 빈틈이면 다가감
+  if (dy > 1.0 && d < 5 && rnd() < 0.02 + g[6] * 0.08) b.wantJump = 1;                     // 상대가 높은 곳이면 따라 올라감
+  if (b.mode === "approach") { inp.mx = fx; inp.mz = fz; }
+  else if (b.mode === "back") { inp.mx = -fx * 0.8 + rx * b.strafe * 0.45; inp.mz = -fz * 0.8 + rz * b.strafe * 0.45; }
+  else { inp.mx = rx * b.strafe + fx * 0.15; inp.mz = rz * b.strafe + fz * 0.15; }
+  if (b.wantJump && me.state === "idle" && me.onGround) { inp.jump = true; b.wantJump = 0; }
+  else if (b.wantJump && me.state === "idle" && !me.onGround && me.vy < 1 && me.jumps > 0 && dy > 0.5 && rnd() < 0.08) inp.jump = true;
+  // 4) 벽에 붙어 있으면 벽차기
+  if ((me.state === "cling" || me.state === "wallrun") && rnd() < 0.03 + g[6] * 0.1) inp.jump = true;
+  // 5) 공격
+  const inRange = d < 1.55 && Math.abs(dy) < 1.2;
+  if (me.state === "attack") {
+    const m = me.move;
+    if (me.mt > 2 && (m.next || m.heavyNext) && rnd() < (me.hitThis ? g[3] * 0.4 : g[3] * 0.03)) {
+      if (m.heavyNext && (rnd() < g[4] * 0.5 || !m.next)) inp.heavy = true; else inp.light = true;
+    }
+    if (m.launch && me.hitThis) {   // 어퍼컷이 맞으면 따라 뛸지 한 번 정함
+      if (b.jcFor !== me.attackId) { b.jcFor = me.attackId; b.jc = rnd() < 0.25 + 0.65 * g[6]; }
+      if (b.jc) inp.jump = true;
+    }
+  } else if (me.state === "idle" || me.state === "cling" || me.state === "wallrun") {
+    if (!me.onGround) {
+      if (d < 1.8 && Math.abs(dy) < 1.3 && rnd() < 0.18 + g[2] * 0.25) { if (dy < -0.6 && rnd() < 0.3 + g[4] * 0.5) inp.heavy = true; else inp.light = true; }
+    } else if (inRange) {
+      const punish = op.state === "attack" && op.mt >= op.move.startup + op.move.active;
+      if (op.state === "hitstun" && op.guardBroken) inp.heavy = true;
+      else if (rnd() < (punish ? 0.35 : 0.03) + g[2] * 0.2) {
+        if (me.sp >= 100 && rnd() < 0.6) inp.special = true;
+        else if (op.state === "guard" && rnd() < 0.3 + g[4] * 0.5) inp.heavy = true;
+        else if (rnd() < g[4] * 0.45) inp.heavy = true; else inp.light = true;
+      }
+    } else if (me.sp >= 100 && d < 3.2 && Math.abs(dy) < 1 && rnd() < 0.02) inp.special = true;
+  }
+  return inp;
+}
+
+/* =====================================================================
+   3. 진화: 6개체 → 라운드마다 하나씩 나와서 채점 → 6라운드마다 다음 세대
+   ===================================================================== */
+const POP = 6;
+const randGenome = () => GENES.map(() => +(0.15 + rnd() * 0.7).toFixed(3));
+const freshEvo = () => ({ gen: 1, idx: 0, pop: Array.from({ length: POP }, randGenome), fit: Array(POP).fill(null), hist: [], champ: null });
+let evo = (() => {
+  try { const e = JSON.parse(store.get("robotBattleEvo") || "null"); if (e && Array.isArray(e.pop) && e.pop.length === POP && e.pop.every(g => g.length === GENES.length)) return e; } catch {}
+  return freshEvo();
+})();
+const saveEvo = () => store.set("robotBattleEvo", JSON.stringify(evo));
+function evolveAI() {
+  const order = evo.pop.map((g, i) => i).sort((a, b) => evo.fit[b] - evo.fit[a]);
+  const best = evo.fit[order[0]], avg = evo.fit.reduce((s, v) => s + v, 0) / POP;
+  evo.hist.push({ gen: evo.gen, best: +best.toFixed(1), avg: +avg.toFixed(1) }); if (evo.hist.length > 60) evo.hist.shift();
+  evo.champ = evo.pop[order[0]].slice();
+  const next = [evo.pop[order[0]].slice(), evo.pop[order[1]].slice()];   // 엘리트 2개체는 그대로
+  const tour = () => { const a = (rnd() * POP) | 0, b = (rnd() * POP) | 0; return evo.fit[a] >= evo.fit[b] ? a : b; };
+  while (next.length < POP) {
+    const pa = evo.pop[tour()], pb = evo.pop[tour()];
+    next.push(pa.map((v, k) => { let x = rnd() < 0.5 ? v : pb[k]; if (rnd() < 0.3) x += gaussR() * 0.12; return +clamp(x, 0, 1).toFixed(3); }));
+  }
+  evo.pop = next; evo.fit = Array(POP).fill(null); evo.idx = 0; evo.gen++;
+}
+function evoReport(fit) {   // 방금 싸운 개체의 점수를 적고, 6개체가 다 싸웠으면 진화
+  evo.fit[evo.idx] = fit; evo.idx++;
+  let evolved = false;
+  if (evo.idx >= POP) { evolveAI(); evolved = true; }
+  saveEvo(); return evolved;
+}
+const aiFitness = (ai, opp, aiWon) => ai.dealt - 0.8 * ai.taken + (aiWon ? 25 : 0) + ai.maxCombo * 1.5;
+const BASE = GENES.map(() => 0.5);
+const NOCB = { swing() {}, jump() {}, walljump() {}, wallrun() {}, dash() {}, land() {}, hit() {}, guard() {}, guardBreak() {}, bounce() {}, wallbounce() {}, slamLand() {}, special() {}, ko() {} };
+function simulateRound(gA, gB) {   // 그림 없이 AI 대 AI 한 라운드 (최대 60초)
+  const W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }, bA = newBrain(), bB = newBrain();
+  let fr = 0;
+  for (; fr < 3600; fr++) {
+    if (W.freeze > 0) { W.freeze--; continue; }
+    stepWorld(W, aiThink(W.f[0], W.f[1], gA, bA), aiThink(W.f[1], W.f[0], gB, bB), NOCB);
+    if (W.f[0].state === "ko" || W.f[1].state === "ko") break;
+  }
+  return { A: W.f[0], B: W.f[1] };
+}
+function sparFitness(g) {   // 연습 상대(지난 세대 1등)와 2라운드
+  const partner = evo.champ || BASE; let tot = 0;
+  for (let k = 0; k < 2; k++) { const { A, B } = simulateRound(partner, g); tot += aiFitness(B, A, B.hp > A.hp); }
+  return tot / 2;
+}
+
+/* =====================================================================
+   4. 3D 장면
+   ===================================================================== */
+const canvas = $("#c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(56, 1, 0.1, 420);
+function resize() { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.fov = w < h ? 68 : 56; camera.updateProjectionMatrix(); }
+addEventListener("resize", resize); resize();
+
+function canvasTex(w, h, draw, rep) {
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  draw(c.getContext("2d"), w, h);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8;
+  if (rep) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep[0], rep[1]); }
+  return t;
+}
+function scaleBoxUV(geo, w, h, d, unit) {   // 상자 면마다 크기에 맞게 무늬 반복
+  const uv = geo.attributes.uv;
+  for (let face = 0; face < 6; face++) {
+    const su = face < 2 ? d : w, sv = face < 2 ? h : face < 4 ? d : h;
+    for (let k = 0; k < 4; k++) { const i = face * 4 + k; uv.setXY(i, uv.getX(i) * su / unit, uv.getY(i) * sv / unit); }
+  }
+  uv.needsUpdate = true;
+}
+const FONT = '"Jua", "Gowun Dodum", sans-serif';
+
+scene.background = canvasTex(4, 512, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, 0, h);
+  gr.addColorStop(0, "#2350d4"); gr.addColorStop(0.5, "#5ea7ff"); gr.addColorStop(0.82, "#b9e1ff"); gr.addColorStop(1, "#ffe0b6");
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+});
+scene.fog = new THREE.Fog("#bfe2ff", 75, 200);
+scene.add(new THREE.HemisphereLight("#ffffff", "#7c6fb5", 0.82));
+const sun = new THREE.DirectionalLight("#fff2da", 0.95);
+sun.position.set(14, 30, 9); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 80 });
+sun.shadow.bias = -0.0004; scene.add(sun);
+
+const windowTex = canvasTex(128, 128, (g) => {
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+    const lit = (i * 3 + j * 5) % 4 === 0;
+    g.fillStyle = lit ? "#fff1a8" : "#3b3f74"; g.fillRect(14 + i * 64, 12 + j * 64, 36, 42);
+    g.fillStyle = "rgba(255,255,255,.35)"; g.fillRect(14 + i * 64, 12 + j * 64, 36, 6);
+  }
+}, [1, 1]);
+
+function buildWorld() {
+  // 바닥 (옥상)
+  const floorTex = canvasTex(1024, 1024, (g, W2, H2) => {
+    const n = 13, s = W2 / n;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { g.fillStyle = (i + j) % 2 ? "#ffe2a6" : "#fff1cf"; g.fillRect(i * s, j * s, s + 1, s + 1); }
+    g.strokeStyle = "rgba(170,120,50,.22)"; g.lineWidth = 3;
+    for (let i = 0; i <= n; i++) { g.beginPath(); g.moveTo(i * s, 0); g.lineTo(i * s, H2); g.stroke(); g.beginPath(); g.moveTo(0, i * s); g.lineTo(W2, i * s); g.stroke(); }
+    g.lineWidth = 22; g.strokeStyle = "#ff6b4a"; g.beginPath(); g.arc(512, 512, 230, 0, Math.PI * 2); g.stroke();
+    g.lineWidth = 9; g.strokeStyle = "#2f8bff"; g.beginPath(); g.arc(512, 512, 188, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = "#ff6b4a"; g.font = `150px ${FONT}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("VS", 512, 524);
+  });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(HALF * 2, HALF * 2), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.9 }));
+  floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+  const baseGeo = new THREE.BoxGeometry(HALF * 2 + 2, 34, HALF * 2 + 2); scaleBoxUV(baseGeo, HALF * 2 + 2, 34, HALF * 2 + 2, 3.5);
+  const base = new THREE.Mesh(baseGeo, new THREE.MeshStandardMaterial({ color: "#6d5ce8", map: windowTex, roughness: 0.8 }));
+  base.position.y = -17.01; scene.add(base);
+
+  // 경기장 벽과 구조물
+  const FACADE = { n: "#ff7a9a", s: "#5b8cff", w: "#ffb347", e: "#2fc4a0" };
+  const KIND = {
+    plat: ["#ff8fb1", "#ffd6e2"], tower: ["#8a6cff", "#d6ccff"], wall: ["#2fb5ff", "#bfe9ff"], pillar: ["#ffbe0b", "#fff0b0"],
+  };
+  const stripeTex = (a, b2) => canvasTex(128, 128, (g) => {
+    g.fillStyle = a; g.fillRect(0, 0, 128, 128); g.fillStyle = b2;
+    for (let k = -128; k < 256; k += 48) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k + 24, 0); g.lineTo(k + 24 + 128, 128); g.lineTo(k + 128, 128); g.closePath(); g.fill(); }
+  });
+  for (const b of BOXES) {
+    const geo = new THREE.BoxGeometry(b.w, b.h, b.d);
+    let mats;
+    if (b.kind === "outer") {
+      scaleBoxUV(geo, b.w, b.h, b.d, 3.5);
+      mats = new THREE.MeshStandardMaterial({ color: FACADE[b.face], map: windowTex, roughness: 0.75 });
+    } else {
+      scaleBoxUV(geo, b.w, b.h, b.d, 1.6);
+      const [c1, c2] = KIND[b.kind];
+      const side = new THREE.MeshStandardMaterial({ map: stripeTex(c1, c2), roughness: 0.55 });
+      side.map.wrapS = side.map.wrapT = THREE.RepeatWrapping;
+      const top = new THREE.MeshStandardMaterial({ color: c2, roughness: 0.5 });
+      mats = [side, side, top, top, side, side];
+    }
+    const m = new THREE.Mesh(geo, mats); m.position.set(b.x, b.h / 2, b.z); m.castShadow = b.kind !== "outer"; m.receiveShadow = true; scene.add(m);
+    if (b.kind !== "outer") {   // 윗면 테두리
+      const rim = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.06, 0.08, b.d + 0.06), new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.4 }));
+      rim.position.set(b.x, b.h + 0.04, b.z); scene.add(rim);
+    } else {
+      const cap = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.1, 0.25, b.d + 0.1), new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.5 }));
+      cap.position.set(b.x, b.h + 0.12, b.z); scene.add(cap);
+    }
+  }
+  // 바깥 벽 안쪽에 그린 큰 그림 글씨
+  const painted = (text, sub, bg, fg, x, z, rotY) => {
+    const t = canvasTex(1024, 320, (g, w, h) => {
+      g.fillStyle = bg; g.beginPath(); g.roundRect ? g.roundRect(8, 8, w - 16, h - 16, 60) : g.rect(8, 8, w - 16, h - 16); g.fill();
+      g.fillStyle = fg; g.textAlign = "center"; g.textBaseline = "middle";
+      g.font = `150px ${FONT}`; g.fillText(text, w / 2, h / 2 - (sub ? 30 : 0));
+      if (sub) { g.font = `64px ${FONT}`; g.fillText(sub, w / 2, h - 62); }
+    });
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(10, 3.1), new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 0.7 }));
+    p.position.set(x, 4.4, z); p.rotation.y = rotY; scene.add(p);
+  };
+  painted("꼬마 로봇 배틀", "EVOLUTION CUP", "#ffd23f", "#2a1d5c", 0, -HALF + 0.02, 0);
+  painted("진화하는 AI", "GEN ∞", "#2a1d5c", "#ffd23f", 0, HALF - 0.02, Math.PI);
+  painted("벽을 타라!", "WALL RUN", "#ffffff", "#ff4b3e", -HALF + 0.02, -2, Math.PI / 2);
+  painted("콤보!", "J · J · J", "#ff4b3e", "#ffffff", HALF - 0.02, 2, -Math.PI / 2);
+
+  // 멀리 보이는 도시
+  const CITY = ["#ff6b8b", "#5b8cff", "#ffb84d", "#3fd0a6", "#a07bff", "#ff8f5a", "#47c2ff"].map(c => new THREE.MeshStandardMaterial({ color: c, map: windowTex, roughness: 0.8 }));
+  let placed = 0, guard = 0;
+  while (placed < 80 && guard++ < 1000) {
+    const ang = rnd() * Math.PI * 2, dist = 24 + rnd() * 75, x = Math.cos(ang) * dist, z = Math.sin(ang) * dist;
+    if (Math.abs(x) < 19 && Math.abs(z) < 19) continue;
+    const w = 5 + rnd() * 8, d = 5 + rnd() * 8, h = 20 + rnd() * (dist > 55 ? 70 : 45);
+    const geo = new THREE.BoxGeometry(w, h, d); scaleBoxUV(geo, w, h, d, 3.5);
+    const m = new THREE.Mesh(geo, CITY[placed % CITY.length]); m.position.set(x, -34 + h / 2, z); scene.add(m); placed++;
+  }
+  // 구름과 풍선
+  const cloudMat = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 1 });
+  for (let i = 0; i < 9; i++) {
+    const grp = new THREE.Group(), ang = rnd() * Math.PI * 2, dist = 110 + rnd() * 50;
+    for (let k = 0; k < 5; k++) { const s = new THREE.Mesh(new THREE.SphereGeometry(5 + rnd() * 4, 16, 12), cloudMat); s.position.set(k * 6 - 12, rnd() * 3, rnd() * 4); s.scale.y = 0.55; grp.add(s); }
+    grp.position.set(Math.cos(ang) * dist, 45 + rnd() * 25, Math.sin(ang) * dist); grp.lookAt(0, grp.position.y, 0); scene.add(grp);
+  }
+  const BAL = ["#ff4b3e", "#ffd23f", "#2f8bff", "#2fd1a0", "#a07bff"];
+  for (let i = 0; i < 10; i++) {
+    const ang = (i / 10) * Math.PI * 2 + 0.3, r = 17 + rnd() * 5;
+    const bal = new THREE.Mesh(new THREE.SphereGeometry(0.9, 20, 16), new THREE.MeshStandardMaterial({ color: BAL[i % BAL.length], roughness: 0.25 }));
+    bal.scale.y = 1.15; bal.position.set(Math.cos(ang) * r, 11 + rnd() * 6, Math.sin(ang) * r); bal.userData.y0 = bal.position.y; bal.userData.ph = rnd() * 6;
+    scene.add(bal); balloons.push(bal);
+  }
+}
+const balloons = [];
+
+/* ---- 로봇 모델 ---- */
+function makeFighterMesh(side) {
+  const P = side === 0;
+  const main = P ? "#3d8bff" : "#ff5a4a", glove = P ? "#ffffff" : "#2b2340";
+  const root = new THREE.Group(); scene.add(root);
+  const tilt = new THREE.Group(); root.add(tilt);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: main, roughness: 0.38, emissive: "#000000" });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 22), bodyMat); body.position.y = 0.62; body.scale.set(1, 0.96, 1); body.castShadow = true; tilt.add(body);
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(0.34, 24, 16), new THREE.MeshStandardMaterial({ color: "#fff6e6", roughness: 0.6 }));
+  belly.position.set(0, 0.5, 0.22); belly.scale.set(1, 0.85, 0.55); tilt.add(belly);
+  const eyeMat = new THREE.MeshStandardMaterial({ color: "#16121f", roughness: 0.2 });
+  const eyes = [-1, 1].map(s => {
+    const e = new THREE.Mesh(new THREE.SphereGeometry(0.075, 16, 12), eyeMat); e.position.set(s * 0.16, 0.76, 0.43); tilt.add(e);
+    const sh = new THREE.Mesh(new THREE.SphereGeometry(0.024, 8, 6), new THREE.MeshBasicMaterial({ color: "#ffffff" })); sh.position.set(0.025, 0.03, 0.06); e.add(sh);
+    return e;
+  });
+  [-1, 1].forEach(s => {
+    const c = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), new THREE.MeshStandardMaterial({ color: "#ff8fa8", transparent: true, opacity: 0.85 }));
+    c.position.set(s * 0.29, 0.62, 0.38); c.scale.set(1, 0.55, 0.4); tilt.add(c);
+  });
+  const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.24, 8), new THREE.MeshStandardMaterial({ color: "#5d6970" })); stick.position.set(0, 1.18, 0); tilt.add(stick);
+  const knobMat = new THREE.MeshStandardMaterial({ color: P ? "#ffd23f" : "#ff2d55", emissive: P ? "#ffb000" : "#ff0040", emissiveIntensity: 0.3 });
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 12), knobMat); knob.position.set(0, 1.32, 0); tilt.add(knob);
+  let tails = null;
+  if (P) {   // 파랑: 노란 머리띠와 휘날리는 끈
+    const bandMat = new THREE.MeshStandardMaterial({ color: "#ffd23f", roughness: 0.5 });
+    const band = new THREE.Mesh(new THREE.TorusGeometry(0.47, 0.055, 10, 40), bandMat); band.position.y = 0.9; band.rotation.x = Math.PI / 2; tilt.add(band);
+    tails = [-1, 1].map(s => {
+      const pivot = new THREE.Group(); pivot.position.set(s * 0.07, 0.9, -0.45); pivot.rotation.y = s * 0.25; tilt.add(pivot);
+      const t = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.025, 0.46), bandMat); t.position.z = -0.22; pivot.add(t);
+      return pivot;
+    });
+  } else {   // 빨강: 뿔 두 개와 화난 눈썹
+    const hornMat = new THREE.MeshStandardMaterial({ color: "#ffe7a6", roughness: 0.4 });
+    [-1, 1].forEach(s => {
+      const h = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.3, 12), hornMat); h.position.set(s * 0.27, 1.05, 0.02); h.rotation.z = -s * 0.45; tilt.add(h);
+      const brow = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.035, 0.04), eyeMat); brow.position.set(s * 0.16, 0.88, 0.45); brow.rotation.z = s * 0.35; tilt.add(brow);
+    });
+  }
+  const fistMat = new THREE.MeshStandardMaterial({ color: glove, roughness: 0.35, emissive: "#000000" });
+  const fistGeo = new THREE.SphereGeometry(0.17, 18, 14);
+  const fistL = new THREE.Mesh(fistGeo, fistMat), fistR = new THREE.Mesh(fistGeo, fistMat);
+  fistL.castShadow = fistR.castShadow = true; tilt.add(fistL, fistR);
+  const footMat = new THREE.MeshStandardMaterial({ color: P ? "#1f4fa8" : "#9c2a22", roughness: 0.5 });
+  const footGeo = new THREE.SphereGeometry(0.15, 14, 10);
+  const footL = new THREE.Mesh(footGeo, footMat), footR = new THREE.Mesh(footGeo, footMat);
+  footL.scale.set(1, 0.6, 1.35); footR.scale.set(1, 0.6, 1.35); tilt.add(footL, footR);
+  const shield = new THREE.Mesh(new THREE.CircleGeometry(0.72, 6), new THREE.MeshBasicMaterial({ color: "#7fe7ff", transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false }));
+  shield.position.set(0, 0.65, 0.72); shield.visible = false; tilt.add(shield);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.68, 36), new THREE.MeshBasicMaterial({ color: P ? "#2f8bff" : "#ff3b30", transparent: true, opacity: 0.85, depthWrite: false }));
+  ring.rotation.x = -Math.PI / 2; scene.add(ring);
+  return { root, tilt, bodyMat, eyes, fistL, fistR, footL, footR, fistMat, shield, knobMat, tails, ring, dispYaw: side ? Math.PI : 0 };
+}
+
+/* =====================================================================
+   5. 효과: 불꽃, 충격파, 잔상, 떠오르는 글씨, 소리
+   ===================================================================== */
+const parts = [], rings = [], ghosts = [];
+const sparkGeo = new THREE.OctahedronGeometry(0.085), ghostGeo = new THREE.SphereGeometry(0.5, 16, 12);
+const SPARK = { light: ["#fff3a0", "#ffd23f", "#ffffff"], heavy: ["#ff9d1a", "#ffd23f", "#ff5a3c", "#ffffff"], guard: ["#7fe7ff", "#ffffff", "#4dc3ff"],
+  dust: ["#efe4d2", "#d8c8b0"], wall: ["#ffffff", "#bfe9ff"] };
+const sparkMats = {}; for (const k in SPARK) sparkMats[k] = SPARK[k].map(c => new THREE.MeshBasicMaterial({ color: c }));
+function burst(x, y, z, n, kind, speed = 6) {
+  const mats = sparkMats[kind], dust = kind === "dust";
+  for (let i = 0; i < n; i++) {
+    const m = new THREE.Mesh(sparkGeo, mats[i % mats.length]);
+    const th = rnd() * Math.PI * 2, ph = Math.acos(2 * rnd() - 1), s = speed * (0.4 + rnd() * 0.8);
+    m.position.set(x, y, z);
+    m.userData = { vx: Math.sin(ph) * Math.cos(th) * s, vy: Math.abs(Math.cos(ph)) * s * (dust ? 0.4 : 0.8) + (dust ? 1 : 2), vz: Math.sin(ph) * Math.sin(th) * s,
+      life: 1, decay: dust ? 1.7 : 2.3, g: dust ? 3 : 12 };
+    scene.add(m); parts.push(m);
+  }
+}
+function shockRing(x, y, z, color, size = 1, flat = false) {
+  const m = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.06, 8, 40), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false }));
+  m.position.set(x, y, z); if (flat) m.rotation.x = Math.PI / 2; else m.lookAt(camera.position);
+  m.userData = { life: 1, size }; scene.add(m); rings.push(m);
+}
+function addGhost(fm, side) {
+  const m = new THREE.Mesh(ghostGeo, new THREE.MeshBasicMaterial({ color: side ? "#ff8a7a" : "#8cc4ff", transparent: true, opacity: 0.45, depthWrite: false }));
+  m.position.copy(fm.root.position); m.position.y += 0.62 + fm.tilt.position.y; m.userData = { life: 1 }; scene.add(m); ghosts.push(m);
+}
+function updateFx(dt) {
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const m = parts[i], u = m.userData;
+    u.vy -= u.g * dt; m.position.x += u.vx * dt; m.position.y += u.vy * dt; m.position.z += u.vz * dt;
+    if (m.position.y < 0.05) { m.position.y = 0.05; u.vy *= -0.3; }
+    m.rotation.x += dt * 9; m.rotation.y += dt * 7; u.life -= dt * u.decay; m.scale.setScalar(Math.max(0.01, u.life * 1.3));
+    if (u.life <= 0) { scene.remove(m); parts.splice(i, 1); }
+  }
+  for (let i = rings.length - 1; i >= 0; i--) {
+    const m = rings[i], u = m.userData; u.life -= dt * 3;
+    const s = (1 + (1 - u.life) * 2.6) * u.size; m.scale.set(s, s, s); m.material.opacity = Math.max(0, u.life * 0.9);
+    if (u.life <= 0) { scene.remove(m); m.geometry.dispose(); m.material.dispose(); rings.splice(i, 1); }
+  }
+  for (let i = ghosts.length - 1; i >= 0; i--) {
+    const m = ghosts[i], u = m.userData; u.life -= dt * 4; m.material.opacity = Math.max(0, u.life * 0.45);
+    if (u.life <= 0) { scene.remove(m); m.material.dispose(); ghosts.splice(i, 1); }
+  }
+}
+const v3 = new THREE.Vector3();
+function floatText(text, x, y, z, cls = "") {
+  if (G.phase === "title") return;
+  v3.set(x, y, z).project(camera); if (v3.z > 1) return;
+  const el = document.createElement("div"); el.className = "float " + cls; el.textContent = text;
+  el.style.left = ((v3.x * 0.5 + 0.5) * innerWidth) + "px"; el.style.top = ((-v3.y * 0.5 + 0.5) * innerHeight) + "px";
+  $("#floats").appendChild(el); setTimeout(() => el.remove(), 1000);
+}
+function flashScreen(a) { if (G.phase === "title") return; const f = $("#flash"); f.style.transition = "none"; f.style.opacity = a; requestAnimationFrame(() => { f.style.transition = ""; f.style.opacity = 0; }); }
+const comboTimer = [0, 0];
+function showCombo(side, n, name) {
+  if (G.phase === "title") return;
+  const el = $("#combo" + side); el.innerHTML = `<b>${n}</b><span> HIT</span><small>${name}</small>`;
+  el.hidden = false; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); comboTimer[side] = 1.3;
+}
+function showBanner(text) {
+  if (G.phase === "title") return;
+  const el = $("#banner"); el.textContent = text; el.hidden = false; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+}
+const hideBanner = () => { $("#banner").hidden = true; $("#tipline").hidden = true; };
+
+// 소리 (버튼을 누른 뒤에만 켜짐)
+let AC = null, noiseBuf = null, soundOn = store.get("rbSound") !== "off";
+function ensureAudio() {
+  if (!soundOn) return;
+  try {
+    if (!AC) {
+      AC = new (window.AudioContext || window.webkitAudioContext)();
+      const len = AC.sampleRate * 0.5; noiseBuf = AC.createBuffer(1, len, AC.sampleRate);
+      const ch = noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) ch[i] = rnd() * 2 - 1;
+    }
+    if (AC.state === "suspended") AC.resume();
+  } catch { AC = null; }
+}
+function tone(type, f0, f1, dur, vol, delay = 0) {
+  const t = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + 0.03);
+}
+function noise(dur, vol, freq, q = 1, delay = 0) {
+  const t = AC.currentTime + delay, s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = noiseBuf; f.type = "bandpass"; f.frequency.value = freq; f.Q.value = q;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s.connect(f); f.connect(g); g.connect(AC.destination); s.start(t); s.stop(t + dur + 0.03);
+}
+function sfx(kind) {
+  if (!soundOn || !AC || G.phase === "title") return;
+  try {
+    switch (kind) {
+      case "hit": noise(0.08, 0.45, 1800, 0.8); tone("sine", 190, 60, 0.12, 0.45); break;
+      case "heavy": noise(0.16, 0.65, 900, 0.6); tone("sine", 140, 40, 0.26, 0.75); break;
+      case "guard": tone("triangle", 1100, 700, 0.08, 0.22); noise(0.05, 0.18, 4200, 2); break;
+      case "swing": noise(0.07, 0.1, 2600, 1.5); break;
+      case "jump": tone("sine", 320, 640, 0.1, 0.16); break;
+      case "walljump": tone("square", 420, 900, 0.09, 0.1); noise(0.06, 0.2, 3000, 1); break;
+      case "wallrun": noise(0.14, 0.12, 1400, 1.2); break;
+      case "dash": noise(0.12, 0.22, 3200, 0.7); break;
+      case "land": tone("sine", 120, 70, 0.08, 0.22); break;
+      case "special": tone("sawtooth", 180, 900, 0.5, 0.2); tone("square", 90, 450, 0.5, 0.1); break;
+      case "ko": tone("sine", 220, 35, 0.9, 0.85); noise(0.5, 0.55, 500, 0.5); break;
+      case "round": tone("square", 520, 520, 0.12, 0.12); tone("square", 780, 780, 0.22, 0.12, 0.14); break;
+    }
+  } catch {}
+}
+
+// 전투 → 화면 효과 연결
+const CB = {
+  swing(f, m) { sfx(m.special ? "special" : "swing"); },
+  jump(f, dbl) { burst(f.x, f.y + 0.1, f.z, dbl ? 6 : 4, "dust", 2.5); if (dbl) shockRing(f.x, f.y + 0.1, f.z, "#ffffff", 0.9, true); sfx("jump"); },
+  walljump(f, w, up) {
+    if (!w) return;
+    const x = f.x - w.nx * R, z = f.z - w.nz * R;
+    burst(x, f.y + 0.6, z, 10, "wall", 4); shockRing(x, f.y + 0.6, z, "#bfe9ff", 0.8); sfx("walljump");
+    if (f.side === 0 && G.phase === "fight") floatText(up ? "벽 오르기!" : "벽차기!", f.x, f.y + 1.6, f.z, "tip");
+  },
+  wallrun(f) { sfx("wallrun"); },
+  dash(f) { G.ghostT[f.side] = 10; burst(f.x, f.y + 0.1, f.z, 6, "dust", 3); sfx("dash"); },
+  land(f, v) { if (v > 9) { burst(f.x, f.y + 0.05, f.z, 8, "dust", 3); sfx("land"); } },
+  hit(a, b, info) {
+    const { px, py, pz, heavy } = info;
+    burst(px, py, pz, heavy ? 26 : 12, heavy ? "heavy" : "light", heavy ? 8 : 5.5);
+    shockRing(px, py, pz, heavy ? "#ffb020" : "#fff3a0", heavy ? 1.5 : 0.9);
+    floatText(String(Math.max(1, Math.round(info.dmg))), px, py + 0.35, pz, heavy ? "heavy" : "");
+    if (info.counter) floatText("카운터!", px, py + 0.95, pz, "big");
+    G.shake = Math.max(G.shake, heavy ? 0.32 : 0.12);
+    sfx(heavy ? "heavy" : "hit");
+    if (info.combo >= 2) showCombo(a.side, info.combo, info.name);
+  },
+  guard(a, b, x, y, z) { burst(x, y, z, 10, "guard", 4); shockRing(x, y, z, "#7fe7ff", 0.9); floatText("가드", x, y + 0.4, z, "guard"); sfx("guard"); },
+  guardBreak(a, b, x, y, z) { burst(x, y, z, 24, "heavy", 8); shockRing(x, y, z, "#ffd23f", 1.6); floatText("가드 브레이크!", x, y + 0.5, z, "big"); G.shake = Math.max(G.shake, 0.4); sfx("heavy"); },
+  bounce(f) { burst(f.x, f.y + 0.05, f.z, 12, "dust", 4); shockRing(f.x, f.y + 0.05, f.z, "#ffffff", 1.4, true); G.shake = Math.max(G.shake, 0.3); sfx("land"); },
+  wallbounce(f) {
+    const w = f.wall, x = f.x - w.nx * R, z = f.z - w.nz * R;
+    burst(x, f.y + 0.6, z, 16, "heavy", 6); shockRing(x, f.y + 0.6, z, "#ffd23f", 1.3); floatText("벽 꽝!", f.x, f.y + 1.6, f.z, "big");
+    G.shake = Math.max(G.shake, 0.45); sfx("heavy");
+  },
+  slamLand(f) { shockRing(f.x, f.y + 0.05, f.z, "#ffd23f", 1.6, true); burst(f.x, f.y + 0.05, f.z, 12, "dust", 5); G.shake = Math.max(G.shake, 0.25); sfx("land"); },
+  special(f) { flashScreen(0.55); floatText("필살!", f.x, f.y + 1.8, f.z, "big"); G.slow = 16; },
+  ko() { showBanner("K.O.!"); G.slow = 75; G.shake = 0.7; flashScreen(0.7); sfx("ko"); },
+};
+
+/* =====================================================================
+   6. 입력: 키보드 + 터치
+   ===================================================================== */
+const keys = new Set(), edges = new Set();
+const KEYMAP = { KeyW: "up", ArrowUp: "up", KeyS: "down", ArrowDown: "down", KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right",
+  Space: "jump", KeyJ: "light", KeyZ: "light", KeyK: "heavy", KeyX: "heavy", KeyL: "guard", KeyC: "guard", ShiftLeft: "dash", ShiftRight: "dash", KeyU: "special", KeyV: "special" };
+addEventListener("keydown", e => {
+  if (e.code === "Escape" || e.code === "KeyP") { if (G.paused) setPause(false); else setPause(true); return; }
+  const a = KEYMAP[e.code]; if (!a) return;
+  if (G.phase === "title" || G.phase === "result") return;
+  e.preventDefault();
+  if (!e.repeat) edges.add(a);
+  keys.add(a);
+});
+addEventListener("keyup", e => { const a = KEYMAP[e.code]; if (a) keys.delete(a); });
+addEventListener("blur", () => { keys.clear(); if (G.phase === "fight" || G.phase === "intro") setPause(true); });
+const touchState = { mx: 0, my: 0, guard: false };
+const camDir = new THREE.Vector3();
+function playerInput() {
+  let ix = (keys.has("right") ? 1 : 0) - (keys.has("left") ? 1 : 0) + touchState.mx;
+  let iy = (keys.has("up") ? 1 : 0) - (keys.has("down") ? 1 : 0) + touchState.my;
+  const l = Math.hypot(ix, iy); if (l > 1) { ix /= l; iy /= l; }
+  camera.getWorldDirection(camDir); let fx = camDir.x, fz = camDir.z; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl;
+  const rx = -fz, rz = fx;   // 화면 기준 오른쪽
+  const inp = { mx: fx * iy + rx * ix, mz: fz * iy + rz * ix, guard: keys.has("guard") || touchState.guard,
+    jump: edges.has("jump"), light: edges.has("light"), heavy: edges.has("heavy"), dash: edges.has("dash"), special: edges.has("special") };
+  edges.clear();
+  return inp;
+}
+(() => {   // 가상 조이스틱과 버튼
+  const joy = $("#joy"), knob = $("#knob"); let joyId = null, jc = [0, 0];
+  const moveJoy = e => {
+    let dx = e.clientX - jc[0], dy = e.clientY - jc[1]; const max = 48, l = Math.hypot(dx, dy);
+    if (l > max) { dx *= max / l; dy *= max / l; }
+    knob.style.transform = `translate(${dx}px, ${dy}px)`; touchState.mx = dx / max; touchState.my = -dy / max;
+  };
+  joy.addEventListener("pointerdown", e => { joyId = e.pointerId; joy.setPointerCapture(e.pointerId); const r = joy.getBoundingClientRect(); jc = [r.left + r.width / 2, r.top + r.height / 2]; moveJoy(e); ensureAudio(); });
+  joy.addEventListener("pointermove", e => { if (e.pointerId === joyId) moveJoy(e); });
+  const endJoy = e => { if (e.pointerId !== joyId) return; joyId = null; touchState.mx = touchState.my = 0; knob.style.transform = ""; };
+  joy.addEventListener("pointerup", endJoy); joy.addEventListener("pointercancel", endJoy);
+  document.querySelectorAll(".tb").forEach(b => {
+    const act = b.dataset.act;
+    b.addEventListener("pointerdown", e => { e.preventDefault(); b.setPointerCapture(e.pointerId); b.classList.add("on"); if (act === "guard") touchState.guard = true; else edges.add(act); ensureAudio(); });
+    const up = () => { b.classList.remove("on"); if (act === "guard") touchState.guard = false; };
+    b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up);
+  });
+  const markTouch = () => document.body.classList.add("is-touch");
+  if (matchMedia("(pointer: coarse)").matches) markTouch();
+  addEventListener("touchstart", markTouch, { once: true, passive: true });
+})();
+
+/* =====================================================================
+   7. 경기 흐름: 타이틀(AI끼리 데모) → 라운드 소개 → 대결 → K.O. → 결과
+   ===================================================================== */
+const G = { phase: "title", paused: false, round: 1, wins: [0, 0], timeF: 0, time: 60, acc: 0, alpha: 1, slow: 0, shake: 0,
+  introT: 0, koT: 0, roundWinner: -1, match: null, ghostT: [0, 0], demoT: 0, demoKo: 0 };
+let W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }, aiGenome = evo.pop[evo.idx].slice(), aiBrain = newBrain(), demo = null, F = [];
+const TIPS = [
+  "벽 쪽으로 계속 달리면 <b>벽 타기</b>!", "벽에 붙은 채 <b>Space</b> = 벽차기, 벽 쪽으로 누르고 <b>Space</b> = 한 번 더 오르기", "<b>J J J</b> 어퍼컷 맞히고 바로 <b>Space</b> → 공중 콤보",
+  "상대가 가드하면 <b>K</b>로 가드 브레이크", "벽 쪽으로 날려 보내면 <b>벽 꽝!</b> 추가타 기회", "<b>Shift</b> 대시는 잠깐 무적",
+];
+function setPhase(p) { G.phase = p; document.body.dataset.phase = p; }
+function startDemo() {
+  W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 };
+  demo = { g: [evo.champ || randGenome(), evo.pop[evo.idx]], b: [newBrain(), newBrain()] };
+  G.demoT = 0; G.demoKo = 0; G.slow = 0;
+}
+function showTitle() {
+  setPhase("title"); G.paused = false;
+  $("#title").hidden = false; $("#result").hidden = true; $("#pauseMenu").hidden = true;
+  hideBanner(); $("#combo0").hidden = $("#combo1").hidden = true;
+  renderTitleInfo(); startDemo();
+}
+function startMatch() {
+  ensureAudio();
+  G.match = { rounds: [], maxCombo: 0, dealt: 0, taken: 0, parkour: 0, evolved: false, genBefore: evo.gen, genome: null };
+  G.wins = [0, 0]; G.round = 1; $("#title").hidden = true; $("#result").hidden = true;
+  newRound(true);
+}
+function newRound(first) {
+  const sp = first ? [0, 0] : [W.f[0].sp, W.f[1].sp];   // 필살 게이지는 다음 라운드로 이어짐
+  W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }; W.f[0].sp = sp[0]; W.f[1].sp = sp[1];
+  aiGenome = evo.pop[evo.idx].slice(); aiBrain = newBrain();
+  if (!G.match.genome) G.match.genome = aiGenome.slice();
+  setPhase("intro"); G.introT = 0; G.timeF = 0; G.time = 60; G.koT = 0; G.slow = 0; lagHp[0] = lagHp[1] = 100;
+  $("#p2name").textContent = `진화 AI ${evo.gen}세대 ${evo.idx + 1}번`;
+  $("#roundLabel").textContent = `ROUND ${G.round}`;
+  updatePips();
+  showBanner(`ROUND ${G.round}`);
+  const tip = $("#tipline"); tip.innerHTML = TIPS[(G.round - 1 + (evo.gen * 2)) % TIPS.length]; tip.hidden = false;
+  sfx("round");
+}
+function endRound(reason) {
+  setPhase("ko"); G.koT = 0;
+  const [P, A] = W.f;
+  let w = -1;
+  if (reason === "ko") w = P.hp > 0 && A.hp <= 0 ? 0 : A.hp > 0 && P.hp <= 0 ? 1 : -1;
+  else w = P.hp > A.hp + 0.01 ? 0 : A.hp > P.hp + 0.01 ? 1 : -1;
+  G.roundWinner = w;
+  if (reason === "time") showBanner("TIME!");
+  else if (w === -1) showBanner("DOUBLE K.O.!");
+}
+function finishRound() {
+  const [P, A] = W.f, w = G.roundWinner, m = G.match;
+  if (w >= 0) G.wins[w]++;
+  const fit = aiFitness(A, P, w === 1);
+  m.rounds.push({ w, fit, gen: evo.gen, idx: evo.idx + 1 });
+  m.maxCombo = Math.max(m.maxCombo, P.maxCombo); m.dealt += P.dealt; m.taken += P.taken; m.parkour += P.parkour;
+  if (evoReport(fit)) m.evolved = true;
+  updatePips();
+  if (G.wins[0] >= 2 || G.wins[1] >= 2 || G.round >= 5) endMatch();
+  else { G.round++; newRound(false); }
+}
+function endMatch() {
+  setPhase("result"); hideBanner();
+  const m = G.match, win = G.wins[0] > G.wins[1], lose = G.wins[1] > G.wins[0];
+  const rec = (() => { try { return JSON.parse(store.get("robotBattleRecord") || "null") || { w: 0, l: 0, d: 0 }; } catch { return { w: 0, l: 0, d: 0 }; } })();
+  if (win) rec.w++; else if (lose) rec.l++; else rec.d++;
+  store.set("robotBattleRecord", JSON.stringify(rec));
+  $("#rTitle").textContent = win ? "승리!" : lose ? "패배…" : "무승부";
+  $("#rTitle").style.color = win ? "#ff4b3e" : lose ? "#5a3fd6" : "#1d1636";
+  $("#rScore").textContent = `${G.wins[0]} : ${G.wins[1]}`;
+  $("#rStats").innerHTML = [["최대 콤보", m.maxCombo + "HIT"], ["준 피해", Math.round(m.dealt)], ["벽 기술", m.parkour + "번"]]
+    .map(([k, v]) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
+  const left = POP - evo.idx;
+  $("#rGenLabel").textContent = `지금 ${evo.gen}세대`;
+  $("#rEvo").textContent = m.evolved
+    ? `AI가 ${evo.gen}세대로 진화했어요! 나와 싸워서 점수가 높았던 개체 2개는 그대로 남고, 나머지는 잘 싸운 개체끼리 유전자를 섞고 조금 바꿔서 새로 태어났어요. 아래는 다음 상대의 유전자예요(지난 경기 첫 상대와 비교).`
+    : `이번 경기에서 ${m.rounds.length}개체와 싸웠어요. ${left}라운드 더 싸우면 6개체가 모두 채점되어 다음 세대로 진화해요. 아래는 다음 상대의 유전자예요.`;
+  renderGenes($("#rGenes"), evo.pop[evo.idx], m.genome);
+  $("#result").hidden = false;
+  $("#combo0").hidden = $("#combo1").hidden = true;
+}
+function setPause(v) {
+  if (v && !["intro", "fight", "ko"].includes(G.phase)) return;
+  G.paused = v; $("#pauseMenu").hidden = !v; keys.clear(); edges.clear();
+}
+function updatePips() {
+  for (let s = 0; s < 2; s++) [...$("#pips" + s).children].forEach((el, k) => el.classList.toggle("on", G.wins[s] > k));
+}
+function renderGenes(el, g, compare) {
+  el.innerHTML = GENES.map((name, k) => {
+    const v = Math.round(g[k] * 100), diff = compare ? v - Math.round(compare[k] * 100) : 0;
+    const mark = compare && Math.abs(diff) >= 3 ? `<b class="${diff > 0 ? "up" : "down"}">${diff > 0 ? "▲" : "▼"}${v}</b>` : `<b>${v}</b>`;
+    return `<div class="gene"><span>${name}</span><span class="gb"><i style="width:${v}%"></i></span>${mark}</div>`;
+  }).join("");
+}
+function renderTitleInfo() {
+  $("#tGen").textContent = `진화 AI ${evo.gen}세대`;
+  $("#tIdx").textContent = `다음 상대: ${evo.idx + 1}번 개체 (${POP}개체 중)`;
+  renderGenes($("#tGenes"), evo.pop[evo.idx]);
+  $("#tHist").textContent = evo.hist.length
+    ? "세대별 최고 점수: " + evo.hist.slice(-6).map(h => `${h.gen}세대 ${h.best}`).join(" → ")
+    : "아직 진화 기록이 없어요. 6라운드를 싸우면 첫 진화가 일어나요.";
+  let rec; try { rec = JSON.parse(store.get("robotBattleRecord") || "null"); } catch {}
+  $("#tRecord").textContent = rec ? `내 전적: ${rec.w}승 ${rec.l}패${rec.d ? ` ${rec.d}무` : ""}` : "";
+  $("#btnSound").textContent = `소리: ${soundOn ? "켜짐" : "꺼짐"}`;
+}
+async function trainAI(gens) {
+  const bt = $("#btnTrain"), bs = $("#btnStart"); bt.disabled = bs.disabled = true; $("#trainBox").hidden = false;
+  const target = evo.gen + gens, total = (POP - evo.idx) + (gens - 1) * POP; let done = 0;
+  while (evo.gen < target) {
+    evoReport(sparFitness(evo.pop[evo.idx])); done++;
+    $("#trainBar").style.width = Math.min(100, (done / total) * 100) + "%";
+    $("#trainMsg").textContent = `AI끼리 연습 중… ${evo.gen}세대 (${done}/${total}판)`;
+    renderTitleInfo();
+    await new Promise(r => setTimeout(r, 0));
+  }
+  $("#trainMsg").textContent = `연습 끝! 이제 AI ${evo.gen}세대예요. 연습 상대는 매 세대 1등 개체예요.`;
+  bt.disabled = bs.disabled = false; renderTitleInfo(); startDemo();
+}
+
+$("#btnStart").onclick = startMatch;
+$("#btnTrain").onclick = () => trainAI(10);
+$("#btnAgain").onclick = startMatch;
+$("#btnToTitle").onclick = showTitle;
+$("#btnPause").onclick = () => setPause(!G.paused);
+$("#btnResume").onclick = () => setPause(false);
+$("#btnQuit").onclick = () => { setPause(false); showTitle(); };
+$("#btnSound").onclick = () => { soundOn = !soundOn; store.set("rbSound", soundOn ? "on" : "off"); if (soundOn) ensureAudio(); renderTitleInfo(); };
+$("#btnBack").onclick = () => { if (history.length > 1) history.back(); else location.href = location.protocol === "file:" ? "evolving-robots.html" : "./"; };
+let resetArm = 0;
+$("#btnResetAI").onclick = e => {
+  if (Date.now() - resetArm < 3000) { evo = freshEvo(); saveEvo(); renderTitleInfo(); startDemo(); e.currentTarget.textContent = "AI를 처음부터 다시 시작했어요"; resetArm = 0; return; }
+  resetArm = Date.now(); e.currentTarget.textContent = "정말요? 3초 안에 한 번 더 누르세요";
+  setTimeout(() => { $("#btnResetAI").textContent = "AI 처음부터"; }, 3000);
+};
+
+function simFrame() {
+  G.frames = (G.frames || 0) + 1;
+  for (const f of W.f) { f.x0 = f.x; f.y0 = f.y; f.z0 = f.z; }
+  if (G.slow > 0) G.slow--;
+  if (G.phase === "intro") {
+    G.introT++;
+    if (G.introT === 60) showBanner("FIGHT!");
+    if (G.introT >= 92) { setPhase("fight"); hideBanner(); }
+  }
+  if (W.freeze > 0) { W.freeze--; return; }
+  let ip = BLANK, iq = BLANK;
+  if (G.phase === "fight") { ip = playerInput(); iq = aiThink(W.f[1], W.f[0], aiGenome, aiBrain); }
+  else if (G.phase === "title") { ip = aiThink(W.f[0], W.f[1], demo.g[0], demo.b[0]); iq = aiThink(W.f[1], W.f[0], demo.g[1], demo.b[1]); }
+  else edges.clear();
+  stepWorld(W, ip, iq, CB);
+  if (G.phase === "fight") {
+    G.timeF++; if (G.timeF % 60 === 0) G.time = Math.max(0, G.time - 1);
+    const [P, A] = W.f;
+    if (P.state === "ko" || A.state === "ko") endRound("ko");
+    else if (G.time <= 0) endRound("time");
+  } else if (G.phase === "ko") {
+    if (++G.koT === 160) finishRound();
+  } else if (G.phase === "title") {
+    G.demoT++;
+    if (W.f[0].state === "ko" || W.f[1].state === "ko") { if (++G.demoKo > 120) startDemo(); }
+    else if (G.demoT > 60 * 30) startDemo();
+  }
+}
+
+/* =====================================================================
+   8. 화면 갱신
+   ===================================================================== */
+function animFighter(fm, f, time) {
+  const a = G.alpha;
+  const x = lerp(f.x0, f.x, a), y = lerp(f.y0, f.y, a), z = lerp(f.z0, f.z, a);
+  fm.root.position.set(x, y, z);
+  let wantYaw = f.yaw;
+  if ((f.state === "wallrun" || f.state === "cling") && f.wall) wantYaw = Math.atan2(-f.wall.nx, -f.wall.nz);   // 벽을 바라봄
+  fm.dispYaw = turnTo(fm.dispYaw, wantYaw, 0.35);
+  fm.root.rotation.y = fm.dispYaw;
+  let lean = 0, roll = 0, spinY = 0, sy = 1, sxz = 1, lift = 0, eyeS = 1, glow = 0;
+  const L = fm.fistL.position, Rf = fm.fistR.position, FL = fm.footL.position, FR = fm.footR.position;
+  L.set(-0.52, 0.48, 0.12); Rf.set(0.52, 0.48, 0.12); FL.set(-0.2, 0.08, 0.04); FR.set(0.2, 0.08, 0.04);
+  fm.fistR.scale.setScalar(1);
+  const bob = Math.sin(time * 7 + f.side * 2), hsp = Math.hypot(f.vx, f.vz);
+  switch (f.state) {
+    case "idle":
+      if (!f.onGround) {
+        const up = clamp(f.vy / JUMPV, -1, 1); sy = 1 + up * 0.12; sxz = 1 - up * 0.06; lean = -0.1 * up;
+        L.y += 0.18; Rf.y += 0.18; FL.y += 0.12; FR.z -= 0.12;
+      } else if (hsp > 1) {
+        const ph = time * 15; lean = 0.18; lift = Math.abs(Math.sin(ph)) * 0.06;
+        L.z += Math.sin(ph) * 0.2; Rf.z -= Math.sin(ph) * 0.2; FL.z += Math.sin(ph) * 0.18; FR.z -= Math.sin(ph) * 0.18;
+        FL.y += Math.max(0, Math.sin(ph)) * 0.1; FR.y += Math.max(0, -Math.sin(ph)) * 0.1;
+      } else {   // 파이팅 자세
+        lift = (bob * 0.5 + 0.5) * 0.04; L.set(-0.42, 0.55 + bob * 0.04, 0.3); Rf.set(0.42, 0.55 - bob * 0.04, 0.24);
+      }
+      break;
+    case "guard": L.set(-0.2, 0.72, 0.44); Rf.set(0.2, 0.72, 0.44); lean = 0.08; sy = 0.94; break;
+    case "blockstun": L.set(-0.2, 0.72, 0.4); Rf.set(0.2, 0.72, 0.4); lean = -0.14; sy = 0.92; break;
+    case "dash": lean = 0.45; sxz = 0.9; sy = 0.9; L.z -= 0.25; Rf.z -= 0.25; break;
+    case "wallrun": {   // 벽을 달려 오름: 발이 벽을 번갈아 딛음
+      const ph = time * 24; lean = -0.12;
+      FL.set(-0.18, 0.22 + Math.max(0, Math.sin(ph)) * 0.28, 0.36); FR.set(0.18, 0.22 + Math.max(0, -Math.sin(ph)) * 0.28, 0.36);
+      L.set(-0.42, 0.98, 0.28); Rf.set(0.42, 0.78 + Math.sin(ph) * 0.1, 0.28); sy = 1.06; break;
+    }
+    case "cling": lean = -0.08; L.set(-0.34, 1.05, 0.4); Rf.set(0.42, 0.55, 0.32); FL.set(-0.18, 0.16, 0.32); FR.set(0.2, 0.32, 0.26); sy = 0.96; break;
+    case "hitstun": lean = -0.4; eyeS = 0.25; L.y += 0.3; Rf.y += 0.2; L.x -= 0.1; Rf.x += 0.1; if (!f.onGround) roll = Math.sin(time * 20) * 0.2; break;
+    case "ko": lean = -1.35; eyeS = 0.12; lift = 0.18; break;
+    case "attack": {
+      const m = f.move, a0 = m.startup, a1 = a0 + m.active, t = f.mt;
+      const ext = t < a0 ? -0.3 * (t / a0) : t < a1 ? 1 : Math.max(0, 1 - (t - a1) / m.recover), e1 = Math.max(0, ext);
+      switch (m.anim) {
+        case "R": Rf.set(0.52 - 0.36 * e1, 0.5 + 0.12 * e1, 0.12 + 0.85 * ext); lean = 0.15 * ext; spinY = -0.25 * ext; break;
+        case "L": L.set(-0.52 + 0.36 * e1, 0.5 + 0.12 * e1, 0.12 + 0.85 * ext); lean = 0.15 * ext; spinY = 0.25 * ext; break;
+        case "U": Rf.set(0.3, 0.4 + 0.95 * e1, 0.15 + 0.45 * ext); lift = 0.15 * e1; sy = 1 + 0.12 * e1; break;
+        case "H": { const e = t < a0 ? -0.6 * (t / a0) : ext; Rf.set(0.45 - 0.3 * Math.max(0, e), 0.55, 0.12 + 0.95 * e); fm.fistR.scale.setScalar(1 + 0.5 * Math.max(0, e)); lean = 0.25 * e; spinY = -0.5 * e; glow = t < a0 ? t / a0 : 0; break; }
+        case "S": { const p = clamp((t - a0 * 0.4) / (a1 - a0 * 0.4), 0, 1); spinY = p * Math.PI * 2; FR.set(0.62 * e1, 0.35, 0.3); lean = -0.1; break; }
+        case "K": FR.set(0.12, 0.3 + 0.1 * e1, 0.1 + 0.68 * ext); lean = -0.2 * ext; break;
+        case "D": if (t < a0) { L.set(-0.25, 1.15, 0.15); Rf.set(0.25, 1.15, 0.15); lean = -0.2; } else { L.set(-0.2, 0.25, 0.55); Rf.set(0.2, 0.25, 0.55); lean = 0.5; } break;
+        case "X":
+          if (t >= a0 && t < a1) { const k = ((t - a0) / 3 | 0) % 2; (k ? L : Rf).set(k ? -0.15 : 0.15, 0.6, 0.98); lean = 0.25; glow = 1; }
+          else if (t < a0) { glow = t / a0; L.z -= 0.2; Rf.z -= 0.2; sy = 0.9; }
+          break;
+      }
+      break;
+    }
+  }
+  if (f.land > 0 && f.state === "idle") { sy *= 1 - f.land * 0.025; sxz *= 1 + f.land * 0.015; }
+  fm.tilt.position.y = lift;
+  fm.tilt.rotation.set(lean, spinY, roll);
+  fm.tilt.scale.set(sxz, sy, sxz);
+  fm.eyes.forEach(e => { e.scale.y = eyeS; });
+  if (f.flash > 0) fm.bodyMat.emissive.setRGB(0.9, 0.9, 0.9);
+  else if (f.invuln > 0 && f.state === "dash") fm.bodyMat.emissive.setRGB(0.1, 0.35, 0.5);
+  else if (glow > 0) fm.bodyMat.emissive.setRGB(0.6 * glow, 0.25 * glow, 0);
+  else fm.bodyMat.emissive.setRGB(0, 0, 0);
+  fm.fistMat.emissive.setRGB(glow * 0.9, glow * 0.4, 0);
+  const guarding = f.state === "guard" || f.state === "blockstun";
+  fm.shield.visible = guarding;
+  if (guarding) fm.shield.material.opacity = f.state === "blockstun" ? 0.75 : 0.35 + 0.1 * Math.sin(time * 10);
+  if (fm.tails) fm.tails.forEach((t, i) => { t.rotation.x = 0.3 + Math.sin(time * 9 + i) * 0.15 + clamp(hsp * 0.06, 0, 0.5); });
+  fm.knobMat.emissiveIntensity = f.sp >= 100 ? 0.6 + 0.4 * Math.sin(time * 12) : 0.25;
+  const gr = groundAt(x, z, y);   // 발밑 링: 높이 뛸수록 커짐 → 높이가 잘 보임
+  fm.ring.position.set(x, gr + 0.03, z); fm.ring.scale.setScalar(1 + Math.min(1.6, (y - gr) * 0.3)); fm.ring.material.opacity = f.state === "ko" ? 0 : 0.85;
+}
+
+const camPos = new THREE.Vector3(0, 6, -18), camLook = new THREE.Vector3(0, 1, 0);
+let camFx = 0, camFz = 1;
+function updateCamera(dt, time) {
+  const a = F[0].root.position, b = F[1].root.position;
+  let tx, ty, tz, lx, ly, lz;
+  if (G.phase === "title") {   // 타이틀: 데모 경기를 천천히 돌며 보여 줌
+    const ang = time * 0.13, mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+    tx = mx + Math.sin(ang) * 10; tz = mz + Math.cos(ang) * 10; ty = 5.5; lx = mx; ly = 1.2 + (a.y + b.y) / 2; lz = mz;
+  } else {   // 대결: 내 로봇 뒤에서 상대를 바라봄
+    const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
+    if (d > 0.6) { camFx = lerp(camFx, dx / d, 0.2); camFz = lerp(camFz, dz / d, 0.2); const l = Math.hypot(camFx, camFz) || 1; camFx /= l; camFz /= l; }
+    const back = 5.4 + Math.min(5, d * 0.42), lim0 = HALF - 0.8;
+    // 기본은 내 로봇 바로 뒤. 바깥 벽에 막히면 로봇 주위를 옆으로 돌아서 벽 안쪽에서 비춤
+    tx = a.x - camFx * back - camFz * 1.15; tz = a.z - camFz * back + camFx * 1.15;
+    for (const t of [0, 0.45, -0.45, 0.9, -0.9, 1.35, -1.35]) {
+      const c = Math.cos(t), s = Math.sin(t), fx2 = camFx * c - camFz * s, fz2 = camFx * s + camFz * c;
+      const cx = a.x - fx2 * back - fz2 * 1.15, cz = a.z - fz2 * back + fx2 * 1.15;
+      if (Math.abs(cx) <= lim0 && Math.abs(cz) <= lim0) { tx = cx; tz = cz; break; }
+    }
+    ty = a.y * 0.7 + 2.8 + Math.min(2.5, d * 0.1) + Math.max(0, b.y - a.y) * 0.35;
+    lx = lerp(a.x, b.x, 0.42); lz = lerp(a.z, b.z, 0.42); ly = 0.9 + (a.y + b.y) * 0.45;
+  }
+  const lim = HALF - 0.7, ox = Math.max(0, Math.abs(tx) - lim), oz = Math.max(0, Math.abs(tz) - lim);
+  tx = clamp(tx, -lim, lim); tz = clamp(tz, -lim, lim); ty += (ox + oz) * 0.6;   // 바깥 벽 뒤로 나가지 않게
+  const k = 1 - Math.pow(0.002, dt);
+  camPos.x += (tx - camPos.x) * k; camPos.y += (ty - camPos.y) * k; camPos.z += (tz - camPos.z) * k;
+  camLook.x += (lx - camLook.x) * k; camLook.y += (ly - camLook.y) * k; camLook.z += (lz - camLook.z) * k;
+  camera.position.copy(camPos);
+  if (G.shake > 0.01) { camera.position.x += (rnd() - 0.5) * G.shake; camera.position.y += (rnd() - 0.5) * G.shake; camera.position.z += (rnd() - 0.5) * G.shake; }
+  G.shake *= Math.pow(0.004, dt);
+  camera.lookAt(camLook);
+}
+const lagHp = [100, 100];
+const HUD = [0, 1].map(s => ({ hp: $("#hp" + s), lag: $("#lag" + s), sp: $("#sp" + s), spw: $("#spw" + s), rdy: $("#rdy" + s) }));
+function updateHud() {
+  W.f.forEach((f, s) => {
+    const h = HUD[s], hp = Math.max(0, f.hp);
+    lagHp[s] = Math.max(hp, lagHp[s] - 0.45);
+    h.hp.style.width = hp + "%"; h.lag.style.width = lagHp[s] + "%";
+    h.hp.className = "fill" + (hp > 50 ? "" : hp > 25 ? " mid" : " low");
+    h.sp.style.width = f.sp + "%"; h.spw.classList.toggle("ready", f.sp >= 100); h.rdy.classList.toggle("on", f.sp >= 100);
+  });
+  const t = $("#timer"); t.textContent = G.time; t.classList.toggle("low", G.time <= 10);
+}
+
+let last = performance.now();
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!G.paused && G.phase !== "result") {
+    G.acc += dt * (G.slow > 0 ? 0.3 : 1);
+    let n = 0;
+    while (G.acc >= DT && n < 5) { G.acc -= DT; simFrame(); n++; }
+    if (n >= 5) G.acc = 0;
+    G.alpha = clamp(G.acc / DT, 0, 1);
+  }
+  const time = now / 1000;
+  animFighter(F[0], W.f[0], time); animFighter(F[1], W.f[1], time);
+  for (let s = 0; s < 2; s++) {
+    const f = W.f[s];
+    if (G.ghostT[s] > 0) { G.ghostT[s]--; if (G.ghostT[s] % 2 === 0) addGhost(F[s], s); }
+    if (f.state === "wallrun" && rnd() < 0.3 && f.wall) burst(f.x - f.wall.nx * R, f.y + 0.2, f.z - f.wall.nz * R, 1, "wall", 1.5);
+    if (comboTimer[s] > 0 && (comboTimer[s] -= dt) <= 0) $("#combo" + s).hidden = true;
+  }
+  balloons.forEach(b => { b.position.y = b.userData.y0 + Math.sin(time * 0.8 + b.userData.ph) * 0.6; });
+  updateFx(dt); updateCamera(dt, time);
+  if (G.phase !== "title") updateHud();
+  renderer.render(scene, camera);
+}
+
+/* =====================================================================
+   9. 시작
+   ===================================================================== */
+F = [makeFighterMesh(0), makeFighterMesh(1)];
+if (/[?&]debug\b/.test(location.search)) window.__rb = { G, get W() { return W; }, get evo() { return evo; }, endRound };
+const fontReady = document.fonts && document.fonts.load ? Promise.race([document.fonts.load(`40px "Jua"`), new Promise(r => setTimeout(r, 1500))]) : Promise.resolve();
+fontReady.catch(() => {}).then(() => { buildWorld(); });
+showTitle();
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
