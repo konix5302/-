@@ -412,6 +412,7 @@ body[data-mode="online"] .pips { visibility: visible; }
       </details>
       <div class="row small">
         <button class="link" id="btnBack" type="button">← 진화 실험실로</button>
+        <a class="link" id="labLink" target="_blank" rel="noopener" hidden>진화 실험실 열기 ↗</a>
         <button class="link" id="btnFullTitle" type="button">전체 화면 (F)</button>
         <button class="link" id="btnSound" type="button">소리: 켜짐</button>
         <button class="link" id="btnResetAI" type="button">AI·유령 처음부터</button>
@@ -1786,8 +1787,8 @@ const NET = { room: null, state: "init", connected: false, nr: null, code: "", r
   ev: [], evId: 0, gCnt: null, gPend: null, lastGT: 0, guestRtt: 0, hostBuf: [], sendSeq: 0, lastSend: 0, matchId: 0, bannerSeq: 0,
   snaps: [], offs: [], offMin: 0, buf: 90, lastQ: -1, evMax: -1, evQ: [], rtt: 0, lastPe: 0, cnt: null, inSeq: 0, lastHostP: null, lastHostAt: 0,
   shownResult: -1, curMid: -1, bnSeen: -1, staleWarned: false, infoT: 0, oppStaleWarned: false };
-const STANDALONE_URL = "", LAB_URL = "";   // 배포 뒤에 채움: 친구 대전 전용 페이지 / 진화 실험실
-const isStandalone = () => !/robot-battle\.html$/.test(location.pathname);
+const STANDALONE_URL = "https://claude.ai/artifact/MjF8EqwtLxe9tEXWGFQvPN", LAB_URL = "https://claude.ai/artifact/5HN3cMbuoX3CwrjYhL5fXQ";   // 친구 대전 전용 페이지 / 진화 실험실
+const isStandalone = () => location.protocol !== "file:" && !/robot-battle\.html$/.test(location.pathname);   // 실험실 안에서 열렸나, 따로 열렸나
 const NET_STATES = ["idle", "attack", "guard", "blockstun", "hitstun", "dash", "wallrun", "cling", "grapple", "ko", "stun"];
 const MOVE_KEYS = Object.keys(MOVES), STUNK = ["", "jelly", "dizzy", "break"];
 const HIT_NAMES = [...Object.values(MOVES).map(m => m.name), JELLY_HIT.name, PULL_HIT.name];
@@ -1902,10 +1903,10 @@ function syncOnline() {
   const inRoom = !!NET.nr;
   $("#onLobby").hidden = inRoom; $("#onRoom").hidden = !inRoom;
   $("#btnHost").disabled = $("#btnJoin").disabled = !(netReady() && NET.connected && !inRoom);
-  const link = $("#onStandalone"); link.hidden = !(NET.state === "none" && STANDALONE_URL && !isStandalone()); if (STANDALONE_URL) link.href = STANDALONE_URL;
+  const link = $("#onStandalone"); link.hidden = !(NET.state === "none" && STANDALONE_URL); if (STANDALONE_URL) link.href = STANDALONE_URL;
   if (inRoom) return;   // 방 안의 안내는 방 로직이 씀
   if (NET.state === "init") setOnStatus("연결하는 중…");
-  else if (NET.state === "none") setOnStatus("이 화면에서는 친구 연결을 쓸 수 없어요. claude.ai에 로그인한 상태로, 공유받은 이 아티팩트 페이지 안에서 열어야 연결돼요." + (STANDALONE_URL && !isStandalone() ? " 아래 '친구 대전 전용 페이지'에서 해 보세요." : ""), "bad");
+  else if (NET.state === "none") setOnStatus("이 화면에서는 친구 연결을 쓸 수 없어요. 친구 대전은 claude.ai에 로그인한 상태로 '친구 대전 전용 페이지'(아래 링크)를 열어야 연결돼요.", "bad");
   else if (!NET.connected) setOnStatus("서버에 연결하는 중…");
   else setOnStatus("연결됐어요! 방을 만들거나, 친구가 알려 준 방 코드로 들어가요.", "ok");
 }
@@ -2082,8 +2083,9 @@ function netGuestInput() {   // 친구가 보낸 입력: 이동은 그대로, �
   else ACTIONS.forEach((k, i) => { const d = (cnt[i] - NET.gCnt[i] + 1000) % 1000; if (d > 0 && d < 30) NET.gPend[i] = Math.min(3, NET.gPend[i] + d); NET.gCnt[i] = cnt[i]; });
   ACTIONS.forEach((k, i) => { if (NET.gPend[i] > 0) { inp[k] = true; NET.gPend[i]--; } });
   NET.lastGT = num(a[11], 0, 1e12, 0); NET.guestRtt = num(p.presence.rt, 0, 3000, 0);
-  if (G.phase === "fight" && performance.now() - p.updatedAt > 8000 && !NET.oppStaleWarned) { NET.oppStaleWarned = true; notice(`${NET.oppNick} 님 화면이 멈춘 것 같아요 (다른 창을 보고 있나 봐요).`, 4000); }
-  else if (performance.now() - p.updatedAt < 1000) NET.oppStaleWarned = false;
+  const quiet = Date.now() - p.updatedAt;   // updatedAt은 Date.now() 기준
+  if (G.phase === "fight" && quiet > 8000 && !NET.oppStaleWarned) { NET.oppStaleWarned = true; notice(`${NET.oppNick} 님 화면이 멈춘 것 같아요 (다른 창을 보고 있나 봐요).`, 4000); }
+  else if (quiet < 1000) NET.oppStaleWarned = false;
   return inp;
 }
 function netHostSend(now) {
@@ -2104,13 +2106,21 @@ function netClientFrame(now) {
   if (host && host.presence !== NET.lastHostP) {
     NET.lastHostP = host.presence;
     const st = host.presence.st;
-    if (st && typeof st === "object" && typeof st.q === "number" && st.q !== NET.lastQ && st.ph !== "wait") { NET.lastQ = st.q; NET.lastHostAt = now; acceptSnap(st, now); }
+    if (st && typeof st === "object" && typeof st.q === "number" && st.q !== NET.lastQ) {
+      NET.lastQ = st.q; NET.lastHostAt = now;
+      if (st.ph !== "wait") acceptSnap(st, now);
+      else if (G.mode === "online") {   // 방장이 다시 기다리는 중 (상대가 나감) → 방 화면으로
+        NET.snaps = []; NET.evMax = -1; NET.evQ = [];
+        showOnlineOverlay(NET.role === "guest" ? `${NET.hostNick} 님과 곧 다시 시작해요!` : `${NET.hostNick} 님이 다음 상대를 기다리는 중…`, "ok");
+        return;
+      }
+    }
   }
   if (G.mode === "online" && NET.lastHostAt) {
     const gap = now - NET.lastHostAt;
     if (gap > 4000 && !NET.staleWarned) { NET.staleWarned = true; notice("방장 화면에서 소식이 없어요… (방장이 다른 창을 보고 있을 수 있어요)", 5000); }
     else if (gap < 1000) NET.staleWarned = false;
-    if (gap > 25000) { hostLeft(); return; }
+    if (gap > 60000) { hostLeft(); return; }
   }
   if (NET.snaps.length) renderFromSnaps(now);
   netSendInput(now);
@@ -2158,9 +2168,9 @@ function netApplyMeta(st) {   // 라운드·타이머·글씨·결과
   if (G.mode !== "online") {   // 경기 화면으로 들어감
     $("#online").hidden = true; $("#title").hidden = true; $("#result").hidden = true; $("#pauseMenu").hidden = true;
     setMode("online"); W = newWorld(); G.paused = false; $("#netInfo").hidden = false;
-    const spec = NET.role === "spec";
-    $("#p1tag").textContent = spec ? "파랑" : "방장"; $("#p2tag").textContent = spec ? "빨강" : "나";
   }
+  const spec = NET.role === "spec";
+  setText("#p1tag", spec ? "파랑" : "방장"); setText("#p2tag", spec ? "빨강" : "나");
   setText("#p1name", NET.hostNick); setText("#p2name", nk[1] || (NET.role === "guest" ? NET.nick : "친구"));
   if (mid !== NET.curMid) { NET.curMid = mid; $("#result").hidden = true; }
   if (ph === "result") {
@@ -2776,6 +2786,7 @@ $("#btnResume").onclick = () => setPause(false);
 $("#btnQuit").onclick = () => { setPause(false); if (G.mode === "online") { leaveRoom(); showOnlineOverlay(); } else showTitle(); };
 $("#btnSound").onclick = () => { soundOn = !soundOn; store.set("rbSound", soundOn ? "on" : "off"); if (soundOn) ensureAudio(); renderTitleInfo(); };
 $("#btnBack").onclick = () => { if (history.length > 1) history.back(); else location.href = location.protocol === "file:" ? "evolving-robots.html" : "./"; };
+if (isStandalone()) { $("#btnBack").hidden = true; const a = $("#labLink"); a.href = LAB_URL; a.hidden = !LAB_URL; }   // 따로 연 배틀 페이지: 실험실은 새 탭 링크로
 let resetArm = 0;
 document.querySelectorAll("[data-diff]").forEach(b => b.onclick = () => { diffKey = b.dataset.diff; store.set("rbDiff", diffKey); renderTitleInfo(); });
 $("#btnResetAI").onclick = e => {
