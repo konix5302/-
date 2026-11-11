@@ -57,6 +57,14 @@ body[data-phase="result"] .touch, body[data-phase="result"] .keys { display: non
 .fp.p2 .spb i { left: auto; right: 0; }
 .spb.ready i { animation: glow .45s ease-in-out infinite alternate; }
 @keyframes glow { to { filter: brightness(1.45); } }
+.skills { display: flex; gap: 6px; margin-top: 6px; }
+.fp.p2 .skills { justify-content: flex-end; }
+.sk { position: relative; overflow: hidden; border-radius: 8px; padding: 1px 8px; font-family: var(--font-display); font-size: 12.5px; background: #ff5fb4; color: #fff; }
+.sk.cd { background: rgba(255, 255, 255, .14); color: rgba(255, 255, 255, .7); }
+.sk i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: rgba(255, 95, 180, .45); }
+.sk em { position: relative; font-style: normal; }
+.sk b { font-weight: 400; color: #ffe066; }
+.tb.jelly { background: rgba(255, 95, 180, .6); font-size: 14px; }
 .meta { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; gap: 6px; font-family: var(--font-display); font-size: 13px; min-height: 16px; }
 .fp.p2 .meta { flex-direction: row-reverse; }
 .pips { display: flex; gap: 5px; }
@@ -169,9 +177,13 @@ details.howto summary { cursor: pointer; font-family: var(--font-display); font-
 .specbar .sb-g { display: flex; gap: 3px; }
 .specbar button { border: 0; border-radius: 9px; padding: 5px 10px; background: rgba(255, 255, 255, .14); color: #fff; font-family: var(--font-display); font-size: 14px; }
 .specbar button.on { background: var(--gold); color: var(--ink); }
-body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: none; }
+body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys, body[data-mode="spectate"] .sk b { display: none; }
 .pick-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: end; margin: 0 0 12px; }
 .pick { display: grid; gap: 4px; font-family: var(--font-display); font-size: 15px; min-width: 0; }
+.learn-row { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; font-size: 13.5px; color: #3c3552; cursor: pointer; }
+.learn-row input { margin-top: 3px; accent-color: #5a3fd6; width: 18px; height: 18px; flex: none; }
+.learn-row b { font-family: var(--font-display); font-weight: 400; font-size: 15px; color: #5a3fd6; }
+.sb-league { font-size: 13px; color: #fff; padding: 0 4px; }
 .pick.inline { display: flex; align-items: center; gap: 8px; color: var(--muted); }
 .pick.blue span, .c-blue { color: var(--p1); }
 .pick.red span, .c-red { color: var(--p2); }
@@ -212,6 +224,7 @@ body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: n
       <div class="nm"><span class="tag" id="p1tag">나</span><span id="p1name">파랑 로봇</span></div>
       <div class="bar"><i class="lag" id="lag0"></i><i class="fill" id="hp0"></i></div>
       <div class="spb" id="spw0"><i id="sp0"></i></div>
+      <div class="skills"><span class="sk" id="sks0"><i></i><em>젤리탄 <b>I</b></em></span><span class="sk" id="skg0"><i></i><em>갈고리 <b>O</b></em></span></div>
       <div class="meta"><span class="pips" id="pips0"><i></i><i></i></span><span class="ready" id="rdy0">필살 OK! U</span></div>
     </div>
     <div class="clock">
@@ -226,6 +239,7 @@ body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: n
       <div class="nm"><span id="p2name">진화 AI</span><span class="tag" id="p2tag">AI</span></div>
       <div class="bar"><i class="lag" id="lag1"></i><i class="fill" id="hp1"></i></div>
       <div class="spb" id="spw1"><i id="sp1"></i></div>
+      <div class="skills"><span class="sk" id="sks1"><i></i><em>젤리탄</em></span><span class="sk" id="skg1"><i></i><em>갈고리</em></span></div>
       <div class="meta"><span class="pips" id="pips1"><i></i><i></i></span><span class="ready" id="rdy1">필살 OK!</span></div>
     </div>
   </div>
@@ -237,10 +251,11 @@ body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: n
   <div id="floats"></div>
   <div class="flash" id="flash"></div>
   <div class="notice" id="notice" hidden></div>
-  <div class="keys" id="keys">전체 화면 <b>F</b> · 이동 <b>WASD</b> · 점프 <b>Space</b>(2단·벽차기) · 약 <b>J</b> · 강 <b>K</b> · 가드 <b>L</b> · 대시 <b>Shift</b> · 필살 <b>U</b> · 벽 쪽으로 달리면 <b>벽 타기</b></div>
+  <div class="keys" id="keys">젤리탄 <b>I</b> · 갈고리 <b>O</b> · 풍선 2단 점프 뒤 <b>Space</b> 꾹 · 전체 화면 <b>F</b> · 이동 <b>WASD</b> · 점프 <b>Space</b>(2단·벽차기) · 약 <b>J</b> · 강 <b>K</b> · 가드 <b>L</b> · 대시 <b>Shift</b> · 필살 <b>U</b> · 벽 쪽으로 달리면 <b>벽 타기</b></div>
 
   <div class="specbar" id="specBar" hidden>
     <span class="sb-t">AI끼리 관전</span>
+    <span class="sb-league" id="leagueInfo" hidden></span>
     <span class="sb-g" role="group" aria-label="시점"><button type="button" data-cam="broadcast">중계 (3)</button><button type="button" data-cam="0">파랑 시점 (1)</button><button type="button" data-cam="1">빨강 시점 (2)</button></span>
     <span class="sb-g" role="group" aria-label="속도"><button type="button" data-spd="1">1×</button><button type="button" data-spd="2">2×</button><button type="button" data-spd="4">4×</button></span>
     <button type="button" id="specStop">그만 보기</button>
@@ -255,6 +270,8 @@ body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: n
       <button class="tb" data-act="heavy" type="button">강</button>
       <button class="tb main" data-act="light" type="button">약</button>
       <button class="tb" data-act="jump" type="button">점프</button>
+      <button class="tb jelly" data-act="shot" type="button">젤리탄</button>
+      <button class="tb jelly" data-act="grapple" type="button">갈고리</button>
     </div>
   </div>
 
@@ -293,6 +310,9 @@ body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: n
           <tr><th>콤보</th><td>J K = 강펀치, J J K = 회전 킥. 어퍼컷을 맞히고 바로 Space → 공중에서 J J K(내려찍기).</td></tr>
           <tr><th>가드 · 대시</th><td>L을 누르고 있으면 가드. Shift는 잠깐 무적인 대시(공중에서도 한 번).</td></tr>
           <tr><th>필살기</th><td>게이지가 가득 차면 U로 로켓 펀치 러시.</td></tr>
+          <tr><th>젤리탄</th><td>I. 끈적한 젤리를 쏴요. 맞으면 1.7초 동안 느려지고 점프가 약해져요(2.5초마다).</td></tr>
+          <tr><th>젤리 갈고리</th><td>O. 앞쪽 높은 곳(분홍 고리 표시, 크게 반짝이는 곳)에 걸어 휙 날아가요. 상대가 가까우면 끌어와서 콤보 기회!</td></tr>
+          <tr><th>젤리 풍선</th><td>2단 점프 뒤 Space를 꾹 누르고 있으면 둥실 활공해요.</td></tr>
           <tr><th>팁</th><td>날려 보낸 상대가 벽에 세게 부딪히면 튕겨 나와요(벽 꽝). 그때 한 번 더 때릴 수 있어요.</td></tr>
         </table>
       </details>
@@ -310,7 +330,7 @@ body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: n
     <div class="card">
       <p class="eyebrow">AI끼리 대결</p>
       <h2>누구와 누구를 붙여 볼까요?</h2>
-      <p class="lead">두 로봇을 고르면 AI끼리 3판 2선승으로 싸워요. 옛날 세대 대표와 지금 대표를 붙이면 진화가 얼마나 강하게 만들었는지 볼 수 있어요. 관전 경기는 진화 기록에 남지 않아요.</p>
+      <p class="lead">두 로봇을 고르면 AI끼리 3판 2선승으로 싸워요. 옛날 세대 대표와 지금 대표를 붙이면 진화가 얼마나 강하게 만들었는지 볼 수 있어요. 리그전을 켜면 두 팀이 서로를 상대로 진화해요(내 상대 AI 기록은 그대로예요).</p>
       <div class="pick-row">
         <label class="pick blue"><span>파랑</span><select id="pickL"></select></label>
         <span class="vs">VS</span>
@@ -320,6 +340,7 @@ body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: n
         <div class="ai-box"><div class="ai-head"><b class="c-blue">파랑</b><span id="specLInfo"></span></div><div class="genes" id="specLGenes"></div></div>
         <div class="ai-box"><div class="ai-head"><b class="c-red">빨강</b><span id="specRInfo"></span></div><div class="genes" id="specRGenes"></div></div>
       </div>
+      <label class="learn-row"><input type="checkbox" id="specLearn" checked> <span><b>서로 싸우면서 학습하기 (리그전)</b><br>경기가 끝나도 자동으로 계속 이어서 싸워요. 라운드마다 두 팀이 상대 팀 대표와 연습해서 진화해요. 다 보면 잘 진화한 팀을 내 상대 AI로 가져올 수 있어요.</span></label>
       <label class="pick inline">실력 <select id="pickDiff"><option value="hard">유전자 그대로 (어려움)</option><option value="normal">보통</option><option value="easy">쉬움</option></select></label>
       <div class="row" style="margin-top:12px">
         <button class="big" id="btnSpecGo" type="button">▶ 대결 보기</button>
@@ -351,7 +372,7 @@ body[data-mode="spectate"] .touch, body[data-mode="spectate"] .keys { display: n
         <div class="genes" id="rGenes"></div>
         <p class="hist" id="rGhost"></p>
       </div>
-      <div class="row"><button class="big" id="btnAgain" type="button">▶ 다시 대결</button><button class="ghost" id="btnSpecChange" type="button" hidden>조합 바꾸기</button><button class="ghost" id="btnToTitle" type="button">타이틀로</button></div>
+      <div class="row"><button class="big" id="btnAgain" type="button">▶ 다시 대결</button><button class="ghost" id="btnSpecChange" type="button" hidden>조합 바꾸기</button><button class="ghost" id="btnAdopt0" type="button" hidden>파랑 팀을 내 상대로</button><button class="ghost" id="btnAdopt1" type="button" hidden>빨강 팀을 내 상대로</button><button class="ghost" id="btnToTitle" type="button">타이틀로</button></div>
     </div>
   </div>
 </div>
@@ -380,20 +401,50 @@ const RUN = 6.5, AIRRUN = 5.4, DASHV = 15, DASH_T = 11;  // 달리기, 공중 �
 const WR_V = 7.2, WR_MAX = 24;                           // 벽 타기: 초속 7.2로 최대 24프레임
 const CLING_SLIDE = 1.3, CLING_MAX = 80;                 // 벽 붙기: 천천히 미끄러짐, 최대 80프레임
 const WJ_UP = 9.6, WJ_OUT = 7.5;                         // 벽차기: 위로 9.6, 벽 반대쪽으로 7.5
-const HALF = 13;                                         // 경기장 반 크기 (26 × 26)
+const HALF = 30, OUTER_H = 14, BODY_H = 1.3;             // 경기장 반 크기 (60 × 60), 바깥 벽 높이, 몸 높이
 const BOXES = [
-  // 바깥 벽 (높이 7, 벽 타기·벽차기에 씀)
-  { x: 0, z: -HALF - 0.5, w: HALF * 2 + 2, d: 1, h: 7, kind: "outer", face: "n" },
-  { x: 0, z: HALF + 0.5, w: HALF * 2 + 2, d: 1, h: 7, kind: "outer", face: "s" },
-  { x: -HALF - 0.5, z: 0, w: 1, d: HALF * 2, h: 7, kind: "outer", face: "w" },
-  { x: HALF + 0.5, z: 0, w: 1, d: HALF * 2, h: 7, kind: "outer", face: "e" },
-  // 안쪽 구조물 (가운데를 중심으로 뒤집어도 같은 모양: 어느 쪽에서 시작해도 공평)
-  { x: -7, z: -2, w: 4, d: 3, h: 1.4, kind: "plat" }, { x: 7, z: 2, w: 4, d: 3, h: 1.4, kind: "plat" },
-  { x: -8.5, z: 7.5, w: 3, d: 3, h: 3.0, kind: "tower" }, { x: 8.5, z: -7.5, w: 3, d: 3, h: 3.0, kind: "tower" },
-  { x: -5, z: 3.6, w: 5, d: 0.8, h: 3.2, kind: "wall" }, { x: 5, z: -3.6, w: 5, d: 0.8, h: 3.2, kind: "wall" },
-  { x: 3.5, z: 8.5, w: 1.3, d: 1.3, h: 4.6, kind: "pillar" }, { x: -3.5, z: -8.5, w: 1.3, d: 1.3, h: 4.6, kind: "pillar" },
+  // 바깥 벽 (높이 14)
+  { x: 0, z: -HALF - 0.5, w: HALF * 2 + 2, d: 1, h: OUTER_H, y0: 0, kind: "outer", face: "n" },
+  { x: 0, z: HALF + 0.5, w: HALF * 2 + 2, d: 1, h: OUTER_H, y0: 0, kind: "outer", face: "s" },
+  { x: -HALF - 0.5, z: 0, w: 1, d: HALF * 2, h: OUTER_H, y0: 0, kind: "outer", face: "w" },
+  { x: HALF + 0.5, z: 0, w: 1, d: HALF * 2, h: OUTER_H, y0: 0, kind: "outer", face: "e" },
 ];
-const SPAWN = [[0, -6.5], [0, 6.5]];
+// 안쪽 구조물: 가운데를 중심으로 뒤집어도 같은 모양(점대칭) → 어느 쪽에서 시작해도 공평
+const pair = (x, z, w, d, h, kind, y0 = 0) => { BOXES.push({ x, z, w, d, h, y0, kind }, { x: -x, z: -z, w, d, h, y0, kind }); };
+[[12, 0, 4.5], [8.5, 8.5, 7], [0, 12, 4.5], [-8.5, 8.5, 9.5]].forEach(([x, z, h]) => pair(x, z, 1.6, 1.6, h, "pillar"));   // 기둥 고리 (높이 4.5 / 7 / 9.5)
+pair(19, 19, 8, 8, 6, "bldg"); pair(-19, 19, 8, 8, 9, "bldg");                        // 모서리 옥상 건물
+pair(19, 6, 4, 4, 6, "tower"); pair(19, 11.5, 2.2, 7, 6, "bridge", 5.6);               // 탑 ─ 공중 다리 ─ 옥상 (다리 밑으로 지나갈 수 있음)
+pair(-6, 19, 4, 4, 9, "tower"); pair(-11.5, 19, 7, 2.2, 9, "bridge", 8.6);
+pair(0, 24, 10, 0.8, 4, "wall"); pair(24, 0, 0.8, 10, 4, "wall");                     // 벽 타기용 긴 벽
+pair(3, -15, 3, 3, 1.5, "plat"); pair(16, -5, 3, 3, 2.5, "plat"); pair(5, 4, 2.5, 2.5, 1.2, "plat");   // 낮은 발판
+const SPAWN = [[0, -9], [0, 9]];
+// 젤리 갈고리를 걸 수 있는 곳: 높은 구조물 윗면 (큰 건물은 가장자리에도)
+const ANCHORS = [];
+for (const b of BOXES) {
+  if (b.kind === "outer" || b.h < 3.5) continue;
+  const pts = [[b.x, b.z]];
+  if (b.w >= 5) pts.push([b.x - b.w / 2 + 1, b.z], [b.x + b.w / 2 - 1, b.z]);
+  if (b.d >= 5) pts.push([b.x, b.z - b.d / 2 + 1], [b.x, b.z + b.d / 2 - 1]);
+  for (const [x, z] of pts) ANCHORS.push({ x, y: b.h + 0.5, z });
+}
+// 가까운 상자만 빨리 찾기 위한 격자 (4m 칸)
+const CELL = 4, GOFF = HALF + 4, GN = Math.ceil((GOFF * 2) / CELL) + 1;
+const GRID = Array.from({ length: GN * GN }, () => []);
+BOXES.forEach((b, i) => {
+  const c0 = clamp(Math.floor((b.x - b.w / 2 - 1 + GOFF) / CELL), 0, GN - 1), c1 = clamp(Math.floor((b.x + b.w / 2 + 1 + GOFF) / CELL), 0, GN - 1);
+  const r0 = clamp(Math.floor((b.z - b.d / 2 - 1 + GOFF) / CELL), 0, GN - 1), r1 = clamp(Math.floor((b.z + b.d / 2 + 1 + GOFF) / CELL), 0, GN - 1);
+  for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) GRID[r * GN + c].push(i);
+});
+const seenBox = new Uint32Array(BOXES.length), nearOut = []; let stampN = 0;
+function nearBoxes(x, z) {
+  stampN++; nearOut.length = 0;
+  const c = clamp(Math.floor((x + GOFF) / CELL), 0, GN - 1), r = clamp(Math.floor((z + GOFF) / CELL), 0, GN - 1);
+  for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+    const rr = r + dr, cc = c + dc; if (rr < 0 || cc < 0 || rr >= GN || cc >= GN) continue;
+    for (const i of GRID[rr * GN + cc]) if (seenBox[i] !== stampN) { seenBox[i] = stampN; nearOut.push(BOXES[i]); }
+  }
+  return nearOut;
+}
 // 기술표: startup(준비) → active(맞는 순간) → recover(빈틈), 단위는 프레임(1/60초)
 const MOVES = {
   jab1:  { name: "잽", startup: 5, active: 4, recover: 11, dmg: 4, reach: 1.25, kb: 1.6, up: 0, stun: 20, lunge: 2.4, next: "jab2", heavyNext: "smash", anim: "R" },
@@ -406,9 +457,16 @@ const MOVES = {
   slam:  { name: "내려찍기", startup: 8, active: 9, recover: 14, dmg: 10, reach: 1.45, kb: 3, up: -15, stun: 36, air: true, spike: true, anim: "D" },
   rush:  { name: "로켓 펀치 러시", startup: 12, active: 36, recover: 22, dmg: 3.5, reach: 1.7, kb: 1.5, up: 1.2, stun: 22, lunge: 7.5, multi: 6, hits: 6, finalKb: 13, finalUp: 6.5, special: true, anim: "X" },
 };
-const ACTIONS = ["jump", "light", "heavy", "dash", "special"];
-const BLANK = Object.freeze({ mx: 0, mz: 0, guard: false, jump: false, light: false, heavy: false, dash: false, special: false });
-const blankInput = () => ({ mx: 0, mz: 0, guard: false, jump: false, light: false, heavy: false, dash: false, special: false });
+// 젤리 스킬
+const SHOT_V = 21, SHOT_G = 6, SHOT_CD = 150, STICKY_T = 100;               // 젤리탄: 맞으면 1.7초 동안 끈적해서 느려짐
+const GRAP_V = 17, GRAP_CD = 110, GRAP_RANGE = 18, PULL_RANGE = 8.5;        // 젤리 갈고리: 높은 곳으로 휙, 가까운 상대는 끌어옴
+const GLIDE_FALL = 1.5, GLIDE_MAX = 150;                                     // 젤리 풍선: 2단 점프 뒤 점프를 누르고 있으면 활공
+const JELLY_HIT = { name: "젤리탄", dmg: 3, kb: 1.2, up: 0, stun: 14, reach: 1 };
+const PULL_HIT = { name: "젤리 끌어오기", dmg: 2, kb: -12, up: 3, stun: 30, reach: 1, pull: true };
+const ACTIONS = ["jump", "light", "heavy", "dash", "special", "shot", "grapple"];
+const BLANK = Object.freeze({ mx: 0, mz: 0, guard: false, jump: false, light: false, heavy: false, dash: false, special: false, shot: false, grapple: false, jumpHeld: false });
+const blankInput = () => ({ mx: 0, mz: 0, guard: false, jump: false, light: false, heavy: false, dash: false, special: false, shot: false, grapple: false, jumpHeld: false });
+const newWorld = () => ({ f: [makeFighter(0), makeFighter(1)], freeze: 0, shots: [], shotId: 0 });
 
 function makeFighter(side) {
   const [x, z] = SPAWN[side];
@@ -417,7 +475,8 @@ function makeFighter(side) {
     onGround: true, jumps: 2, airAtk: 0, airDash: true, wrT: 0, clingT: 0, wjCd: 0, wjN: 0, wall: null, impact: 0, climbJ: false,
     hp: 100, sp: 0, state: "idle", move: null, moveName: "", mt: 0, hitThis: 0, queued: null, rushHits: 0, attackId: 0,
     stun: 0, invuln: 0, dashT: 0, dashCd: 0, combo: 0, maxCombo: 0, flash: 0, land: 0, spiked: false, guardBroken: false,
-    buf: { jump: 0, light: 0, heavy: 0, dash: 0, special: 0 }, dealt: 0, taken: 0, parkour: 0,
+    buf: { jump: 0, light: 0, heavy: 0, dash: 0, special: 0, shot: 0, grapple: 0 }, dealt: 0, taken: 0, parkour: 0,
+    shotCd: 0, grapCd: 0, sticky: 0, castT: 0, glideT: 0, gliding: false, grap: null, ropeT: 0, skills: 0, skillHits: 0,
   };
 }
 function turnTo(a, b, k) { const d = Math.atan2(Math.sin(b - a), Math.cos(b - a)); return a + d * k; }
@@ -425,7 +484,7 @@ function turnTo(a, b, k) { const d = Math.atan2(Math.sin(b - a), Math.cos(b - a)
 // 발밑에서 설 수 있는 가장 높은 곳 (턱 높이 STEP까지는 그냥 올라섬)
 function groundAt(x, z, y) {
   let g = 0;
-  for (const b of BOXES) {
+  for (const b of nearBoxes(x, z)) {
     if (b.h > y + STEP || b.h <= g) continue;
     if (Math.abs(x - b.x) <= b.w / 2 + R * 0.5 && Math.abs(z - b.z) <= b.d / 2 + R * 0.5) g = b.h;
   }
@@ -434,12 +493,16 @@ function groundAt(x, z, y) {
 // 몸(원)과 상자 충돌: 겹치면 바깥으로 밀어내고 벽 방향(법선)을 기억. 모서리는 둥글게 미끄러짐 → 끼지 않음
 function collide(f) {
   f.wall = null;
+  const list = nearBoxes(f.x, f.z);
   for (let iter = 0; iter < 2; iter++) {
-    for (const b of BOXES) {
-      if (b.h <= f.y + STEP) continue;   // 낮은 상자는 올라설 수 있으니 벽이 아님
+    for (const b of list) {
+      if (b.h <= f.y + STEP || b.y0 >= f.y + BODY_H) continue;   // 올라설 수 있는 높이이거나, 머리 위에 떠 있는 상자(다리 밑)
       const x0 = b.x - b.w / 2, x1 = b.x + b.w / 2, z0 = b.z - b.d / 2, z1 = b.z + b.d / 2;
       const cx = clamp(f.x, x0, x1), cz = clamp(f.z, z0, z1);
       let dx = f.x - cx, dz = f.z - cz, d = Math.hypot(dx, dz), nx, nz;
+      if (b.y0 > 0 && f.y + BODY_H - b.y0 < 0.5 && d < R * 0.9) {   // 다리 밑면에 머리를 부딪힘
+        f.y = b.y0 - BODY_H - 0.001; if (f.vy > 0) f.vy = 0; continue;
+      }
       if (d < 1e-6) {   // 중심이 상자 안으로 들어갔으면 가장 얕은 쪽으로 빼냄
         const pl = f.x - x0, pr = x1 - f.x, pb = f.z - z0, pf = z1 - f.z, m = Math.min(pl, pr, pb, pf);
         if (m === pl) { nx = -1; nz = 0; d = -pl; } else if (m === pr) { nx = 1; nz = 0; d = -pr; }
@@ -466,7 +529,7 @@ function separate(p, q) {   // 두 로봇이 겹치지 않게
 }
 function doJump(f, v, cb) {
   const dbl = !f.onGround;
-  f.vy = v; f.onGround = false; f.jumps = dbl ? 0 : 1; f.buf.jump = 0; f.state = "idle"; f.move = null;
+  f.vy = v * (f.sticky > 0 ? 0.65 : 1); f.onGround = false; f.jumps = dbl ? 0 : 1; f.buf.jump = 0; f.state = "idle"; f.move = null;
   cb.jump(f, dbl);
 }
 function wallJump(f, inp, cb) {
@@ -485,7 +548,7 @@ function startDash(f, inp, tx, tz, cb) {
   let dx = inp.mx, dz = inp.mz; const l = Math.hypot(dx, dz);
   if (l < 0.25) { dx = -tx; dz = -tz; } else { dx /= l; dz /= l; }   // 방향 입력이 없으면 뒤로 빠짐
   f.state = "dash"; f.dashT = DASH_T; f.dashCd = 24; f.invuln = 8; f.move = null;
-  f.vx = dx * DASHV; f.vz = dz * DASHV;
+  const dv = DASHV * (f.sticky > 0 ? 0.6 : 1); f.vx = dx * dv; f.vz = dz * dv;
   if (!f.onGround) { f.airDash = false; f.vy = Math.max(f.vy, 0.5); }
   f.buf.dash = 0; cb.dash(f);
 }
@@ -498,12 +561,65 @@ function startMove(f, name, cb) {
   cb.swing(f, m);
 }
 
+function pickAnchor(f, dirx, dirz) {   // 앞쪽·위쪽에서 젤리 갈고리를 걸기 가장 좋은 곳
+  let best = null, bs = -1e9;
+  for (const a of ANCHORS) {
+    const dx = a.x - f.x, dy = a.y - f.y, dz = a.z - f.z, hd = Math.hypot(dx, dz), d = Math.hypot(hd, dy);
+    if (d > GRAP_RANGE || d < 2.5 || dy < -1) continue;
+    const dot = hd > 0.01 ? (dx * dirx + dz * dirz) / hd : 0;
+    if (dot < 0.25) continue;
+    const sc = dot * 2 + Math.min(dy, 6) * 0.15 - d * 0.05;
+    if (sc > bs) { bs = sc; best = a; }
+  }
+  return best;
+}
+function fireShot(W, f, o, cb) {   // 젤리탄: 상대가 움직이는 쪽을 조금 앞질러 노림
+  f.buf.shot = 0; f.shotCd = SHOT_CD; f.castT = 10; f.skills++;
+  const sx = f.x + Math.sin(f.yaw) * 0.6, sy = f.y + 0.85, sz = f.z + Math.cos(f.yaw) * 0.6;
+  const t = clamp(Math.hypot(o.x - sx, o.z - sz) / SHOT_V, 0.05, 0.6);
+  const dx = o.x + o.vx * t * 0.7 - sx, dy = o.y + 0.6 + o.vy * t * 0.3 - sy, dz = o.z + o.vz * t * 0.7 - sz, l = Math.hypot(dx, dy, dz) || 1;
+  W.shots.push({ x: sx, y: sy, z: sz, vx: dx / l * SHOT_V, vy: dy / l * SHOT_V + 0.5 * SHOT_G * t, vz: dz / l * SHOT_V, side: f.side, life: 55, id: ++W.shotId });
+  cb.shot(f);
+}
+function startGrapple(W, f, o, inp, tx, tz, cb) {
+  f.buf.grapple = 0;
+  const dx = o.x - f.x, dy = o.y - f.y, dz = o.z - f.z, d = Math.hypot(dx, dz) || 1;
+  const front = (Math.sin(f.yaw) * dx + Math.cos(f.yaw) * dz) / d;
+  if (d < PULL_RANGE && Math.abs(dy) < 3 && front > 0.5 && o.state !== "ko" && o.invuln <= 0) {   // 가까우면 상대를 끌어옴
+    f.grapCd = GRAP_CD; f.castT = 12; f.ropeT = 14; f.skills++;
+    const r = applyHit(W, f, o, { ...PULL_HIT, kb: -clamp((d - 1.3) / 0.32, 4, 26) }, cb);
+    if (r === "hit") f.skillHits++;
+    cb.grapple(f, true);
+    return;
+  }
+  const im = Math.hypot(inp.mx, inp.mz), dirx = im > 0.3 ? inp.mx / im : tx, dirz = im > 0.3 ? inp.mz / im : tz;
+  const a = pickAnchor(f, dirx, dirz);
+  if (!a) { f.grapCd = 20; cb.grappleMiss(f); return; }   // 걸 곳이 없으면 짧게 쉬기만
+  f.state = "grapple"; f.grap = { x: a.x, y: a.y, z: a.z, t: 0, lastD: 1e9, stall: 0 }; f.grapCd = GRAP_CD; f.onGround = false; f.move = null; f.gliding = false; f.skills++; f.parkour++;
+  cb.grapple(f, false);
+}
+function stepShots(W, cb) {   // 날아가는 젤리탄
+  for (let i = W.shots.length - 1; i >= 0; i--) {
+    const s = W.shots[i];
+    s.vy -= SHOT_G * DT; s.x += s.vx * DT; s.y += s.vy * DT; s.z += s.vz * DT; s.life--;
+    const tgt = W.f[1 - s.side];
+    let gone = s.life <= 0 || s.y < 0.05 || Math.abs(s.x) > HALF || Math.abs(s.z) > HALF, hit = false;
+    if (!gone) for (const b of nearBoxes(s.x, s.z)) if (s.y >= b.y0 && s.y <= b.h && Math.abs(s.x - b.x) <= b.w / 2 + 0.1 && Math.abs(s.z - b.z) <= b.d / 2 + 0.1) { gone = true; break; }
+    if (!gone && tgt.state !== "ko" && tgt.invuln <= 0 && Math.hypot(s.x - tgt.x, s.y - (tgt.y + 0.62), s.z - tgt.z) < 0.78) {
+      gone = hit = true;
+      const r = applyHit(W, W.f[s.side], tgt, JELLY_HIT, cb);
+      if (r === "hit" || r === "ko") { tgt.sticky = STICKY_T; W.f[s.side].skillHits++; }
+    }
+    if (gone) { W.shots.splice(i, 1); cb.shotPop(s, hit); }
+  }
+}
 function stepFighter(W, f, inp, o, cb) {
   if (f.invuln > 0) f.invuln--;
   if (f.dashCd > 0) f.dashCd--;
   if (f.flash > 0) f.flash--;
   if (f.land > 0) f.land--;
   if (f.wjCd > 0) f.wjCd--;
+  if (f.shotCd > 0) f.shotCd--; if (f.grapCd > 0) f.grapCd--; if (f.sticky > 0) f.sticky--; if (f.castT > 0) f.castT--; if (f.ropeT > 0) f.ropeT--;
   for (const k of ACTIONS) { if (f.buf[k] > 0) f.buf[k]--; if (inp[k]) f.buf[k] = 9; }   // 입력을 9프레임 동안 기억 (콤보가 편해짐)
   const tdx = o.x - f.x, tdz = o.z - f.z, dist = Math.hypot(tdx, tdz) || 1, tx = tdx / dist, tz = tdz / dist;
   const targetYaw = Math.atan2(tdx, tdz);
@@ -512,7 +628,7 @@ function stepFighter(W, f, inp, o, cb) {
   const into = wall && inMag > 0.1 ? -(inp.mx * wall.nx + inp.mz * wall.nz) / inMag : 0;   // 1 = 벽을 정면으로 미는 중
 
   const s0 = f.state;
-  if (s0 === "idle" || s0 === "guard" || s0 === "blockstun" || s0 === "dash" || s0 === "wallrun" || s0 === "cling") f.yaw = turnTo(f.yaw, targetYaw, 0.3);
+  if (s0 === "idle" || s0 === "guard" || s0 === "blockstun" || s0 === "dash" || s0 === "wallrun" || s0 === "cling" || s0 === "grapple") f.yaw = turnTo(f.yaw, targetYaw, 0.3);
   else if (s0 === "attack" && f.mt < f.move.startup) f.yaw = turnTo(f.yaw, targetYaw, 0.25);
 
   switch (s0) {
@@ -551,6 +667,24 @@ function stepFighter(W, f, inp, o, cb) {
       else if (!wall || f.onGround || into < 0.05 || ++f.clingT > CLING_MAX) f.state = "idle";
       else { if (f.vy < -CLING_SLIDE) f.vy = -CLING_SLIDE; f.vx = -wall.nx * 1.2; f.vz = -wall.nz * 1.2; }
       break;
+    case "grapple": {   // 젤리 갈고리에 끌려가는 중
+      const gp = f.grap; gp.t++;
+      const hx = gp.x - f.x, hz = gp.z - f.z, hd = Math.hypot(hx, hz), dy = gp.y - f.y, d = Math.hypot(hd, dy);
+      const arrived = hd < 1.0 && dy < 0.9;
+      if (arrived || gp.t > 80 || gp.stall > 12) {
+        f.state = "idle"; f.grap = null;
+        if (arrived) { f.vx *= 0.08; f.vz *= 0.08; f.vy = 2.5; }                  // 도착: 앞으로 가던 힘을 빼고 꼭대기에 사뿐히
+        else { f.vy = Math.max(f.vy * 0.3, 6); f.vx *= 0.45; f.vz *= 0.45; }      // 막힘: 살짝 튀며 놓음
+        f.jumps = Math.max(f.jumps, 1); f.airDash = true; f.wjN = 0; cb.grappleEnd(f);
+      } else {
+        let vx = hx, vy = dy + (hd > 1.5 ? Math.min(2.5, hd * 0.6) : 0), vz = hz; const l = Math.hypot(vx, vy, vz) || 1;   // 조금 위를 겨눠서 모서리를 넘어감
+        vx = vx / l * GRAP_V; vy = vy / l * GRAP_V; vz = vz / l * GRAP_V;
+        if (f.wall && dy > -0.3) { vy = GRAP_V * 0.9; vx *= 0.3; vz *= 0.3; }   // 벽에 막히면 벽을 따라 끌려 올라감
+        f.vx = vx; f.vy = vy; f.vz = vz;
+        gp.stall = d > gp.lastD - 0.04 ? gp.stall + 1 : 0; gp.lastD = d;
+      }
+      break;
+    }
     case "attack": {
       const m = f.move; f.mt++;
       const a0 = m.startup, a1 = a0 + m.active;
@@ -579,8 +713,11 @@ function stepFighter(W, f, inp, o, cb) {
 
   if (f.state === "idle") {
     if (inp.guard && f.onGround) f.state = "guard";
+    else if (f.castT > 0) { /* 젤리를 쓰는 중: 다른 기술은 잠깐 못 씀 */ }
     else if (f.buf.special && f.sp >= 100) { f.sp = 0; f.buf.special = 0; f.invuln = 16; f.yaw = targetYaw; startMove(f, "rush", cb); cb.special(f); }
     else if (f.buf.dash && f.dashCd === 0 && (f.onGround || f.airDash)) startDash(f, inp, tx, tz, cb);
+    else if (f.buf.shot && f.shotCd === 0) fireShot(W, f, o, cb);
+    else if (f.buf.grapple && f.grapCd === 0) startGrapple(W, f, o, inp, tx, tz, cb);
     else if (f.buf.light && (f.onGround || f.airAtk < 3)) { f.buf.light = 0; startMove(f, f.onGround ? "jab1" : "air1", cb); }
     else if (f.buf.heavy && (f.onGround || f.airAtk < 3)) { f.buf.heavy = 0; startMove(f, f.onGround ? "smash" : "slam", cb); }
     else if (f.buf.jump) {
@@ -589,25 +726,30 @@ function stepFighter(W, f, inp, o, cb) {
       else if (f.jumps > 0) doJump(f, JUMP2, cb);              // 아니면 2단 점프
     }
     if (f.state === "idle") {
-      if (wall && into > 0.55 && inMag > 0.5 && f.wrT < WR_MAX && wall.top > f.y + 0.8 && f.vy > -5) {
+      f.gliding = !f.onGround && inp.jumpHeld && f.jumps === 0 && f.vy < 0.5 && f.glideT < GLIDE_MAX && f.sticky === 0;   // 젤리 풍선 활공
+      if (f.gliding) f.glideT++;
+      if (wall && into > 0.55 && inMag > 0.5 && f.wrT < WR_MAX && wall.top > f.y + 0.8 && f.vy > -5 && f.sticky === 0) {
         f.state = "wallrun"; f.wrT++; f.vy = WR_V; f.onGround = false; f.parkour++; cb.wallrun(f);
       } else if (wall && !f.onGround && into > 0.35 && f.vy < 0 && wall.top > f.y + 0.6) {
         f.state = "cling"; f.clingT = 0;
       } else {
-        const sp = f.onGround ? RUN : AIRRUN, k = f.onGround ? 0.25 : 0.08;
+        const slow = (f.sticky > 0 ? 0.45 : 1) * (f.castT > 0 ? 0.5 : 1);   // 끈적하면 느려짐
+        const sp = (f.onGround ? RUN : f.gliding ? AIRRUN * 1.15 : AIRRUN) * slow, k = f.onGround ? 0.25 : f.gliding ? 0.06 : 0.08;
         f.vx += (inp.mx * sp - f.vx) * k; f.vz += (inp.mz * sp - f.vz) * k;
       }
     }
   }
+  if (f.state !== "idle") f.gliding = false;
 
   // ---- 물리: 중력 → 이동 → 벽 충돌 → 바닥 ----
   let g = GRAV;
   if (f.state === "hitstun" && !f.onGround && !f.spiked) g *= 0.72;   // 띄운 상대는 천천히 떨어짐 (공중 콤보용)
   else if (f.state === "dash" && !f.onGround) g = 0;
-  else if (f.state === "wallrun") g = 0;
+  else if (f.state === "wallrun" || f.state === "grapple") g = 0;
   else if (f.state === "cling" && f.vy <= 0) g *= 0.25;   // 붙어서 내려올 때만 천천히 (올라가는 중엔 보통 중력)
   else if (f.state === "attack" && f.move.air && f.mt < f.move.startup + f.move.active && f.moveName !== "slam") g *= 0.5;
-  f.vy -= g * DT; if (f.vy < -22) f.vy = -22;
+  if (f.gliding) f.vy = Math.max(f.vy - GRAV * 0.3 * DT, -GLIDE_FALL);
+  else { f.vy -= g * DT; if (f.vy < -22) f.vy = -22; }
   f.x += f.vx * DT; f.z += f.vz * DT; f.y += f.vy * DT;
   f.impact = 0; collide(f);
   if (f.state === "hitstun" && f.impact > 7 && f.wall) {   // 세게 날아가 벽에 부딪히면 튕겨 나옴 (벽 꽝)
@@ -621,7 +763,7 @@ function stepFighter(W, f, inp, o, cb) {
       if (f.spiked) { f.spiked = false; f.y = gr; f.vy = 6.5; f.stun = Math.max(f.stun, 26); cb.bounce(f); return; }   // 내려찍기 바운드
       f.land = 6; cb.land(f, -f.vy);
     }
-    f.y = gr; f.vy = 0; f.onGround = true; f.jumps = 2; f.airAtk = 0; f.airDash = true; f.wrT = 0; f.climbJ = false; f.wjN = 0;
+    f.y = gr; f.vy = 0; f.onGround = true; f.jumps = 2; f.airAtk = 0; f.airDash = true; f.wrT = 0; f.climbJ = false; f.wjN = 0; f.glideT = 0; f.gliding = false;
     if (f.state === "cling" || (f.state === "wallrun" && f.vy <= 0)) f.state = "idle";
   } else if (f.y > gr + 0.05) {
     if (f.onGround && f.jumps === 2) f.jumps = 1;   // 걸어서 떨어지면 공중 점프 1번만
@@ -652,13 +794,13 @@ function applyHit(W, a, b, m, cb) {
   if ((b.state === "guard" || b.state === "blockstun") && facing) {
     if (m.guardBreak) {
       b.state = "hitstun"; b.stun = 52; b.vx = nx * 3; b.vz = nz * 3; b.guardBroken = true; b.move = null;
-      a.sp = Math.min(100, a.sp + 8); W.freeze = 9; cb.guardBreak(a, b, px, py, pz); return;
+      a.sp = Math.min(100, a.sp + 8); W.freeze = 9; cb.guardBreak(a, b, px, py, pz); return "break";
     }
     const chip = m.dmg * 0.12; b.hp = Math.max(1, b.hp - chip); b.taken += chip; a.dealt += chip;
     b.state = "blockstun"; b.stun = 10 + Math.round(m.dmg * 0.8);
-    b.vx = nx * (m.kb * 0.5 + 1.5); b.vz = nz * (m.kb * 0.5 + 1.5); a.vx -= nx * 1.2; a.vz -= nz * 1.2;
+    if (m.pull) { b.vx = b.vz = 0; } else { b.vx = nx * (m.kb * 0.5 + 1.5); b.vz = nz * (m.kb * 0.5 + 1.5); a.vx -= nx * 1.2; a.vz -= nz * 1.2; }
     b.sp = Math.min(100, b.sp + 3); a.sp = Math.min(100, a.sp + 2);
-    W.freeze = 4; cb.guard(a, b, px, py, pz); return;
+    W.freeze = 4; cb.guard(a, b, px, py, pz); return "guard";
   }
   const counter = b.state === "attack" && b.mt < b.move.startup;   // 상대가 공격을 준비하는 중에 맞히면 카운터
   a.combo = b.state === "hitstun" ? a.combo + 1 : 1; a.maxCombo = Math.max(a.maxCombo, a.combo);
@@ -677,16 +819,18 @@ function applyHit(W, a, b, m, cb) {
   const info = { dmg, counter, combo: a.combo, heavy, px, py, pz, name: m.name };
   if (b.hp <= 0) {
     b.hp = 0; b.state = "ko"; b.vx = nx * 10; b.vz = nz * 10; b.vy = 8; b.onGround = false; b.spiked = false;
-    W.freeze = 22; info.heavy = true; cb.hit(a, b, info); cb.ko(a, b); return;
+    W.freeze = 22; info.heavy = true; cb.hit(a, b, info); cb.ko(a, b); return "ko";
   }
   W.freeze = m.special && !fin ? 3 : heavy ? 9 : 5;   // 히트스톱: 맞는 순간 잠깐 멈춤
   cb.hit(a, b, info);
+  return "hit";
 }
 function stepWorld(W, ip, iq, cb) {
   const [p, q] = W.f;
   stepFighter(W, p, ip, q, cb); stepFighter(W, q, iq, p, cb);
   separate(p, q);
   checkHit(W, p, q, cb); checkHit(W, q, p, cb);
+  if (W.shots.length) stepShots(W, cb);
   if (p.combo && q.state !== "hitstun") p.combo = 0;
   if (q.combo && p.state !== "hitstun") q.combo = 0;
 }
@@ -694,8 +838,9 @@ function stepWorld(W, ip, iq, cb) {
 /* =====================================================================
    2. AI: 유전자 8개가 싸움 성향을 정함
    ===================================================================== */
-const GENES = ["공격성", "선호 거리", "공격 빈도", "콤보 집착", "강공격 비율", "가드 반응", "점프·벽타기", "회피 성향"];
-function newBrain() { return { hes: 0, tick: 0, mode: "approach", strafe: rnd() < 0.5 ? 1 : -1, guardHold: 0, reacted: -1, evade: 0, wantJump: 0, jcFor: -1, jc: false, chk: 0, lx: 0, ly: 0, lz: 0 }; }
+const GENES = ["공격성", "선호 거리", "공격 빈도", "콤보 집착", "강공격 비율", "가드 반응", "점프·벽타기", "회피 성향", "젤리탄", "갈고리"];
+const fixG = g => (g.length >= GENES.length ? g.slice(0, GENES.length) : g.concat(Array(GENES.length - g.length).fill(0.5)));   // 예전 8개짜리 유전자는 0.5로 채움
+function newBrain() { return { stuckT: 0, hes: 0, tick: 0, mode: "approach", strafe: rnd() < 0.5 ? 1 : -1, guardHold: 0, reacted: -1, evade: 0, wantJump: 0, jcFor: -1, jc: false, chk: 0, lx: 0, ly: 0, lz: 0 }; }
 // 난이도: 유전자(싸움 성향)는 그대로, 실력(반응 속도·공격 빈도·가드·실수)만 조절
 const DIFFS = {
   easy:   { label: "쉬움",   react: 16, act: 0.45, guard: 0.45, combo: 0.5,  hes: 0.012 },
@@ -724,7 +869,7 @@ function aiThink(me, op, g, b, D = DIFFS.hard) {
   // 2) 막힘 감지: 0.75초 동안 거의 못 움직였으면 방향을 바꾸고 점프 → 벽에 끼지 않음
   if (++b.chk >= 45) {
     const moved = Math.hypot(me.x - b.lx, me.z - b.lz) + Math.abs(me.y - b.ly);
-    if (moved < 0.7 && d > 2.2 && me.state !== "attack") { b.mode = "strafe"; b.strafe *= -1; b.tick = 35; b.wantJump = 1; }
+    if (moved < 0.7 && d > 2.2 && me.state !== "attack") { b.mode = "strafe"; b.strafe *= -1; b.tick = 35; b.wantJump = 1; b.stuckT = 90; }
     b.lx = me.x; b.ly = me.y; b.lz = me.z; b.chk = 0;
   }
   // 3) 이동 계획 (8~17프레임마다 새로 정함)
@@ -746,7 +891,17 @@ function aiThink(me, op, g, b, D = DIFFS.hard) {
   else if (b.wantJump && me.state === "idle" && !me.onGround && me.vy < 1 && me.jumps > 0 && dy > 0.5 && rnd() < 0.08) inp.jump = true;
   // 4) 벽에 붙어 있으면 벽차기
   if ((me.state === "cling" || me.state === "wallrun") && rnd() < 0.03 + g[6] * 0.1) inp.jump = true;
-  // 5) 공격
+  // 5) 젤리 스킬: 중거리면 젤리탄, 멀거나 높거나 막혔으면 갈고리로 이동, 가까우면 갈고리로 끌어오기
+  if (b.stuckT > 0) b.stuckT--;
+  if (me.state === "idle" && me.castT === 0) {
+    if (me.shotCd === 0 && d > 2.8 && d < 14 && Math.abs(dy) < 4 && rnd() < (0.006 + g[8] * 0.035) * D.act) inp.shot = true;
+    else if (me.grapCd === 0) {
+      if ((d > 11 || dy > 2.2 || b.stuckT > 0) && rnd() < (0.008 + g[9] * 0.05) * D.act) { inp.grapple = true; inp.mx = fx; inp.mz = fz; }
+      else if (d < PULL_RANGE - 0.5 && d > 3.2 && Math.abs(dy) < 2.5 && rnd() < g[9] * 0.012 * D.act) inp.grapple = true;
+    }
+  } else if ((me.state === "cling" || me.state === "wallrun") && me.grapCd === 0 && dy > 1.5 && rnd() < 0.02 + g[9] * 0.05) { inp.grapple = true; inp.mx = fx; inp.mz = fz; }
+  if (!me.onGround && me.vy < 0 && d > 5) inp.jumpHeld = true;   // 높은 데서 떨어질 때 상대가 멀면 풍선 활공
+  // 6) 공격
   const inRange = d < 1.55 && Math.abs(dy) < 1.2;
   if (me.state === "attack") {
     const m = me.move;
@@ -784,6 +939,10 @@ const freshEvo = () => ({ v: 2, gen: 1, pop: Array.from({ length: POP }, randGen
 let evo = (() => {
   try {
     const e = JSON.parse(store.get("robotBattleEvo") || "null");
+    if (e && Array.isArray(e.pop) && e.pop.every(Array.isArray)) {
+      e.pop = e.pop.map(fixG); if (Array.isArray(e.champ)) e.champ = fixG(e.champ);
+      if (Array.isArray(e.hist)) e.hist.forEach(h => { if (Array.isArray(h.g)) h.g = fixG(h.g); });
+    }
     const okPop = e && Array.isArray(e.pop) && e.pop.length === POP && e.pop.every(g => Array.isArray(g) && g.length === GENES.length);
     if (okPop && e.v === 2 && Array.isArray(e.sum) && Array.isArray(e.n) && Array.isArray(e.win)) return e;
     if (okPop) { const f = freshEvo(); f.gen = e.gen || 1; f.pop = e.pop; f.champ = e.champ || null; return f; }   // 예전 형식은 유전자만 옮김
@@ -791,33 +950,39 @@ let evo = (() => {
   return freshEvo();
 })();
 const saveEvo = () => store.set("robotBattleEvo", JSON.stringify(evo));
-const meanFit = i => (evo.n[i] ? evo.sum[i] / evo.n[i] : -1e9);
-const winRate = i => (evo.n[i] ? evo.win[i] / evo.n[i] : 0);
-function champIdx() { let b = 0; for (let i = 1; i < POP; i++) if (meanFit(i) > meanFit(b)) b = i; return b; }
-function addSample(i, fit, won, w = 1) { evo.sum[i] += fit * w; evo.n[i] += w; evo.win[i] += won ? w : 0; }
-function evolveAI() {
-  const order = [...Array(POP).keys()].sort((a, b) => meanFit(b) - meanFit(a));
-  const scored = order.filter(i => evo.n[i] > 0), best = order[0];
-  const avg = scored.reduce((s, i) => s + meanFit(i), 0) / Math.max(1, scored.length);
-  evo.hist.push({ gen: evo.gen, best: +meanFit(best).toFixed(1), avg: +avg.toFixed(1), win: Math.round(winRate(best) * 100), g: evo.pop[best].slice() });
-  if (evo.hist.length > 80) evo.hist.shift();
-  evo.champ = evo.pop[best].slice();
-  // 엘리트 2개체는 점수 기록을 들고 다음 세대로 (오래 살아남을수록 점수가 정확해짐). 내 실력이 변하니 옛 기록은 60%만 남김
+// 유전자 무리(6개체)를 진화시키는 공통 함수: 내 상대 AI(evo)와 리그의 두 팀이 모두 같은 방식으로 진화
+const pMean = (P, i) => (P.n[i] ? P.sum[i] / P.n[i] : -1e9);
+const pWin = (P, i) => (P.n[i] ? P.win[i] / P.n[i] : 0);
+function pChamp(P) { let b = 0; for (let i = 1; i < POP; i++) if (pMean(P, i) > pMean(P, b)) b = i; return b; }
+function pAdd(P, i, fit, won, w = 1) { P.sum[i] += fit * w; P.n[i] += w; P.win[i] += won ? w : 0; }
+function pEvolve(P) {
+  const order = [...Array(POP).keys()].sort((a, b) => pMean(P, b) - pMean(P, a));
+  const scored = order.filter(i => P.n[i] > 0), best = order[0];
+  const avg = scored.reduce((s, i) => s + pMean(P, i), 0) / Math.max(1, scored.length);
+  P.hist.push({ gen: P.gen, best: +pMean(P, best).toFixed(1), avg: +avg.toFixed(1), win: Math.round(pWin(P, best) * 100), g: P.pop[best].slice() });
+  if (P.hist.length > 80) P.hist.shift();
+  P.champ = P.pop[best].slice();
+  // 엘리트 2개체는 점수 기록을 들고 다음 세대로 (오래 살아남을수록 점수가 정확해짐). 상대가 변하니 옛 기록은 60%만 남김
   const keep = order.slice(0, 2);
-  const pop = keep.map(i => evo.pop[i].slice()), sum = keep.map(i => evo.sum[i] * 0.6), n = keep.map(i => evo.n[i] * 0.6), win = keep.map(i => evo.win[i] * 0.6);
-  const tour = () => { const a = (rnd() * POP) | 0, b = (rnd() * POP) | 0; return meanFit(a) >= meanFit(b) ? a : b; };
+  const pop = keep.map(i => P.pop[i].slice()), sum = keep.map(i => P.sum[i] * 0.6), n = keep.map(i => P.n[i] * 0.6), win = keep.map(i => P.win[i] * 0.6);
+  const tour = () => { const a = (rnd() * POP) | 0, b = (rnd() * POP) | 0; return pMean(P, a) >= pMean(P, b) ? a : b; };
   while (pop.length < POP) {
-    const pa = evo.pop[tour()], pb = evo.pop[tour()];
+    const pa = P.pop[tour()], pb = P.pop[tour()];
     pop.push(pa.map((v, k) => { let x = rnd() < 0.5 ? v : pb[k]; if (rnd() < 0.35) x += gaussR() * 0.15; return +clamp(x, 0, 1).toFixed(3); }));
     sum.push(0); n.push(0); win.push(0);
   }
-  Object.assign(evo, { pop, sum, n, win }); evo.gen++;
+  Object.assign(P, { pop, sum, n, win }); P.gen++;
 }
+const meanFit = i => pMean(evo, i), winRate = i => pWin(evo, i);
+function champIdx() { return pChamp(evo); }
+function addSample(i, fit, won, w = 1) { pAdd(evo, i, fit, won, w); }
+function evolveAI() { pEvolve(evo); }
 const aiFitness = (ai, opp, aiWon) => ai.dealt - 0.8 * ai.taken + (aiWon ? 25 : 0) + ai.maxCombo * 1.5;
-const NOCB = { swing() {}, jump() {}, walljump() {}, wallrun() {}, dash() {}, land() {}, hit() {}, guard() {}, guardBreak() {}, bounce() {}, wallbounce() {}, slamLand() {}, special() {}, ko() {} };
+const NOCB = { swing() {}, jump() {}, walljump() {}, wallrun() {}, dash() {}, land() {}, hit() {}, guard() {}, guardBreak() {}, bounce() {}, wallbounce() {}, slamLand() {}, special() {}, ko() {},
+  shot() {}, shotPop() {}, grapple() {}, grappleEnd() {}, grappleMiss() {} };
 
 /* ---- 내 습관 기록 → 유령: 대결 중 내 입력을 보고 조금씩 갱신 (이 브라우저에 저장) ---- */
-const PM_DEFAULT = { guard: 0.45, react: 20, gap: 11, heavy: 0.15, jump: 0.006, dash: 0.003, juggle: 0.3, spec: 0.03, seen: 0 };
+const PM_DEFAULT = { guard: 0.45, react: 20, gap: 11, heavy: 0.15, jump: 0.006, dash: 0.003, juggle: 0.3, spec: 0.03, shot: 0.004, grap: 0.003, seen: 0 };
 let PM = (() => {
   try { const m = JSON.parse(store.get("robotBattlePM") || "null"); if (m && typeof m.guard === "number") return { ...PM_DEFAULT, ...m }; } catch {}
   return { ...PM_DEFAULT };
@@ -844,6 +1009,8 @@ function observe(o, P, A, inp, fr) {
   if (o.upAt && inp.jump) o.upJump = true;
   if (o.upAt && fr - o.upAt >= 20) { pmUp("juggle", o.upJump ? 1 : 0, 0.15); o.upAt = 0; }
   if (P.sp >= 100 && d < 2.5) pmUp("spec", inp.special ? 1 : 0, 0.02);
+  if (P.shotCd === 0 && d > 2.8 && d < 14) pmUp("shot", inp.shot ? 1 : 0, 0.004);    // 젤리탄을 얼마나 자주 쓰나
+  if (P.grapCd === 0 && P.state === "idle") pmUp("grap", inp.grapple ? 1 : 0, 0.003);   // 갈고리를 얼마나 자주 쓰나
 }
 function newGhost() { return { t: 0, seenId: -1, reactAt: 0, willGuard: false, nextPress: 0, guardUntil: 0 }; }
 function ghostThink(me, op, st, M) {   // 유령: 기록된 습관대로 움직이는 나
@@ -862,10 +1029,13 @@ function ghostThink(me, op, st, M) {   // 유령: 기록된 습관대로 움직�
   if (rnd() < M.jump) inp.jump = true;
   if (rnd() < M.dash) { inp.dash = true; if (d < 2) { inp.mx = -fz; inp.mz = fx; } }
   if (me.sp >= 100 && d < 2.5 && rnd() < M.spec) inp.special = true;
+  if (me.state === "idle" && me.shotCd === 0 && d > 2.8 && d < 14 && rnd() < M.shot) inp.shot = true;
+  if (me.state === "idle" && me.grapCd === 0 && (d > 11 || dy > 2.2) && rnd() < M.grap * 3) { inp.grapple = true; inp.mx = fx; inp.mz = fz; }
+  if (!me.onGround && me.vy < 0 && d > 5) inp.jumpHeld = true;
   return inp;
 }
 function ghostFight(g, D, M) {
-  const W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }, gs = newGhost(), ab = newBrain();
+  const W = newWorld(), gs = newGhost(), ab = newBrain();
   for (let fr = 0; fr < 3600; fr++) {
     if (W.freeze > 0) { W.freeze--; continue; }
     stepWorld(W, ghostThink(W.f[0], W.f[1], gs, M), aiThink(W.f[1], W.f[0], g, ab, D), NOCB);
@@ -926,7 +1096,9 @@ scene.fog = new THREE.Fog("#bfe2ff", 75, 200);
 scene.add(new THREE.HemisphereLight("#ffffff", "#7c6fb5", 0.82));
 const sun = new THREE.DirectionalLight("#fff2da", 0.95);
 sun.position.set(14, 30, 9); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -16, right: 16, top: 16, bottom: -16, near: 1, far: 80 });
+Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20, near: 1, far: 90 });
+scene.add(sun.target);
+function followSun(x, z) { sun.position.set(x + 14, 30, z + 9); sun.target.position.set(x, 0, z); }   // 그림자 범위가 싸우는 곳을 따라감
 sun.shadow.bias = -0.0004; scene.add(sun);
 
 const windowTex = canvasTex(128, 128, (g) => {
@@ -940,17 +1112,19 @@ const windowTex = canvasTex(128, 128, (g) => {
 
 function buildWorld() {
   // 바닥 (옥상)
-  const floorTex = canvasTex(1024, 1024, (g, W2, H2) => {
-    const n = 13, s = W2 / n;
-    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { g.fillStyle = (i + j) % 2 ? "#ffe2a6" : "#fff1cf"; g.fillRect(i * s, j * s, s + 1, s + 1); }
-    g.strokeStyle = "rgba(170,120,50,.22)"; g.lineWidth = 3;
-    for (let i = 0; i <= n; i++) { g.beginPath(); g.moveTo(i * s, 0); g.lineTo(i * s, H2); g.stroke(); g.beginPath(); g.moveTo(0, i * s); g.lineTo(W2, i * s); g.stroke(); }
-    g.lineWidth = 22; g.strokeStyle = "#ff6b4a"; g.beginPath(); g.arc(512, 512, 230, 0, Math.PI * 2); g.stroke();
-    g.lineWidth = 9; g.strokeStyle = "#2f8bff"; g.beginPath(); g.arc(512, 512, 188, 0, Math.PI * 2); g.stroke();
-    g.fillStyle = "#ff6b4a"; g.font = `150px ${FONT}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("VS", 512, 524);
-  });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(HALF * 2, HALF * 2), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.9 }));
+  const tileTex = canvasTex(256, 256, (g) => {   // 2m 바둑판 타일 (반복)
+    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) { g.fillStyle = (i + j) % 2 ? "#ffe2a6" : "#fff1cf"; g.fillRect(i * 128, j * 128, 128, 128); }
+    g.strokeStyle = "rgba(170,120,50,.22)"; g.lineWidth = 3; g.strokeRect(1.5, 1.5, 125, 125); g.strokeRect(129.5, 129.5, 125, 125); g.strokeRect(129.5, 1.5, 125, 125); g.strokeRect(1.5, 129.5, 125, 125);
+  }, [HALF / 2, HALF / 2]);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(HALF * 2, HALF * 2), new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.9 }));
   floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+  const emblem = canvasTex(1024, 1024, (g) => {   // 가운데 광장 무늬
+    g.lineWidth = 34; g.strokeStyle = "#ff6b4a"; g.beginPath(); g.arc(512, 512, 440, 0, Math.PI * 2); g.stroke();
+    g.lineWidth = 14; g.strokeStyle = "#2f8bff"; g.beginPath(); g.arc(512, 512, 380, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = "#ff6b4a"; g.font = `260px ${FONT}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("VS", 512, 530);
+  });
+  const emb = new THREE.Mesh(new THREE.PlaneGeometry(18, 18), new THREE.MeshStandardMaterial({ map: emblem, transparent: true, roughness: 0.9, depthWrite: false }));
+  emb.rotation.x = -Math.PI / 2; emb.position.y = 0.012; emb.receiveShadow = true; scene.add(emb);
   const baseGeo = new THREE.BoxGeometry(HALF * 2 + 2, 34, HALF * 2 + 2); scaleBoxUV(baseGeo, HALF * 2 + 2, 34, HALF * 2 + 2, 3.5);
   const base = new THREE.Mesh(baseGeo, new THREE.MeshStandardMaterial({ color: "#6d5ce8", map: windowTex, roughness: 0.8 }));
   base.position.y = -17.01; scene.add(base);
@@ -959,27 +1133,30 @@ function buildWorld() {
   const FACADE = { n: "#ff7a9a", s: "#5b8cff", w: "#ffb347", e: "#2fc4a0" };
   const KIND = {
     plat: ["#ff8fb1", "#ffd6e2"], tower: ["#8a6cff", "#d6ccff"], wall: ["#2fb5ff", "#bfe9ff"], pillar: ["#ffbe0b", "#fff0b0"],
+    bridge: ["#2fd1a0", "#c9f6e9"], bldg: ["#ff7a59", "#ffe0d4"],
   };
   const stripeTex = (a, b2) => canvasTex(128, 128, (g) => {
     g.fillStyle = a; g.fillRect(0, 0, 128, 128); g.fillStyle = b2;
     for (let k = -128; k < 256; k += 48) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k + 24, 0); g.lineTo(k + 24 + 128, 128); g.lineTo(k + 128, 128); g.closePath(); g.fill(); }
   });
   for (const b of BOXES) {
-    const geo = new THREE.BoxGeometry(b.w, b.h, b.d);
+    const bh = b.h - b.y0;   // 떠 있는 다리는 밑면(y0)부터
+    const geo = new THREE.BoxGeometry(b.w, bh, b.d);
     let mats;
     if (b.kind === "outer") {
-      scaleBoxUV(geo, b.w, b.h, b.d, 3.5);
+      scaleBoxUV(geo, b.w, bh, b.d, 3.5);
       mats = new THREE.MeshStandardMaterial({ color: FACADE[b.face], map: windowTex, roughness: 0.75 });
     } else {
-      scaleBoxUV(geo, b.w, b.h, b.d, 1.6);
-      const [c1, c2] = KIND[b.kind];
-      const side = new THREE.MeshStandardMaterial({ map: stripeTex(c1, c2), roughness: 0.55, transparent: true });
+      const [c1, c2] = KIND[b.kind], windows = b.kind === "bldg" || b.kind === "tower";
+      scaleBoxUV(geo, b.w, bh, b.d, windows ? 2.2 : 1.6);
+      const side = windows ? new THREE.MeshStandardMaterial({ color: c1, map: windowTex, roughness: 0.6, transparent: true })
+        : new THREE.MeshStandardMaterial({ map: stripeTex(c1, c2), roughness: 0.55, transparent: true });
       side.map.wrapS = side.map.wrapT = THREE.RepeatWrapping;
       const top = new THREE.MeshStandardMaterial({ color: c2, roughness: 0.5, transparent: true });
       mats = [side, side, top, top, side, side];
       occluders.push({ b, mats: [side, top], op: 1 });
     }
-    const m = new THREE.Mesh(geo, mats); m.position.set(b.x, b.h / 2, b.z); m.castShadow = b.kind !== "outer"; m.receiveShadow = true; scene.add(m);
+    const m = new THREE.Mesh(geo, mats); m.position.set(b.x, b.y0 + bh / 2, b.z); m.castShadow = b.kind !== "outer"; m.receiveShadow = true; scene.add(m);
     if (b.kind !== "outer") {   // 윗면 테두리
       const rimMat = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.4, transparent: true });
       const rim = new THREE.Mesh(new THREE.BoxGeometry(b.w + 0.06, 0.08, b.d + 0.06), rimMat);
@@ -998,21 +1175,21 @@ function buildWorld() {
       g.font = `150px ${FONT}`; g.fillText(text, w / 2, h / 2 - (sub ? 30 : 0));
       if (sub) { g.font = `64px ${FONT}`; g.fillText(sub, w / 2, h - 62); }
     });
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(10, 3.1), new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 0.7 }));
-    p.position.set(x, 4.4, z); p.rotation.y = rotY; scene.add(p);
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(16, 5), new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 0.7 }));
+    p.position.set(x, 8, z); p.rotation.y = rotY; scene.add(p);
   };
   painted("꼬마 로봇 배틀", "EVOLUTION CUP", "#ffd23f", "#2a1d5c", 0, -HALF + 0.02, 0);
   painted("진화하는 AI", "GEN ∞", "#2a1d5c", "#ffd23f", 0, HALF - 0.02, Math.PI);
-  painted("벽을 타라!", "WALL RUN", "#ffffff", "#ff4b3e", -HALF + 0.02, -2, Math.PI / 2);
-  painted("콤보!", "J · J · J", "#ff4b3e", "#ffffff", HALF - 0.02, 2, -Math.PI / 2);
+  painted("벽을 타라!", "WALL RUN", "#ffffff", "#ff4b3e", -HALF + 0.02, -6, Math.PI / 2);
+  painted("젤리 갈고리!", "GRAPPLE", "#ff4b3e", "#ffffff", HALF - 0.02, 6, -Math.PI / 2);
 
   // 멀리 보이는 도시
   const CITY = ["#ff6b8b", "#5b8cff", "#ffb84d", "#3fd0a6", "#a07bff", "#ff8f5a", "#47c2ff"].map(c => new THREE.MeshStandardMaterial({ color: c, map: windowTex, roughness: 0.8 }));
   let placed = 0, guard = 0;
   while (placed < 80 && guard++ < 1000) {
-    const ang = rnd() * Math.PI * 2, dist = 24 + rnd() * 75, x = Math.cos(ang) * dist, z = Math.sin(ang) * dist;
-    if (Math.abs(x) < 19 && Math.abs(z) < 19) continue;
-    const w = 5 + rnd() * 8, d = 5 + rnd() * 8, h = 20 + rnd() * (dist > 55 ? 70 : 45);
+    const ang = rnd() * Math.PI * 2, dist = 42 + rnd() * 80, x = Math.cos(ang) * dist, z = Math.sin(ang) * dist;
+    if (Math.abs(x) < 37 && Math.abs(z) < 37) continue;
+    const w = 6 + rnd() * 9, d = 6 + rnd() * 9, h = 34 + rnd() * (dist > 75 ? 80 : 50);
     const geo = new THREE.BoxGeometry(w, h, d); scaleBoxUV(geo, w, h, d, 3.5);
     const m = new THREE.Mesh(geo, CITY[placed % CITY.length]); m.position.set(x, -34 + h / 2, z); scene.add(m); placed++;
   }
@@ -1025,16 +1202,16 @@ function buildWorld() {
   }
   const BAL = ["#ff4b3e", "#ffd23f", "#2f8bff", "#2fd1a0", "#a07bff"];
   for (let i = 0; i < 10; i++) {
-    const ang = (i / 10) * Math.PI * 2 + 0.3, r = 17 + rnd() * 5;
+    const ang = (i / 10) * Math.PI * 2 + 0.3, r = HALF + 5 + rnd() * 6;
     const bal = new THREE.Mesh(new THREE.SphereGeometry(0.9, 20, 16), new THREE.MeshStandardMaterial({ color: BAL[i % BAL.length], roughness: 0.25 }));
-    bal.scale.y = 1.15; bal.position.set(Math.cos(ang) * r, 11 + rnd() * 6, Math.sin(ang) * r); bal.userData.y0 = bal.position.y; bal.userData.ph = rnd() * 6;
+    bal.scale.y = 1.15; bal.position.set(Math.cos(ang) * r, 18 + rnd() * 8, Math.sin(ang) * r); bal.userData.y0 = bal.position.y; bal.userData.ph = rnd() * 6;
     scene.add(bal); balloons.push(bal);
   }
 }
 const balloons = [], occluders = [];
 function segHitsBox(ax, ay, az, bx, by, bz, b) {   // 카메라 → 로봇 선분이 상자를 지나는지
   let t0 = 0, t1 = 1;
-  for (const [p, d, lo, hi] of [[ax, bx - ax, b.x - b.w / 2 - 0.15, b.x + b.w / 2 + 0.15], [ay, by - ay, 0, b.h + 0.1], [az, bz - az, b.z - b.d / 2 - 0.15, b.z + b.d / 2 + 0.15]]) {
+  for (const [p, d, lo, hi] of [[ax, bx - ax, b.x - b.w / 2 - 0.15, b.x + b.w / 2 + 0.15], [ay, by - ay, b.y0, b.h + 0.1], [az, bz - az, b.z - b.d / 2 - 0.15, b.z + b.d / 2 + 0.15]]) {
     if (Math.abs(d) < 1e-9) { if (p < lo || p > hi) return false; continue; }
     let u = (lo - p) / d, v = (hi - p) / d; if (u > v) { const q = u; u = v; v = q; }
     t0 = Math.max(t0, u); t1 = Math.min(t1, v); if (t1 < t0) return false;
@@ -1101,7 +1278,18 @@ function makeFighterMesh(side) {
   shield.position.set(0, 0.65, 0.72); shield.visible = false; tilt.add(shield);
   const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.68, 36), new THREE.MeshBasicMaterial({ color: P ? "#2f8bff" : "#ff3b30", transparent: true, opacity: 0.85, depthWrite: false }));
   ring.rotation.x = -Math.PI / 2; scene.add(ring);
-  return { root, tilt, bodyMat, eyes, fistL, fistR, footL, footR, fistMat, shield, knobMat, tails, ring, dispYaw: side ? Math.PI : 0 };
+  // 젤리 끈적 (젤리탄에 맞으면 몸에 붙음)
+  const goo = new THREE.Mesh(new THREE.SphereGeometry(0.62, 20, 14), new THREE.MeshStandardMaterial({ color: "#ff7ac8", transparent: true, opacity: 0.45, roughness: 0.1, depthWrite: false }));
+  goo.position.y = 0.35; goo.scale.set(1.05, 0.55, 1.05); goo.visible = false; root.add(goo);
+  // 젤리 풍선 (활공)
+  const balloon = new THREE.Group(); balloon.position.y = 1.3; balloon.visible = false; root.add(balloon);
+  const balM = new THREE.Mesh(new THREE.SphereGeometry(0.58, 20, 16), new THREE.MeshStandardMaterial({ color: P ? "#7ad7ff" : "#ff9ad5", transparent: true, opacity: 0.88, roughness: 0.15 }));
+  balM.position.y = 0.8; balM.scale.y = 1.12; balloon.add(balM);
+  const strM = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.5, 6), new THREE.MeshBasicMaterial({ color: "#ffffff" })); strM.position.y = 0.22; balloon.add(strM);
+  // 젤리 갈고리 줄
+  const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1, 8), new THREE.MeshStandardMaterial({ color: P ? "#7ad7ff" : "#ff7ac8", roughness: 0.2, emissive: P ? "#2f8bff" : "#ff4fb0", emissiveIntensity: 0.3 }));
+  rope.visible = false; scene.add(rope);
+  return { root, tilt, bodyMat, eyes, fistL, fistR, footL, footR, fistMat, shield, knobMat, tails, ring, goo, balloon, rope, dispYaw: side ? Math.PI : 0 };
 }
 
 /* =====================================================================
@@ -1110,7 +1298,7 @@ function makeFighterMesh(side) {
 const parts = [], rings = [], ghosts = [];
 const sparkGeo = new THREE.OctahedronGeometry(0.085), ghostGeo = new THREE.SphereGeometry(0.5, 16, 12);
 const SPARK = { light: ["#fff3a0", "#ffd23f", "#ffffff"], heavy: ["#ff9d1a", "#ffd23f", "#ff5a3c", "#ffffff"], guard: ["#7fe7ff", "#ffffff", "#4dc3ff"],
-  dust: ["#efe4d2", "#d8c8b0"], wall: ["#ffffff", "#bfe9ff"] };
+  dust: ["#efe4d2", "#d8c8b0"], wall: ["#ffffff", "#bfe9ff"], jelly: ["#ff7ac8", "#ffb3e0", "#c86bff"] };
 const sparkMats = {}; for (const k in SPARK) sparkMats[k] = SPARK[k].map(c => new THREE.MeshBasicMaterial({ color: c }));
 function burst(x, y, z, n, kind, speed = 6) {
   const mats = sparkMats[kind], dust = kind === "dust";
@@ -1212,6 +1400,8 @@ function sfx(kind) {
       case "special": tone("sawtooth", 180, 900, 0.5, 0.2); tone("square", 90, 450, 0.5, 0.1); break;
       case "ko": tone("sine", 220, 35, 0.9, 0.85); noise(0.5, 0.55, 500, 0.5); break;
       case "round": tone("square", 520, 520, 0.12, 0.12); tone("square", 780, 780, 0.22, 0.12, 0.14); break;
+      case "shot": tone("sine", 700, 260, 0.12, 0.2); noise(0.05, 0.12, 2400, 2); break;
+      case "grapple": tone("triangle", 300, 900, 0.18, 0.16); noise(0.1, 0.12, 3000, 1); break;
     }
   } catch {}
 }
@@ -1231,7 +1421,7 @@ const CB = {
   land(f, v) { if (v > 9) { burst(f.x, f.y + 0.05, f.z, 8, "dust", 3); sfx("land"); } },
   hit(a, b, info) {
     const { px, py, pz, heavy } = info;
-    burst(px, py, pz, heavy ? 26 : 12, heavy ? "heavy" : "light", heavy ? 8 : 5.5);
+    burst(px, py, pz, heavy ? 26 : 12, info.name === "젤리탄" || info.name === "젤리 끌어오기" ? "jelly" : heavy ? "heavy" : "light", heavy ? 8 : 5.5);
     shockRing(px, py, pz, heavy ? "#ffb020" : "#fff3a0", heavy ? 1.5 : 0.9);
     floatText(String(Math.max(1, Math.round(info.dmg))), px, py + 0.35, pz, heavy ? "heavy" : "");
     if (info.counter) floatText("카운터!", px, py + 0.95, pz, "big");
@@ -1249,6 +1439,11 @@ const CB = {
   },
   slamLand(f) { shockRing(f.x, f.y + 0.05, f.z, "#ffd23f", 1.6, true); burst(f.x, f.y + 0.05, f.z, 12, "dust", 5); G.shake = Math.max(G.shake, 0.25); sfx("land"); },
   special(f) { flashScreen(0.55); floatText("필살!", f.x, f.y + 1.8, f.z, "big"); G.slow = 16; },
+  shot(f) { sfx("shot"); },
+  shotPop(s, hit) { if (!hit) burst(s.x, s.y, s.z, 6, "jelly", 2.5); },
+  grapple(f, pull) { sfx("grapple"); if (pull) floatText("끌어오기!", f.x, f.y + 1.6, f.z, "tip"); },
+  grappleEnd(f) { burst(f.x, f.y + 0.3, f.z, 6, "jelly", 2); },
+  grappleMiss(f) { if (f.side === 0 && G.phase === "fight" && G.mode !== "spectate") floatText("걸 곳이 없어요", f.x, f.y + 1.6, f.z, "tip"); },
   ko() { showBanner("K.O.!"); G.slow = 75; G.shake = 0.7; flashScreen(0.7); sfx("ko"); },
 };
 
@@ -1257,7 +1452,8 @@ const CB = {
    ===================================================================== */
 const keys = new Set(), edges = new Set();
 const KEYMAP = { KeyW: "up", ArrowUp: "up", KeyS: "down", ArrowDown: "down", KeyA: "left", ArrowLeft: "left", KeyD: "right", ArrowRight: "right",
-  Space: "jump", KeyJ: "light", KeyZ: "light", KeyK: "heavy", KeyX: "heavy", KeyL: "guard", KeyC: "guard", ShiftLeft: "dash", ShiftRight: "dash", KeyU: "special", KeyV: "special" };
+  Space: "jump", KeyJ: "light", KeyZ: "light", KeyK: "heavy", KeyX: "heavy", KeyL: "guard", KeyC: "guard", ShiftLeft: "dash", ShiftRight: "dash", KeyU: "special", KeyV: "special",
+  KeyI: "shot", KeyO: "grapple" };
 addEventListener("keydown", e => {
   if (e.code === "KeyF" && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); toggleFull(); return; }
   if (e.code === "Escape" || e.code === "KeyP") { if (G.paused) setPause(false); else setPause(true); return; }
@@ -1275,7 +1471,7 @@ addEventListener("keydown", e => {
 });
 addEventListener("keyup", e => { const a = KEYMAP[e.code]; if (a) keys.delete(a); });
 addEventListener("blur", () => { keys.clear(); if (G.phase === "fight" || G.phase === "intro") setPause(true); });
-const touchState = { mx: 0, my: 0, guard: false };
+const touchState = { mx: 0, my: 0, guard: false, jumpHeld: false };
 const camDir = new THREE.Vector3();
 function playerInput() {
   let ix = (keys.has("right") ? 1 : 0) - (keys.has("left") ? 1 : 0) + touchState.mx;
@@ -1284,7 +1480,8 @@ function playerInput() {
   camera.getWorldDirection(camDir); let fx = camDir.x, fz = camDir.z; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl;
   const rx = -fz, rz = fx;   // 화면 기준 오른쪽
   const inp = { mx: fx * iy + rx * ix, mz: fz * iy + rz * ix, guard: keys.has("guard") || touchState.guard,
-    jump: edges.has("jump"), light: edges.has("light"), heavy: edges.has("heavy"), dash: edges.has("dash"), special: edges.has("special") };
+    jump: edges.has("jump"), light: edges.has("light"), heavy: edges.has("heavy"), dash: edges.has("dash"), special: edges.has("special"),
+    shot: edges.has("shot"), grapple: edges.has("grapple"), jumpHeld: keys.has("jump") || touchState.jumpHeld };
   edges.clear();
   return inp;
 }
@@ -1301,8 +1498,8 @@ function playerInput() {
   joy.addEventListener("pointerup", endJoy); joy.addEventListener("pointercancel", endJoy);
   document.querySelectorAll(".tb").forEach(b => {
     const act = b.dataset.act;
-    b.addEventListener("pointerdown", e => { e.preventDefault(); b.setPointerCapture(e.pointerId); b.classList.add("on"); if (act === "guard") touchState.guard = true; else edges.add(act); ensureAudio(); });
-    const up = () => { b.classList.remove("on"); if (act === "guard") touchState.guard = false; };
+    b.addEventListener("pointerdown", e => { e.preventDefault(); b.setPointerCapture(e.pointerId); b.classList.add("on"); if (act === "guard") touchState.guard = true; else edges.add(act); if (act === "jump") touchState.jumpHeld = true; ensureAudio(); });
+    const up = () => { b.classList.remove("on"); if (act === "guard") touchState.guard = false; if (act === "jump") touchState.jumpHeld = false; };
     b.addEventListener("pointerup", up); b.addEventListener("pointercancel", up);
   });
   const markTouch = () => document.body.classList.add("is-touch");
@@ -1316,7 +1513,7 @@ function ctrlThink(c, me, op) { return c.kind === "ghost" ? ghostThink(me, op, c
 function* matchupSim(L, R, D, n) {   // 관전 조합을 한 라운드씩 n번 (그림 없이)
   const res = { l: 0, r: 0, d: 0, frames: 0, done: 0, n };
   for (let k = 0; k < n; k++) {
-    const W2 = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }, cl = makeCtrl(L, D), cr = makeCtrl(R, D);
+    const W2 = newWorld(), cl = makeCtrl(L, D), cr = makeCtrl(R, D);
     let fr = 0;
     for (; fr < 3600; fr++) {
       if (W2.freeze > 0) { W2.freeze--; continue; }
@@ -1327,6 +1524,39 @@ function* matchupSim(L, R, D, n) {   // 관전 조합을 한 라운드씩 n번 (
     if (a.hp > b.hp + 0.01) res.l++; else if (b.hp > a.hp + 0.01) res.r++; else res.d++;
     res.frames += fr; res.done++;
     yield res;
+  }
+}
+
+/* ---- 리그: 두 팀이 서로 싸우며 학습 ---- */
+function makeTeam(spec, label) {
+  if (spec.kind === "ghost") return { label, kind: "ghost", M: spec.M, learns: false, gen: 0, hist: [] };
+  const pop = [spec.g.slice()];   // 고른 로봇 + 조금씩 다른 변종 5개체로 시작
+  while (pop.length < POP) pop.push(spec.g.map(v => +clamp(v + gaussR() * 0.18, 0, 1).toFixed(3)));
+  return { label, kind: "ai", learns: true, gen: 1, pop, sum: Array(POP).fill(0), n: Array(POP).fill(0), win: Array(POP).fill(0), hist: [], seed: spec.g.slice() };
+}
+const teamSpec = T => (T.kind === "ghost" ? { kind: "ghost", M: T.M, name: T.label } : { kind: "ai", g: T.pop[pChamp(T)].slice(), name: `${T.label} ${T.gen}세대` });
+function duel(L, R, D) {   // 그림 없이 한 라운드
+  const W2 = newWorld(), cl = makeCtrl(L, D), cr = makeCtrl(R, D);
+  for (let fr = 0; fr < 3600; fr++) {
+    if (W2.freeze > 0) { W2.freeze--; continue; }
+    stepWorld(W2, ctrlThink(cl, W2.f[0], W2.f[1]), ctrlThink(cr, W2.f[1], W2.f[0]), NOCB);
+    if (W2.f[0].state === "ko" || W2.f[1].state === "ko") break;
+  }
+  return W2;
+}
+const LEAGUE_FIGHTS = 3;
+function* coTrainer(T0, T1, D) {   // 각 팀의 6개체가 상대 팀 대표와 3판씩 → 각자 진화 (공진화)
+  for (const [T, O, side] of [[T0, T1, 0], [T1, T0, 1]]) {
+    if (!T.learns) continue;
+    const opp = teamSpec(O);
+    for (let i = 0; i < POP; i++) for (let j = 0; j < LEAGUE_FIGHTS; j++) {
+      const mine = { kind: "ai", g: T.pop[i] }, W2 = side === 0 ? duel(mine, opp, D) : duel(opp, mine, D);
+      const me = W2.f[side], op = W2.f[1 - side], won = me.hp > op.hp + 0.01;
+      pAdd(T, i, aiFitness(me, op, won), won);
+      yield { evolved: false };
+    }
+    pEvolve(T);
+    yield { evolved: true };
   }
 }
 
@@ -1360,15 +1590,16 @@ document.addEventListener("webkitfullscreenchange", onFullChange);
    7. 경기 흐름: 타이틀(AI끼리 데모) → 라운드 소개 → 대결 → K.O. → 결과
    ===================================================================== */
 const G = { phase: "title", paused: false, round: 1, wins: [0, 0], timeF: 0, time: 60, acc: 0, alpha: 1, slow: 0, shake: 0,
-  introT: 0, koT: 0, roundWinner: -1, match: null, ghostT: [0, 0], demoT: 0, demoKo: 0, trainer: null, simJob: null,
+  introT: 0, koT: 0, roundWinner: -1, match: null, ghostT: [0, 0], demoT: 0, demoKo: 0, trainer: null, simJob: null, league: null, leagueSummary: false, holdT: 0,
   mode: "play", spec: null, ctrls: null, camMode: "broadcast", camSide: 1, specSpeed: 1 };
 let aiIdx = champIdx(), aiGenome = evo.pop[aiIdx].slice(), aiBrain = newBrain(), demo = null, F = [], obs = newObserver();
-let W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 };
+let W = newWorld();
 let diffKey = store.get("rbDiff"); if (!DIFFS[diffKey]) diffKey = "normal";
 const diff = () => DIFFS[diffKey];
 const TIPS = [
   "벽 쪽으로 계속 달리면 <b>벽 타기</b>!", "벽에 붙은 채 <b>Space</b> = 벽차기, 벽 쪽으로 누르고 <b>Space</b> = 한 번 더 오르기", "<b>J J J</b> 어퍼컷 맞히고 바로 <b>Space</b> → 공중 콤보",
   "상대가 가드하면 <b>K</b>로 가드 브레이크", "벽 쪽으로 날려 보내면 <b>벽 꽝!</b> 추가타 기회", "<b>Shift</b> 대시는 잠깐 무적",
+  "<b>O</b> 젤리 갈고리로 높은 곳까지 휙!", "<b>I</b> 젤리탄을 맞히면 상대가 끈적해져 느려져요", "2단 점프 뒤 <b>Space</b>를 꾹 = 젤리 풍선 활공",
 ];
 function setPhase(p) { G.phase = p; document.body.dataset.phase = p; }
 function setMode(m) { G.mode = m; document.body.dataset.mode = m; $("#specBar").hidden = m !== "spectate"; }
@@ -1418,11 +1649,68 @@ function startSpectate() {
   if (G.trainer || G.simJob) return;
   ensureAudio();
   G.spec = { L: specResolved.L, R: specResolved.R, D: DIFFS[$("#pickDiff").value] || DIFFS.hard };
-  setMode("spectate");
+  G.league = $("#specLearn").checked
+    ? { teams: [makeTeam(specResolved.L, "파랑 팀"), makeTeam(specResolved.R, "빨강 팀")], matches: 0, wins: [0, 0], recent: [], champ: [0, 0] }
+    : null;
+  setMode("spectate"); syncLeagueInfo();
   G.match = { rounds: [], maxCombo: 0, maxCombo2: 0, dealt: 0, taken: 0, parkour: 0, genome: null };
   G.wins = [0, 0]; G.round = 1; G.camMode = "broadcast"; G.camSide = 1; G.specSpeed = 1; syncSpecBar();
   $("#specSetup").hidden = true; $("#title").hidden = true; $("#result").hidden = true;
   newRound(true);
+}
+function recordLeagueMatch() {
+  const L = G.league, w = G.wins[0] > G.wins[1] ? 0 : G.wins[1] > G.wins[0] ? 1 : -1;
+  L.matches++; if (w >= 0) L.wins[w]++; L.recent.push(w); if (L.recent.length > 60) L.recent.shift();
+  showBanner(w === 0 ? "파랑 팀 승리!" : w === 1 ? "빨강 팀 승리!" : "무승부");
+  syncLeagueInfo();
+}
+function proceedLeague() {
+  if (G.matchOver) {   // 다음 경기
+    G.matchOver = false; G.match = { rounds: [], maxCombo: 0, maxCombo2: 0, dealt: 0, taken: 0, parkour: 0, genome: null };
+    G.wins = [0, 0]; G.round = 1; updatePips(); newRound(true);
+  } else { G.round++; newRound(false); }
+}
+function syncLeagueInfo() {
+  const el = $("#leagueInfo"), L = G.league;
+  el.hidden = !L; if (!L) return;
+  const t = L.teams, gl = T => (T.kind === "ai" ? `${T.gen}세대` : "유령");
+  el.textContent = `리그 ${L.matches}경기 · 파랑 ${L.wins[0]}승(${gl(t[0])}) · 빨강 ${L.wins[1]}승(${gl(t[1])})`;
+}
+function leagueTrend() {   // 앞 5경기 vs 최근 5경기 파랑 승률
+  const r = G.league.recent.filter(x => x >= 0); if (r.length < 6) return null;
+  const rate = a => Math.round(a.filter(x => x === 0).length / a.length * 100);
+  return [rate(r.slice(0, 5)), rate(r.slice(-5))];
+}
+function showLeagueSummary() {
+  const L = G.league, T = L.teams;
+  G.leagueSummary = true; setPhase("result"); hideBanner(); $("#specBar").hidden = true;
+  const lead = L.wins[0] > L.wins[1] ? 0 : L.wins[1] > L.wins[0] ? 1 : -1;
+  $("#rTitle").textContent = "리그 결과"; $("#rTitle").style.color = lead === 0 ? "#2f8bff" : lead === 1 ? "#ff4b3e" : "#1d1636";
+  $("#rScore").textContent = `파랑 팀 ${L.wins[0]} : ${L.wins[1]} 빨강 팀`;
+  const gl = t => (t.kind === "ai" ? `${t.gen}세대` : "유령(학습 안 함)");
+  $("#rStats").innerHTML = [["경기 수", L.matches + "경기"], ["파랑 팀", gl(T[0])], ["빨강 팀", gl(T[1])]]
+    .map(([k, v]) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join("");
+  const tr = leagueTrend();
+  $("#rBoxTitle").textContent = "서로 싸우며 학습한 결과";
+  $("#rGenLabel").textContent = G.trainer ? "아직 연습 중…" : "";
+  $("#rEvo").textContent = `두 팀이 라운드마다 상대 팀 대표와 연습해서 진화했어요. ${tr ? `파랑 팀 승률: 앞 5경기 ${tr[0]}% → 최근 5경기 ${tr[1]}%. ` : "6경기 넘게 보면 승률 변화도 보여 드려요. "}`
+    + (lead >= 0 ? `앞선 쪽은 ${lead === 0 ? "파랑" : "빨강"} 팀이에요. 아래는 그 팀 대표의 유전자(처음 고른 로봇과 비교)예요.` : "아래는 파랑 팀 대표의 유전자예요.");
+  const show = T[lead >= 0 ? lead : 0];
+  if (show.kind === "ai") renderGenes($("#rGenes"), show.pop[pChamp(show)], show.seed); else $("#rGenes").innerHTML = "";
+  $("#rGhost").textContent = "";
+  $("#btnAgain").textContent = "▶ 이어서 보기"; $("#btnAgain").disabled = false; $("#btnSpecChange").hidden = false;
+  $("#btnAdopt0").hidden = T[0].kind !== "ai"; $("#btnAdopt1").hidden = T[1].kind !== "ai";
+  $("#btnAdopt0").textContent = "파랑 팀을 내 상대로"; $("#btnAdopt1").textContent = "빨강 팀을 내 상대로";
+  $("#result").hidden = false; $("#combo0").hidden = $("#combo1").hidden = true;
+}
+function adoptTeam(sd) {   // 리그에서 진화한 팀을 내 상대 AI로 가져오기
+  const T = G.league.teams[sd]; if (T.kind !== "ai") return;
+  const c = pChamp(T), order = [c, ...[...Array(POP).keys()].filter(i => i !== c)];
+  evo.pop = order.map(i => T.pop[i].slice()); evo.sum = Array(POP).fill(0); evo.n = Array(POP).fill(0); evo.win = Array(POP).fill(0);
+  evo.champ = evo.pop[0].slice();
+  evo.hist.push({ gen: evo.gen, best: +pMean(T, c).toFixed(1), avg: 0, win: Math.round(pWin(T, c) * 100), g: evo.champ.slice(), from: T.label });
+  evo.gen++; saveEvo();
+  const btn = $("#btnAdopt" + sd); btn.textContent = `가져왔어요! 이제 내 상대는 ${T.label} 출신`;
 }
 function syncSpecBar() {
   document.querySelectorAll("#specBar [data-cam]").forEach(b => b.classList.toggle("on", b.dataset.cam === String(G.camMode)));
@@ -1449,12 +1737,12 @@ function pumpSim() {
   $("#btnSpecSim").disabled = $("#btnSpecGo").disabled = false;
 }
 function startDemo() {
-  W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 };
+  W = newWorld();
   demo = { g: [evo.champ || randGenome(), evo.pop[champIdx()]], b: [newBrain(), newBrain()] };
   G.demoT = 0; G.demoKo = 0; G.slow = 0;
 }
 function showTitle() {
-  setPhase("title"); setMode("play"); G.paused = false;
+  setPhase("title"); setMode("play"); G.paused = false; G.league = null; G.leagueSummary = false; syncLeagueInfo();
   $("#specSetup").hidden = true;
   $("#p1tag").textContent = "나"; $("#p1name").textContent = "파랑 로봇"; $("#p2tag").textContent = "AI";
   $("#btnStart").disabled = $("#btnTrain").disabled = !!G.trainer;
@@ -1465,15 +1753,19 @@ function showTitle() {
 const lastWin = () => (evo.hist.length ? evo.hist[evo.hist.length - 1].win : null);
 function startMatch() {
   if (G.trainer || G.simJob) return;   // 연습이 끝나야 시작
-  ensureAudio(); setMode("play");
+  ensureAudio(); setMode("play"); G.league = null; G.leagueSummary = false; syncLeagueInfo();
   G.match = { rounds: [], maxCombo: 0, dealt: 0, taken: 0, parkour: 0, genBefore: evo.gen, winBefore: lastWin(), genome: null };
   G.wins = [0, 0]; G.round = 1; $("#title").hidden = true; $("#result").hidden = true;
   newRound(true);
 }
 function newRound(first) {
   const sp = first ? [0, 0] : [W.f[0].sp, W.f[1].sp];   // 필살 게이지는 다음 라운드로 이어짐
-  W = { f: [makeFighter(0), makeFighter(1)], freeze: 0 }; W.f[0].sp = sp[0]; W.f[1].sp = sp[1];
+  W = newWorld(); W.f[0].sp = sp[0]; W.f[1].sp = sp[1];
   if (G.mode === "spectate") {   // 관전: 양쪽 다 AI(또는 유령)가 조종
+    if (G.league) {   // 리그: 라운드마다 각 팀의 지금 대표가 나옴
+      const T = G.league.teams; G.spec.L = teamSpec(T[0]); G.spec.R = teamSpec(T[1]);
+      G.league.champ = T.map(t => (t.kind === "ai" ? pChamp(t) : -1)); syncLeagueInfo();
+    }
     G.ctrls = [makeCtrl(G.spec.L, G.spec.D), makeCtrl(G.spec.R, G.spec.D)];
     $("#p1tag").textContent = "파랑"; $("#p1name").textContent = G.spec.L.name; $("#p2tag").textContent = "빨강"; $("#p2name").textContent = G.spec.R.name;
   } else {
@@ -1504,6 +1796,12 @@ function endRound(reason) {
   if (G.mode === "spectate") {   // 관전 경기는 진화 기록에 넣지 않음
     m.rounds.push({ w }); m.maxCombo = Math.max(m.maxCombo, P.maxCombo); m.maxCombo2 = Math.max(m.maxCombo2, A.maxCombo); m.parkour += P.parkour + A.parkour;
     updatePips(); G.matchOver = G.wins[0] >= 2 || G.wins[1] >= 2 || G.round >= 5;
+    if (G.league) {   // 방금 싸운 두 대표를 채점하고(2판 몫), 두 팀이 서로를 상대로 연습 시작
+      const L = G.league;
+      L.teams.forEach((T, sd) => { if (T.learns) { const me = W.f[sd], op = W.f[1 - sd], won = w === sd; pAdd(T, L.champ[sd], aiFitness(me, op, won), won, 2); } });
+      const learners = L.teams.filter(T => T.learns).length;
+      if (learners) G.trainer = { it: coTrainer(L.teams[0], L.teams[1], G.spec.D), kind: "league", gens: learners, done: 0, total: learners * (POP * LEAGUE_FIGHTS + 1), evolved: 0 };
+    }
     return;
   }
   const fit = aiFitness(A, P, w === 1);
@@ -1516,6 +1814,12 @@ function endRound(reason) {
   startTraining(GENS_PER_ROUND, G.matchOver ? "result" : "between");   // K.O. 연출이 나오는 동안 바로 내 유령과 연습 시작
 }
 function finishRound() {   // K.O. 연출이 끝난 뒤
+  if (G.league) {   // 리그: 경기가 끝나도 결과 화면 없이 계속
+    if (G.matchOver) recordLeagueMatch();
+    G.holdT = G.matchOver ? 100 : 0;
+    setPhase("between"); const tip = $("#tipline"); tip.innerHTML = G.trainer ? "두 팀이 서로를 상대로 연습 중…" : "다음 라운드 준비"; tip.hidden = false;
+    return;
+  }
   if (G.matchOver) endMatch();
   else if (G.trainer) { setPhase("between"); hideBanner(); const tip = $("#tipline"); tip.innerHTML = "AI가 <b>내 유령</b>과 연습 중… (방금 내 습관을 따라 하는 가상의 나)"; tip.hidden = false; }
   else { G.round++; newRound(false); }
@@ -1533,11 +1837,13 @@ function pumpTrainer() {   // 한 프레임에 8ms씩만 계산
   }
   const pct = Math.round(T.done / T.total * 100);
   if (T.kind === "between") $("#tipline").innerHTML = `AI가 <b>내 유령</b>과 연습 중… ${T.evolved}/${T.gens}세대 진화 (${pct}%)`;
+  else if (T.kind === "league" && G.phase === "between") $("#tipline").innerHTML = `두 팀이 <b>서로를 상대로</b> 연습 중… (${pct}%)`;
   else if (T.kind === "title") { $("#trainBar").style.width = pct + "%"; $("#trainMsg").textContent = `AI가 내 유령과 연습 중… ${evo.gen}세대 (${pct}%)`; renderTitleInfo(); }
 }
 function trainingDone(T) {
   $("#btnAgain").disabled = $("#btnStart").disabled = $("#btnTrain").disabled = $("#btnSpec").disabled = false;
   if (G.phase === "title") renderTitleInfo();
+  if (T.kind === "league") { syncLeagueInfo(); if (G.phase === "result" && G.leagueSummary) showLeagueSummary(); return; }
   if (T.kind === "between" && G.phase === "between") { G.round++; newRound(false); }
   else if (T.kind === "result" && G.phase === "result") renderResultEvo();
   else if (T.kind === "title") {
@@ -1547,7 +1853,7 @@ function trainingDone(T) {
     renderTitleInfo(); startDemo();
   }
 }
-const ghostSummary = () => `내 유령(습관): 가드 ${Math.round(PM.guard * 100)}% · 반응 ${(PM.react / 60).toFixed(2)}초 · 공격 간격 ${(PM.gap / 60).toFixed(2)}초 · 강공격 ${Math.round(PM.heavy * 100)}% · 공중 콤보 ${Math.round(PM.juggle * 100)}%${PM.seen < 5 ? " (아직 기본값, 싸울수록 내 습관을 닮아 가요)" : ""}`;
+const ghostSummary = () => `내 유령(습관): 가드 ${Math.round(PM.guard * 100)}% · 반응 ${(PM.react / 60).toFixed(2)}초 · 공격 간격 ${(PM.gap / 60).toFixed(2)}초 · 강공격 ${Math.round(PM.heavy * 100)}% · 공중 콤보 ${Math.round(PM.juggle * 100)}% · 젤리탄 ${(PM.shot * 60).toFixed(2)}회/초${PM.seen < 5 ? " (아직 기본값, 싸울수록 내 습관을 닮아 가요)" : ""}`;
 function renderResultEvo() {
   const m = G.match, w0 = m.winBefore, w1 = lastWin();
   $("#btnAgain").disabled = !!G.trainer;
@@ -1559,7 +1865,7 @@ function renderResultEvo() {
   $("#rGhost").textContent = ghostSummary();
 }
 function endSpectateMatch() {
-  setPhase("result"); hideBanner(); $("#specBar").hidden = true;
+  setPhase("result"); hideBanner(); $("#specBar").hidden = true; $("#btnAdopt0").hidden = $("#btnAdopt1").hidden = true;
   const m = G.match, L = G.spec.L, R = G.spec.R, lw = G.wins[0] > G.wins[1], rw = G.wins[1] > G.wins[0];
   $("#rTitle").textContent = lw ? "파랑 승리!" : rw ? "빨강 승리!" : "무승부";
   $("#rTitle").style.color = lw ? "#2f8bff" : rw ? "#ff4b3e" : "#1d1636";
@@ -1582,7 +1888,7 @@ function endSpectateMatch() {
 function endMatch() {
   if (G.mode === "spectate") return endSpectateMatch();
   setPhase("result"); hideBanner();
-  $("#btnAgain").textContent = "▶ 다시 대결"; $("#btnSpecChange").hidden = true; $("#rBoxTitle").textContent = "AI의 진화";
+  $("#btnAgain").textContent = "▶ 다시 대결"; $("#btnSpecChange").hidden = true; $("#rBoxTitle").textContent = "AI의 진화"; $("#btnAdopt0").hidden = $("#btnAdopt1").hidden = true;
   const m = G.match, win = G.wins[0] > G.wins[1], lose = G.wins[1] > G.wins[0];
   const rec = (() => { try { return JSON.parse(store.get("robotBattleRecord") || "null") || { w: 0, l: 0, d: 0 }; } catch { return { w: 0, l: 0, d: 0 }; } })();
   if (win) rec.w++; else if (lose) rec.l++; else rec.d++;
@@ -1631,7 +1937,13 @@ function trainAI(gens) {
 
 $("#btnStart").onclick = startMatch;
 $("#btnTrain").onclick = () => trainAI(10);
-$("#btnAgain").onclick = () => (G.mode === "spectate" ? startSpectate() : startMatch());
+$("#btnAgain").onclick = () => {
+  if (G.mode === "spectate" && G.league && G.leagueSummary) {   // 리그 이어서 보기
+    G.leagueSummary = false; $("#result").hidden = true; setMode("spectate"); syncLeagueInfo();
+    G.matchOver = true; proceedLeague(); return;
+  }
+  return G.mode === "spectate" ? startSpectate() : startMatch();
+};
 $("#btnSpec").onclick = openSpecSetup;
 $("#btnSpecChange").onclick = () => { setPhase("title"); setMode("play"); hideBanner(); startDemo(); openSpecSetup(); };
 $("#btnSpecBack").onclick = () => { if (G.simJob) return; $("#specSetup").hidden = true; showTitle(); };
@@ -1639,7 +1951,9 @@ $("#btnSpecGo").onclick = startSpectate;
 $("#btnSpecSim").onclick = runMatchupSim;
 $("#pickL").onchange = () => resolvePick("L");
 $("#pickR").onchange = () => resolvePick("R");
-$("#specStop").onclick = showTitle;
+$("#specStop").onclick = () => (G.league ? showLeagueSummary() : showTitle());
+$("#btnAdopt0").onclick = () => adoptTeam(0);
+$("#btnAdopt1").onclick = () => adoptTeam(1);
 document.querySelectorAll("#specBar [data-cam]").forEach(b => b.onclick = () => { G.camMode = b.dataset.cam === "broadcast" ? "broadcast" : +b.dataset.cam; syncSpecBar(); });
 document.querySelectorAll("#specBar [data-spd]").forEach(b => b.onclick = () => { G.specSpeed = +b.dataset.spd; syncSpecBar(); });
 $("#btnToTitle").onclick = showTitle;
@@ -1680,6 +1994,9 @@ function simFrame() {
     const [P, A] = W.f;
     if (P.state === "ko" || A.state === "ko") endRound("ko");
     else if (G.time <= 0) endRound("time");
+  } else if (G.phase === "between" && G.league) {   // 리그: 연습이 끝나고 잠깐 결과를 보여 준 뒤 다음 라운드/경기
+    if (G.holdT > 0) G.holdT--;
+    else if (!G.trainer) proceedLeague();
   } else if (G.phase === "ko") {
     if (++G.koT === 160) finishRound();
   } else if (G.phase === "title") {
@@ -1727,6 +2044,7 @@ function animFighter(fm, f, time) {
       L.set(-0.42, 0.98, 0.28); Rf.set(0.42, 0.78 + Math.sin(ph) * 0.1, 0.28); sy = 1.06; break;
     }
     case "cling": lean = -0.08; L.set(-0.34, 1.05, 0.4); Rf.set(0.42, 0.55, 0.32); FL.set(-0.18, 0.16, 0.32); FR.set(0.2, 0.32, 0.26); sy = 0.96; break;
+    case "grapple": lean = 0.3; Rf.set(0.3, 1.1, 0.5); L.set(-0.45, 0.6, -0.1); FL.z -= 0.15; FR.z -= 0.15; sy = 1.05; break;
     case "hitstun": lean = -0.4; eyeS = 0.25; L.y += 0.3; Rf.y += 0.2; L.x -= 0.1; Rf.x += 0.1; if (!f.onGround) roll = Math.sin(time * 20) * 0.2; break;
     case "ko": lean = -1.35; eyeS = 0.12; lift = 0.18; break;
     case "attack": {
@@ -1763,10 +2081,57 @@ function animFighter(fm, f, time) {
   if (guarding) fm.shield.material.opacity = f.state === "blockstun" ? 0.75 : 0.35 + 0.1 * Math.sin(time * 10);
   if (fm.tails) fm.tails.forEach((t, i) => { t.rotation.x = 0.3 + Math.sin(time * 9 + i) * 0.15 + clamp(hsp * 0.06, 0, 0.5); });
   fm.knobMat.emissiveIntensity = f.sp >= 100 ? 0.6 + 0.4 * Math.sin(time * 12) : 0.25;
+  // 젤리: 끈적 · 풍선 · 갈고리 줄
+  fm.goo.visible = f.sticky > 0;
+  if (fm.goo.visible) { const w = 1 + Math.sin(time * 9) * 0.06; fm.goo.scale.set(1.05 * w, 0.55 / w, 1.05 * w); fm.goo.material.opacity = 0.2 + Math.min(1, f.sticky / 40) * 0.3; }
+  fm.balloon.visible = f.gliding;
+  if (f.gliding) { fm.balloon.scale.setScalar(Math.min(1, f.glideT / 8)); fm.balloon.rotation.z = Math.sin(time * 3) * 0.1; L.set(-0.16, 1.18, 0.05); Rf.set(0.16, 1.18, 0.05); }
+  const opp = W.f[1 - f.side];
+  const rp = f.state === "grapple" && f.grap ? [f.grap.x, f.grap.y, f.grap.z] : f.ropeT > 0 ? [opp.x, opp.y + 0.6, opp.z] : null;
+  fm.rope.visible = !!rp;
+  if (rp) {
+    const ax = x, ay = y + 0.95, az = z; ropeDir.set(rp[0] - ax, rp[1] - ay, rp[2] - az);
+    const len = ropeDir.length(); fm.rope.position.set((ax + rp[0]) / 2, (ay + rp[1]) / 2, (az + rp[2]) / 2);
+    fm.rope.scale.set(1, len, 1); fm.rope.quaternion.setFromUnitVectors(UPV, ropeDir.normalize());
+  }
   const gr = groundAt(x, z, y);   // 발밑 링: 높이 뛸수록 커짐 → 높이가 잘 보임
   fm.ring.position.set(x, gr + 0.03, z); fm.ring.scale.setScalar(1 + Math.min(1.6, (y - gr) * 0.3)); fm.ring.material.opacity = f.state === "ko" ? 0 : 0.85;
 }
 
+const ropeDir = new THREE.Vector3(), UPV = new THREE.Vector3(0, 1, 0);
+/* 날아가는 젤리탄 */
+const shotMeshes = new Map(), shotGeo = new THREE.SphereGeometry(0.26, 16, 12);
+const shotMats = ["#7ad7ff", "#ff8fd0"].map((c, i) => new THREE.MeshStandardMaterial({ color: c, emissive: i ? "#ff4b9e" : "#2f8bff", emissiveIntensity: 0.35, transparent: true, opacity: 0.9, roughness: 0.1 }));
+function syncShots(time) {
+  const live = new Set();
+  for (const s of W.shots) {
+    live.add(s.id);
+    let m = shotMeshes.get(s.id);
+    if (!m) { m = new THREE.Mesh(shotGeo, shotMats[s.side]); scene.add(m); shotMeshes.set(s.id, m); }
+    m.position.set(s.x, s.y, s.z); const w = 1 + Math.sin(time * 30 + s.id) * 0.12; m.scale.set(w, 1 / w, w);
+  }
+  for (const [id, m] of shotMeshes) if (!live.has(id)) { scene.remove(m); shotMeshes.delete(id); }
+}
+/* 갈고리를 걸 수 있는 곳 표시 (지금 누르면 걸리는 곳은 크게 반짝) */
+const anchorMarks = ANCHORS.map(a => {
+  const m = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.06, 8, 28), new THREE.MeshBasicMaterial({ color: "#ff7ac8", transparent: true, opacity: 0.45, depthWrite: false }));
+  m.rotation.x = Math.PI / 2; m.position.set(a.x, a.y - 0.42, a.z); scene.add(m); return m;
+});
+function updateAnchorMarks(time) {
+  let target = null;
+  const me = W.f[0];
+  if (G.phase === "fight" && G.mode !== "spectate" && me.grapCd === 0 && ["idle", "cling", "wallrun"].includes(me.state)) {
+    let ix = (keys.has("right") ? 1 : 0) - (keys.has("left") ? 1 : 0) + touchState.mx, iy = (keys.has("up") ? 1 : 0) - (keys.has("down") ? 1 : 0) + touchState.my;
+    camera.getWorldDirection(camDir); let fx = camDir.x, fz = camDir.z; const fl = Math.hypot(fx, fz) || 1; fx /= fl; fz /= fl;
+    let dx = fx * iy - fz * ix, dz = fz * iy + fx * ix; const dl = Math.hypot(dx, dz);
+    if (dl < 0.3) { const o = W.f[1], l2 = Math.hypot(o.x - me.x, o.z - me.z) || 1; dx = (o.x - me.x) / l2; dz = (o.z - me.z) / l2; } else { dx /= dl; dz /= dl; }
+    target = pickAnchor(me, dx, dz);
+  }
+  ANCHORS.forEach((a, i) => {
+    const m = anchorMarks[i], on = a === target;
+    m.material.opacity = on ? 0.95 : 0.35; m.scale.setScalar(on ? 1.5 + Math.sin(time * 8) * 0.15 : 1);
+  });
+}
 const camPos = new THREE.Vector3(0, 6, -18), camLook = new THREE.Vector3(0, 1, 0);
 let camFx = 0, camFz = 1;
 function updateCamera(dt, time) {
@@ -1797,8 +2162,8 @@ function updateCamera(dt, time) {
       const cx = a.x - fx2 * bk - fz2 * 1.15, cz = a.z - fz2 * bk + fx2 * 1.15;
       if (Math.abs(cx) <= lim0 && Math.abs(cz) <= lim0) { tx = cx; tz = cz; break; }
     }
-    ty = a.y * 0.7 + 2.8 + Math.min(2.5, d * 0.1) + Math.max(0, b.y - a.y) * 0.35;
-    lx = lerp(a.x, b.x, 0.42); lz = lerp(a.z, b.z, 0.42); ly = 0.9 + (a.y + b.y) * 0.45;
+    ty = Math.max(a.y + 2.4, a.y * 0.7 + 2.8) + Math.min(2.5, d * 0.1) + Math.max(0, b.y - a.y) * 0.35;   // 높이 올라가도 로봇보다 위에서
+    lx = lerp(a.x, b.x, 0.42); lz = lerp(a.z, b.z, 0.42); ly = 0.9 + a.y * 0.65 + b.y * 0.35;              // 시선은 내 로봇 높이 쪽으로
   }
   const lim = HALF - 0.7, ox = Math.max(0, Math.abs(tx) - lim), oz = Math.max(0, Math.abs(tz) - lim);
   tx = clamp(tx, -lim, lim); tz = clamp(tz, -lim, lim); ty += (ox + oz) * 0.6;   // 바깥 벽 뒤로 나가지 않게
@@ -1811,7 +2176,7 @@ function updateCamera(dt, time) {
   camera.lookAt(camLook);
 }
 const lagHp = [100, 100];
-const HUD = [0, 1].map(s => ({ hp: $("#hp" + s), lag: $("#lag" + s), sp: $("#sp" + s), spw: $("#spw" + s), rdy: $("#rdy" + s) }));
+const HUD = [0, 1].map(s => ({ hp: $("#hp" + s), lag: $("#lag" + s), sp: $("#sp" + s), spw: $("#spw" + s), rdy: $("#rdy" + s), ks: $("#sks" + s), kg: $("#skg" + s) }));
 function updateHud() {
   W.f.forEach((f, s) => {
     const h = HUD[s], hp = Math.max(0, f.hp);
@@ -1819,6 +2184,8 @@ function updateHud() {
     h.hp.style.width = hp + "%"; h.lag.style.width = lagHp[s] + "%";
     h.hp.className = "fill" + (hp > 50 ? "" : hp > 25 ? " mid" : " low");
     h.sp.style.width = f.sp + "%"; h.spw.classList.toggle("ready", f.sp >= 100); h.rdy.classList.toggle("on", f.sp >= 100);
+    h.ks.classList.toggle("cd", f.shotCd > 0); h.ks.firstChild.style.width = (f.shotCd > 0 ? (1 - f.shotCd / SHOT_CD) * 100 : 0) + "%";   // 젤리 스킬 쿨타임
+    h.kg.classList.toggle("cd", f.grapCd > 0); h.kg.firstChild.style.width = (f.grapCd > 0 ? (1 - f.grapCd / GRAP_CD) * 100 : 0) + "%";
   });
   const t = $("#timer"); t.textContent = G.time; t.classList.toggle("low", G.time <= 10);
 }
@@ -1843,9 +2210,10 @@ function loop(now) {
     if (f.state === "wallrun" && rnd() < 0.3 && f.wall) burst(f.x - f.wall.nx * R, f.y + 0.2, f.z - f.wall.nz * R, 1, "wall", 1.5);
     if (comboTimer[s] > 0 && (comboTimer[s] -= dt) <= 0) $("#combo" + s).hidden = true;
   }
+  syncShots(time); updateAnchorMarks(time);
   balloons.forEach(b => { b.position.y = b.userData.y0 + Math.sin(time * 0.8 + b.userData.ph) * 0.6; });
   pumpTrainer(); pumpSim();
-  updateFx(dt); updateCamera(dt, time); updateOccluders(dt);
+  updateFx(dt); updateCamera(dt, time); updateOccluders(dt); followSun(camLook.x, camLook.z);
   if (G.phase !== "title") updateHud();
   renderer.render(scene, camera);
 }
