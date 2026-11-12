@@ -2897,8 +2897,15 @@ function applyGfx() {
   if (real) applyQuality();
   sizeAll(); syncGfxUI();
   GFX.settle = 2.5; GFX.frames = 0; GFX.acc = 0; scene.visible = true;
+  if ($("#notice").textContent === BUILD_MSG) $("#notice").hidden = true;
 }
-function setGfx(mode) { if (GFX.mode === mode && scene.visible) return; GFX.mode = mode; store.set("rbGfx", mode); applyGfx(); if (soundOn) ambience(); }
+const BUILD_MSG = "폭풍 치는 항구를 짓는 중…";
+function setGfx(mode) {
+  if (GFX.mode === mode && scene.visible) return;
+  GFX.mode = mode; store.set("rbGfx", mode);
+  const go = () => { applyGfx(); ambience(); };
+  if (mode === "real" && !RW.built && !GFX.failed) { notice(BUILD_MSG, 8000); setTimeout(go, 40); } else go();   // 처음 한 번은 무늬를 그리느라 1~2초 걸림
+}
 function setQuality(q, byAuto) {
   if (q === "auto") { GFX.auto = true; store.set("rbQ", "auto"); q = matchMedia("(pointer: coarse)").matches ? "mid" : "high"; }
   else if (!byAuto) { GFX.auto = false; store.set("rbQ", q); }
@@ -4361,7 +4368,7 @@ Fcute = [makeFighterMesh(0), makeFighterMesh(1)]; F = Fcute;
 if (/[?&]debug\b/.test(location.search)) window.__rb = { G, get W() { return W; }, get evo() { return evo; }, get PM() { return PM; }, get NET() { return NET; }, camera, playerInput, endRound, GFX, RW, POST, setGfx, setQuality, renderer };
 const fontReady = document.fonts && document.fonts.load
   ? Promise.race([Promise.all([document.fonts.load(`40px "Jua"`), document.fonts.load(`40px "Black Han Sans"`), document.fonts.load(`40px "Bebas Neue"`)]), new Promise(r => setTimeout(r, 2200))]) : Promise.resolve();
-fontReady.catch(() => {}).then(() => { applyGfx(); });
+fontReady.catch(() => {}).then(() => { if (GFX.mode === "real") { notice(BUILD_MSG, 8000); setTimeout(applyGfx, 40); } else applyGfx(); });
 showTitle();
 requestAnimationFrame(loop);
 netInit();   // 친구와 대전: room 기능이 있으면 켜짐
